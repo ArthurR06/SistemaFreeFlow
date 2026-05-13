@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Monitoramento de Veículos</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #081528, #102848);
+      color: white;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .topo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      background: rgba(0,0,0,0.25);
+      padding: 16px 20px;
+      border-radius: 12px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .topo h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .status-operacao {
+      margin-bottom: 20px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-weight: bold;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .status-ok {
+      border: 1px solid rgba(31,157,85,0.6);
+      background: rgba(31,157,85,0.18);
+      color: #e9fff0;
+    }
+
+    .status-alerta {
+      border: 1px solid rgba(217,60,60,0.7);
+      background: rgba(217,60,60,0.18);
+      color: #ffeaea;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #f5f7fb;
+      color: #0c1c33;
+      padding: 18px;
+      border-radius: 12px;
+      font-weight: bold;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card .titulo {
+      font-size: 1rem;
+    }
+
+    .card .valor {
+      font-size: 2rem;
+      margin-top: 10px;
+      word-break: break-word;
+    }
+
+    .conteudo {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .painel {
+      background: rgba(255,255,255,0.08);
+      padding: 18px;
+      border-radius: 12px;
+    }
+
+    .painel h2,
+    .painel h3 {
+      margin-top: 0;
+    }
+
+    .barra-acoes {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .acoes-esquerda {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    select,
+    button {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.95rem;
+    }
+
+    button {
+      background: #1f9d55;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      color: #0c1c33;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #e9eef6;
+    }
+
+    .badge-ok {
+      background: #1f9d55;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .badge-dup {
+      background: #d93c3c;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .box-ultima {
+      background: rgba(0,0,0,0.25);
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .linha-info {
+      margin: 12px 0;
+      font-size: 1.05rem;
+      word-break: break-word;
+    }
+
+    .footer-refresh {
+      text-align: center;
+      margin-top: 20px;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
+    .footer-ok {
+      border: 1px solid rgba(31,157,85,0.6);
+      background: rgba(31,157,85,0.18);
+      color: #e9fff0;
+    }
+
+    .footer-atencao {
+      border: 1px solid rgba(255,193,7,0.7);
+      background: rgba(255,193,7,0.18);
+      color: #fff4d2;
+    }
+
+    .footer-alerta {
+      border: 1px solid rgba(217,60,60,0.7);
+      background: rgba(217,60,60,0.18);
+      color: #ffeaea;
+    }
+
+    ul {
+      padding-left: 20px;
+      margin-bottom: 0;
+    }
+
+    li {
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    @media (max-width: 1100px) {
+      .cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .conteudo {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .topo h1 {
+        font-size: 1.5rem;
+      }
+
+      th, td {
+        padding: 10px;
+        font-size: 0.9rem;
+      }
+
+      .card .valor {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topo">
+    <h1>MONITORAMENTO DE VEÍCULOS</h1>
+    <div id="refreshTexto">Atualizando a cada 5 segundos</div>
+  </div>
+
+  <div id="statusOperacao" class="status-operacao status-ok">
+    Recebendo dados normalmente
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="titulo">Total de Veículos</div>
+      <div class="valor" id="total_veiculos">0</div>
+    </div>
+    <div class="card">
+      <div class="titulo">Total Geral Gerado</div>
+      <div class="valor" id="total_gerado">R$ 0,00</div>
+    </div>
+    <div class="card">
+      <div class="titulo">Valor por Passagem</div>
+      <div class="valor" id="valor_por_passagem">R$ 5,00</div>
+    </div>
+    <div class="card">
+      <div class="titulo">Duplicidades</div>
+      <div class="valor" id="total_duplicidades">0</div>
+    </div>
+  </div>
+
+  <div class="conteudo">
+    <div class="painel">
+      <div class="barra-acoes">
+        <h2>Últimos Eventos</h2>
+
+        <div class="acoes-esquerda">
+          <label for="filtroAnomalia">Filtro:</label>
+          <select id="filtroAnomalia">
+            <option value="todos">Todos</option>
+            <option value="duplicidade">Somente duplicidade</option>
+            <option value="ok">Somente OK</option>
+          </select>
+
+          <button onclick="exportarCSV()">Exportar CSV</button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID do Veículo</th>
+            <th>Faixa</th>
+            <th>Data/Hora</th>
+            <th>Valor</th>
+            <th>Anomalia</th>
+          </tr>
+        </thead>
+        <tbody id="tabela_eventos"></tbody>
+      </table>
+    </div>
+
+    <div>
+      <div class="box-ultima">
+        <h2>Última Passagem</h2>
+        <div class="linha-info"><strong>ID do Veículo:</strong> <span id="ultima_id">-</span></div>
+        <div class="linha-info"><strong>Faixa:</strong> <span id="ultima_faixa">-</span></div>
+        <div class="linha-info"><strong>Data/Hora:</strong> <span id="ultimo_horario">-</span></div>
+        <div class="linha-info"><strong>Valor:</strong> <span id="ultimo_valor">R$ 5,00</span></div>
+        <div class="linha-info"><strong>Anomalia:</strong> <span id="ultima_anomalia">OK</span></div>
+      </div>
+
+      <div class="painel">
+        <h2>Resumo de Anomalias</h2>
+        <div class="linha-info"><strong>Duplicidades:</strong> <span id="duplicidades_resumo">0</span></div>
+        <div class="linha-info"><strong>Sem eventos há:</strong> <span id="tempoSemEvento">0</span> segundos</div>
+        <h3>Últimas Duplicidades</h3>
+        <ul id="lista_duplicidades"></ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="rodapeAtualizacao" class="footer-refresh footer-ok">
+    ✅ Última atualização há 0 segundos
+  </div>
+
+  <script>
+    let filtroAtual = "todos";
+
+    function formatarMoeda(valor) {
+      return valor.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+    }
+
+    function exportarCSV() {
+      window.open(`/exportar-csv?anomalia=${filtroAtual}`, "_blank");
+    }
+
+    function filtrarEventos(eventos) {
+      if (filtroAtual === "duplicidade") {
+        return eventos.filter(e => e.anomalia === "duplicidade");
+      }
+
+      if (filtroAtual === "ok") {
+        return eventos.filter(e => e.anomalia === null);
+      }
+
+      return eventos;
+    }
+
+    async function carregarDashboard() {
+      const resposta = await fetch('/dashboard-data');
+      const dados = await resposta.json();
+
+      document.getElementById('refreshTexto').innerText = `Atualizando a cada ${dados.refresh_segundos} segundos`;
+
+      document.getElementById('total_veiculos').innerText = dados.total_veiculos;
+      document.getElementById('total_gerado').innerText = formatarMoeda(dados.total_gerado);
+      document.getElementById('valor_por_passagem').innerText = formatarMoeda(dados.valor_por_passagem);
+      document.getElementById('total_duplicidades').innerText = dados.total_duplicidades;
+      document.getElementById('duplicidades_resumo').innerText = dados.total_duplicidades;
+      document.getElementById('tempoSemEvento').innerText = dados.segundos_sem_evento;
+
+      const statusBox = document.getElementById('statusOperacao');
+      statusBox.innerText = dados.status_operacao;
+
+      if (dados.status_operacao.includes("Alerta")) {
+        statusBox.classList.remove("status-ok");
+        statusBox.classList.add("status-alerta");
+      } else {
+        statusBox.classList.remove("status-alerta");
+        statusBox.classList.add("status-ok");
+      }
+
+      const rodape = document.getElementById('rodapeAtualizacao');
+      rodape.innerText = dados.mensagem_atualizacao;
+      rodape.classList.remove("footer-ok", "footer-atencao", "footer-alerta");
+
+      if (dados.nivel_atualizacao === "ok") {
+        rodape.classList.add("footer-ok");
+      } else if (dados.nivel_atualizacao === "atencao") {
+        rodape.classList.add("footer-atencao");
+      } else {
+        rodape.classList.add("footer-alerta");
+      }
+
+      document.getElementById('ultima_id').innerText = dados.ultima_passagem.id_veiculo;
+      document.getElementById('ultima_faixa').innerText = dados.ultima_passagem.faixa;
+      document.getElementById('ultimo_horario').innerText = dados.ultima_passagem.timestamp_evento;
+      document.getElementById('ultimo_valor').innerText = formatarMoeda(dados.ultima_passagem.valor);
+      document.getElementById('ultima_anomalia').innerText =
+        dados.ultima_passagem.anomalia === "duplicidade" ? "Duplicidade" : "OK";
+
+      const eventosFiltrados = filtrarEventos(dados.eventos);
+
+      const tabela = document.getElementById('tabela_eventos');
+      tabela.innerHTML = "";
+
+      eventosFiltrados.forEach(evento => {
+        const linha = document.createElement('tr');
+
+        const badge = evento.anomalia === "duplicidade"
+          ? '<span class="badge-dup">Duplicidade</span>'
+          : '<span class="badge-ok">OK</span>';
+
+        linha.innerHTML = `
+          <td>${evento.id_veiculo}</td>
+          <td>Faixa ${evento.faixa}</td>
+          <td>${evento.timestamp_evento}</td>
+          <td>${formatarMoeda(evento.valor)}</td>
+          <td>${badge}</td>
+        `;
+
+        tabela.appendChild(linha);
+      });
+
+      const lista = document.getElementById('lista_duplicidades');
+      lista.innerHTML = "";
+
+      dados.duplicidades_recentes.forEach(item => {
+        const li = document.createElement('li');
+        li.innerText = `${item.id_veiculo} - ${item.timestamp_evento}`;
+        lista.appendChild(li);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const filtro = document.getElementById("filtroAnomalia");
+
+      filtro.addEventListener("change", () => {
+        filtroAtual = filtro.value;
+        carregarDashboard();
+      });
+
+      carregarDashboard();
+      setInterval(carregarDashboard, 5000);
+    });
+  </script>
+</body>
+</html>
