@@ -1,225 +1,135 @@
-# Sistema Free Flow - MVP TCC
+# Sistema FreeFlow
 
-Este repositório contém o MVP funcional desenvolvido para o Trabalho de Conclusão de Curso com o tema:
+Protótipo de sistema de cobrança automática de pedágio Free Flow desenvolvido para TCC, utilizando IoT, FastAPI, banco de dados e Inteligência Artificial com Isolation Forest.
 
-**Proposta de arquitetura resiliente para sistemas de cobrança automática de pedágio Free Flow no Brasil, baseada em IoT, computação em nuvem e inteligência artificial.**
+## Estrutura do projeto
 
-O sistema simula o funcionamento de um pedágio no modelo **Free Flow**, onde eventos de passagem de veículos são registrados, armazenados, analisados e exibidos em um dashboard web.
-
----
-
-## Objetivo do Projeto
-
-O objetivo do projeto é demonstrar, em ambiente controlado, o fluxo básico de um sistema de cobrança automática de pedágio sem cancelas físicas.
-
-O MVP contempla:
-
-- Recebimento de eventos de passagem de veículos;
-- Armazenamento dos eventos em banco de dados;
-- Detecção simples de anomalias por duplicidade;
-- Dashboard para monitoramento;
-- Exportação de relatórios em CSV;
-- Simulação de eventos para testes.
-
----
-
-## Tecnologias Utilizadas
-
-- Python
-- FastAPI
-- SQLAlchemy
-- SQLite
-- Pydantic
-- HTML
-- CSS
-- JavaScript
-- Uvicorn
-- Python-dotenv
-
----
-
-## Estrutura do Projeto
-
-```txt
+```text
 SistemaFreeFlow/
 ├── app/
-│   ├── templates/
-│   │   └── dashboard.html
-│   ├── anomaly.py
-│   ├── config.py
-│   ├── crud.py
-│   ├── database.py
-│   ├── main.py
-│   ├── models.py
-│   └── schemas.py
+│   ├── templates/              # Dashboard, portal e páginas de cobrança
+│   ├── main.py                 # API FastAPI e rotas principais
+│   ├── models.py               # Modelos do banco de dados
+│   ├── schemas.py              # Schemas da API
+│   ├── crud.py                 # Operações no banco
+│   ├── database.py             # Conexão com banco
+│   ├── config.py               # Configurações e variáveis de ambiente
+│   ├── anomaly.py              # Detecção de anomalias
+│   └── modelo_anomalia.joblib  # Modelo Isolation Forest treinado
+│
 ├── data/
+│   └── treino_normal.csv       # Dados utilizados no treinamento
+│
+├── scripts/
+│   ├── banco/
+│   │   ├── cadastro_veic_teste.py
+│   │   ├── gerar_dados_portal.py
+│   │   └── sincronizar_cobrancas.py
+│   │
+│   ├── ia/
+│   │   ├── gerar_dados_treino.py
+│   │   ├── treinar_modelo.py
+│   │   └── testar_modelo.py
+│   │
+│   ├── esp32/
+│   │   ├── esp32.ino
+│   │   └── secrets.example.h
+│   │
+│   └── simulador.py
+│
+├── .env.example
+├── .gitignore
+├── README.md
+└── requirements.txt
+```
 
-Funcionalidades
-API
+## Executando localmente
 
-A API permite registrar eventos de passagem, listar eventos armazenados e executar a análise de anomalias.
-
-Principais rotas:
-
-GET /
-POST /evento
-POST /analisar
-GET /eventos
-GET /dashboard
-GET /dashboard-data
-GET /exportar-csv
-Dashboard
-
-O sistema possui um dashboard web para visualização dos dados registrados.
-
-O dashboard exibe:
-
-Total de veículos registrados;
-Valor total gerado;
-Valor por passagem;
-Total de duplicidades;
-Últimos eventos;
-Últimas duplicidades;
-Status de atualização;
-Filtro por anomalia;
-Exportação CSV.
-
-Acesse pelo navegador:
-
-http://127.0.0.1:8000/dashboard
-Detecção de Anomalias
-
-A detecção de anomalias atual é baseada em regra simples.
-
-O sistema considera uma duplicidade quando o mesmo veículo passa pela mesma faixa em um intervalo menor que o tempo configurado.
-
-Exemplo:
-
-Mesmo veículo + mesma faixa + curto intervalo de tempo = duplicidade
-
-O tempo de duplicidade pode ser configurado no arquivo .env.
-
-Configuração do Ambiente
-
-Crie um arquivo .env na raiz do projeto com base no arquivo .env.example.
-
-Exemplo:
-
-APP_ENV=local
-DATABASE_URL=sqlite:///./data/freeflow.db
-VALOR_PASSAGEM=5.0
-TEMPO_DUPLICIDADE=60
-TEMPO_SEM_DADOS_ALERTA=120
-REFRESH_SEGUNDOS=5
-Instalação
-
-Clone o repositório:
-
-git clone https://github.com/ArthurR06/SistemaFreeFlow.git
-
-Acesse a pasta do projeto:
-
-cd SistemaFreeFlow
-
-Crie o ambiente virtual:
-
-python -m venv venv
-
-Ative o ambiente virtual no Windows:
-
-venv\Scripts\activate
+Python recomendado: **3.11**
 
 Instale as dependências:
 
+```bash
 pip install -r requirements.txt
-Como Executar o Sistema
+```
 
-Execute a API com o Uvicorn:
+Crie o arquivo `.env` baseado em `.env.example`.
 
-uvicorn app.main:app --reload
+Para desenvolvimento local:
 
-Depois acesse:
+```env
+APP_ENV=local
+DATABASE_URL=sqlite:///./data/freeflow.db
+```
 
-http://127.0.0.1:8000
+Inicie a API:
 
-Para abrir o dashboard:
+```bash
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8002
+```
 
-http://127.0.0.1:8000/dashboard
-Como Simular Eventos
+Dashboard:
 
-Com a API rodando, execute o simulador:
+```text
+http://localhost:8002/dashboard
+```
 
-python scripts/simulador.py
+## Inteligência Artificial
 
-O simulador envia eventos fictícios para a API e depois executa a análise de anomalias.
+O projeto utiliza **Isolation Forest** para detectar comportamentos anômalos nos eventos.
 
-Exportação de CSV
+Modelo utilizado pela API:
 
-O dashboard permite exportar os eventos em formato CSV.
+```text
+app/modelo_anomalia.joblib
+```
 
-Também é possível acessar diretamente:
+Scripts de IA:
 
-http://127.0.0.1:8000/exportar-csv?anomalia=todos
+```bash
+python -m scripts.ia.gerar_dados_treino
+python -m scripts.ia.treinar_modelo
+python -m scripts.ia.testar_modelo
+```
 
-Filtros disponíveis:
+## Scripts de banco
 
-todos
-duplicidade
-ok
-Relação com o TCC
+Executar a partir da raiz do projeto:
 
-Este sistema representa o MVP prático da arquitetura proposta no TCC.
+```bash
+python -m scripts.banco.cadastro_veic_teste
+python -m scripts.banco.gerar_dados_portal
+python -m scripts.banco.sincronizar_cobrancas
+```
 
-Ele demonstra o fluxo principal de um sistema Free Flow:
+## ESP32
 
-Dispositivo IoT / Simulador
-        ↓
-Backend FastAPI
-        ↓
-Banco de Dados
-        ↓
-Módulo de Anomalias
-        ↓
-Dashboard
+Firmware:
 
-A versão atual roda localmente e tem como foco a validação acadêmica do fluxo de dados, da persistência, do monitoramento e da detecção inicial de anomalias.
+```text
+scripts/esp32/esp32.ino
+```
 
-Em uma evolução futura, o sistema pode ser integrado a:
+Criar localmente:
 
-ESP32;
-Sensor RFID;
-AWS IoT Core;
-Banco de dados em nuvem;
-Serviços de monitoramento;
-Algoritmos reais de inteligência artificial.
-Observações
+```text
+scripts/esp32/secrets.h
+```
 
-Este projeto é um MVP acadêmico e não representa uma solução pronta para uso em ambiente real de produção.
+usando `secrets.example.h` como modelo.
 
-O objetivo é validar os conceitos de:
+As credenciais reais não são enviadas ao GitHub.
 
-Free Flow;
-IoT;
-Backend;
-Banco de dados;
-Dashboard;
-Resiliência;
-Detecção de anomalias.
-Autores
+## Banco de dados / AWS
 
-Projeto desenvolvido para fins acadêmicos no curso de Ciência da Computação da Universidade Paulista - UNIP.
+Localmente o sistema utiliza SQLite.
 
-Autores:
+Para produção, o banco pode ser substituído por PostgreSQL através da variável:
 
-Arthur Gomes Rodrigues de Lima
-Camila Eiko Honda Martins
-Joice Oliveira Jardim
-Leticia Costa Moura
+```env
+DATABASE_URL=postgresql://USUARIO:SENHA@HOST:5432/BANCO
+```
 
+O acesso ao banco é feito com SQLAlchemy.
 
-├── scripts/
-│   └── simulador.py
-├── .env.example
-├── .gitignore
-├── requirements.txt
-└── README.md
+O `.env`, o banco SQLite local, ambiente virtual e credenciais reais dos ESP32 não fazem parte do repositório.
