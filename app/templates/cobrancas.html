@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>FreeFlow - Portal de Cobranças</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #071a2f;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+
+        /* ============================== */
+        /* CABEÇALHO */
+        /* ============================== */
+
+        .header {
+            background: #041426;
+            border-bottom: 1px solid #1f3a56;
+        }
+
+        .header-conteudo {
+            max-width: 1400px;
+            margin: auto;
+            min-height: 95px;
+
+            padding: 18px 30px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .logo span {
+            color: #37b36b;
+        }
+
+        .portal-label {
+            margin-top: 3px;
+
+            font-size: 19px;
+            font-weight: 600;
+
+            color: #ffffff;
+        }
+
+        .cliente-topo {
+            text-align: left;
+
+            min-width: 180px;
+
+            margin-right: 18px;
+        }
+
+        .cliente-topo strong {
+            font-size: 18px;
+        }
+
+        .cliente-topo p {
+            margin-top: 6px;
+
+            color: #9fb1c5;
+
+            font-size: 15px;
+        }
+
+
+        /* ============================== */
+        /* CONTEÚDO */
+        /* ============================== */
+
+        .container {
+            max-width: 1400px;
+
+            margin: auto;
+
+            padding: 35px 30px 60px;
+        }
+
+        .grid-principal {
+            display: grid;
+
+            grid-template-columns:
+                1fr
+                1.15fr;
+
+            gap: 25px;
+
+            align-items: start;
+        }
+
+
+        /* ============================== */
+        /* CARD */
+        /* ============================== */
+
+        .card {
+            background: #102942;
+
+            border: 1px solid #29445f;
+
+            border-radius: 16px;
+
+            padding: 26px;
+
+            box-shadow:
+                0 12px 30px
+                rgba(0, 0, 0, 0.18);
+        }
+
+        .card + .card {
+            margin-top: 22px;
+        }
+
+        .card h2 {
+            font-size: 21px;
+
+            margin-bottom: 20px;
+        }
+
+
+        /* ============================== */
+        /* TOTAL */
+        /* ============================== */
+
+        .resumo-total {
+            background: #173957;
+
+            border-radius: 13px;
+
+            padding: 22px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 22px;
+        }
+
+        .resumo-total span {
+            color: #c3d2df;
+
+            font-size: 16px;
+        }
+
+        .resumo-total strong {
+            font-size: 29px;
+
+            color: #20d77a;
+        }
+
+
+        /* ============================== */
+        /* DADOS DO VEÍCULO */
+        /* ============================== */
+
+        .dados-veiculo {
+            display: grid;
+
+            grid-template-columns:
+                1fr
+                1fr;
+
+            gap: 15px;
+        }
+
+        .dado {
+            background: #0b2138;
+
+            border-radius: 10px;
+
+            padding: 16px;
+        }
+
+        .dado span {
+            display: block;
+
+            color: #8fa5ba;
+
+            font-size: 12px;
+
+            margin-bottom: 6px;
+
+            text-transform: uppercase;
+        }
+
+        .dado strong {
+            font-size: 16px;
+        }
+
+
+        /* ============================== */
+        /* PASSAGENS */
+        /* ============================== */
+
+        .passagem {
+            background: #0b2138;
+
+            border: 1px solid #24415d;
+
+            border-radius: 11px;
+
+            padding: 16px;
+
+            margin-bottom: 12px;
+
+            display: grid;
+
+            grid-template-columns:
+                1.5fr
+                0.7fr
+                0.8fr;
+
+            gap: 10px;
+
+            align-items: center;
+        }
+
+        .passagem:last-child {
+            margin-bottom: 0;
+        }
+
+        .passagem-data {
+            font-size: 14px;
+        }
+
+        .passagem-data small {
+            display: block;
+
+            margin-top: 4px;
+
+            color: #90a6bb;
+        }
+
+        .passagem-valor {
+            text-align: right;
+
+            font-weight: bold;
+        }
+
+
+        /* ============================== */
+        /* STATUS */
+        /* ============================== */
+
+        .status {
+            display: inline-block;
+
+            padding: 7px 10px;
+
+            border-radius: 8px;
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+            text-align: center;
+        }
+
+        .status-pendente {
+            background: #604d18;
+
+            color: #ffd76b;
+        }
+
+        .status-pago {
+            background: #154b32;
+
+            color: #62e59b;
+        }
+
+
+        /* ============================== */
+        /* PAGAMENTO */
+        /* ============================== */
+
+        .valor-pagamento {
+            background: #173957;
+
+            border-radius: 13px;
+
+            padding: 22px;
+
+            margin-bottom: 28px;
+        }
+
+        .valor-pagamento span {
+            color: #c3d2df;
+        }
+
+        .valor-pagamento strong {
+            display: block;
+
+            color: #20d77a;
+
+            font-size: 33px;
+
+            margin-top: 7px;
+        }
+
+        .titulo-forma {
+            font-size: 20px;
+
+            margin-bottom: 16px;
+        }
+
+
+        /* ============================== */
+        /* MÉTODOS */
+        /* ============================== */
+
+        .metodo {
+            background: #0b2138;
+
+            border: 2px solid #28455f;
+
+            border-radius: 12px;
+
+            padding: 20px;
+
+            margin-bottom: 14px;
+
+            cursor: pointer;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            transition: 0.2s;
+        }
+
+        .metodo:hover {
+            border-color: #3d9dd5;
+
+            transform: translateY(-1px);
+        }
+
+        .metodo.selecionado {
+            border-color: #37b36b;
+
+            background: #123a35;
+        }
+
+        .metodo.bloqueado {
+            opacity: 0.45;
+
+            cursor: not-allowed;
+
+            pointer-events: none;
+        }
+
+        .metodo-info {
+            display: flex;
+
+            align-items: center;
+
+            gap: 16px;
+        }
+
+
+        /* ============================== */
+        /* ÍCONES */
+        /* ============================== */
+
+        .icone {
+            width: 38px;
+            min-width: 38px;
+            height: 38px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background: transparent;
+
+            color: #42a5ff;
+
+            font-size: 29px;
+
+            line-height: 1;
+        }
+
+        .metodo strong {
+            display: block;
+
+            font-size: 17px;
+        }
+
+        .metodo small {
+            display: block;
+
+            color: #9eb2c5;
+
+            margin-top: 5px;
+        }
+
+        .tag {
+            background: #176d48;
+
+            color: #d9ffeb;
+
+            border-radius: 7px;
+
+            padding: 6px 9px;
+
+            font-size: 11px;
+
+            font-weight: bold;
+        }
+
+
+        /* ============================== */
+        /* BOTÕES */
+        /* ============================== */
+
+        .btn {
+            width: 100%;
+
+            border: 0;
+
+            border-radius: 10px;
+
+            padding: 15px;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .btn-continuar {
+            background: #23a65d;
+
+            color: white;
+
+            margin-top: 10px;
+        }
+
+        .btn-continuar:hover {
+            background: #1d914f;
+        }
+
+        .btn-continuar:disabled {
+            opacity: 0.55;
+
+            cursor: not-allowed;
+        }
+
+        .btn-segunda-via {
+            display: none;
+
+            margin-top: 12px;
+
+            background: transparent;
+
+            color: #79bfff;
+
+            border: 1px solid #3679a7;
+        }
+
+        .btn-segunda-via:hover {
+            background: #123553;
+        }
+
+        .btn-voltar {
+            display: block;
+
+            text-decoration: none;
+
+            text-align: center;
+
+            color: #b2c4d5;
+
+            margin-top: 17px;
+
+            padding: 10px;
+        }
+
+        .btn-voltar:hover {
+            color: #ffffff;
+        }
+
+
+        /* ============================== */
+        /* EMISSÃO EXISTENTE */
+        /* ============================== */
+
+        .emissao-existente {
+            display: none;
+
+            background: #0b2138;
+
+            border: 1px solid #3679a7;
+
+            border-radius: 10px;
+
+            padding: 15px;
+
+            margin-bottom: 15px;
+
+            color: #b9d8f0;
+
+            line-height: 1.5;
+        }
+
+        .emissao-existente strong {
+            color: #ffffff;
+        }
+
+
+        /* ============================== */
+        /* SEM COBRANÇA */
+        /* ============================== */
+
+        .vazio {
+            color: #8fa5ba;
+
+            text-align: center;
+
+            padding: 30px 10px;
+        }
+
+
+        /* ============================== */
+        /* RESPONSIVO */
+        /* ============================== */
+
+        @media (
+            max-width: 900px
+        ) {
+
+            .grid-principal {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (
+            max-width: 600px
+        ) {
+
+            .header-conteudo {
+                padding: 18px;
+            }
+
+            .container {
+                padding:
+                    25px
+                    15px;
+            }
+
+            .cliente-topo {
+                display: none;
+            }
+
+            .dados-veiculo {
+                grid-template-columns: 1fr;
+            }
+
+            .passagem {
+                grid-template-columns: 1fr;
+            }
+
+            .passagem-valor {
+                text-align: left;
+            }
+
+            .tag {
+                display: none;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- ====================================== -->
+<!-- CABEÇALHO -->
+<!-- ====================================== -->
+
+<header class="header">
+
+    <div class="header-conteudo">
+
+        <div>
+
+            <div class="logo">
+                FREE<span>FLOW</span>
+            </div>
+
+            <div class="portal-label">
+                Portal de Cobranças
+            </div>
+
+        </div>
+
+
+        <div class="cliente-topo">
+
+            <strong id="nomeTopo">
+                Cliente
+            </strong>
+
+            <p id="cpfTopo">
+                CPF: ---
+            </p>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- ====================================== -->
+<!-- CONTEÚDO -->
+<!-- ====================================== -->
+
+<main class="container">
+
+    <div class="grid-principal">
+
+
+        <!-- ================================= -->
+        <!-- LADO ESQUERDO -->
+        <!-- ================================= -->
+
+        <div>
+
+
+            <!-- DETALHES -->
+
+            <section class="card">
+
+                <h2>
+                    Detalhes da cobrança
+                </h2>
+
+
+                <div class="resumo-total">
+
+                    <span>
+                        Total a pagar:
+                    </span>
+
+                    <strong id="totalResumo">
+                        R$ 0,00
+                    </strong>
+
+                </div>
+
+
+                <div class="dados-veiculo">
+
+
+                    <div class="dado">
+
+                        <span>
+                            Placa
+                        </span>
+
+                        <strong id="placaVeiculo">
+                            ---
+                        </strong>
+
+                    </div>
+
+
+                    <div class="dado">
+
+                        <span>
+                            Passagens pendentes
+                        </span>
+
+                        <strong id="quantidadePendentes">
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <div class="dado">
+
+                        <span>
+                            Proprietário
+                        </span>
+
+                        <strong id="nomeCliente">
+                            ---
+                        </strong>
+
+                    </div>
+
+
+                    <div class="dado">
+
+                        <span>
+                            Status
+                        </span>
+
+                        <strong id="statusGeral">
+                            Sem cobranças
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- PASSAGENS -->
+
+            <section class="card">
+
+                <h2>
+                    Passagens registradas
+                </h2>
+
+
+                <div id="listaPassagens">
+
+                    <div class="vazio">
+                        Nenhuma cobrança foi carregada no momento.
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+        <!-- ================================= -->
+        <!-- LADO DIREITO -->
+        <!-- ================================= -->
+
+        <div>
+
+            <section class="card">
+
+
+                <div class="valor-pagamento">
+
+                    <span>
+                        Valor total:
+                    </span>
+
+                    <strong id="totalPagamento">
+                        R$ 0,00
+                    </strong>
+
+                </div>
+
+
+                <h2 class="titulo-forma">
+                    Selecione a forma de pagamento
+                </h2>
+
+
+                <!-- EMISSÃO JÁ EXISTENTE -->
+
+                <div
+                    id="avisoEmissao"
+                    class="emissao-existente"
+                >
+
+                    Já existe uma forma de pagamento
+                    emitida para esta cobrança.
+
+                    <br>
+
+                    <strong>
+                        Utilize a opção de segunda via abaixo.
+                    </strong>
+
+                </div>
+
+
+                <!-- PIX -->
+
+                <div
+                    class="metodo"
+                    data-metodo="pix"
+                    onclick="selecionarMetodo(this)"
+                >
+
+                    <div class="metodo-info">
+
+                        <div class="icone">
+                            ◈
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                PIX
+                            </strong>
+
+                            <small>
+                                Pagamento instantâneo
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <span class="tag">
+                        Recomendado
+                    </span>
+
+                </div>
+
+
+                <!-- BOLETO -->
+
+                <div
+                    class="metodo"
+                    data-metodo="boleto"
+                    onclick="selecionarMetodo(this)"
+                >
+
+                    <div class="metodo-info">
+
+                        <div class="icone">
+                            ▤
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Boleto bancário
+                            </strong>
+
+                            <small>
+                                Pagamento via boleto
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CONTINUAR -->
+
+                <button
+                    id="btnContinuar"
+                    class="btn btn-continuar"
+                    onclick="continuarPagamento()"
+                >
+
+                    Continuar
+
+                </button>
+
+
+                <!-- SEGUNDA VIA -->
+
+                <button
+                    id="btnSegundaVia"
+                    class="btn btn-segunda-via"
+                    onclick="abrirSegundaVia()"
+                >
+
+                    Visualizar 2ª via
+
+                </button>
+
+
+                <a
+                    href="/portal"
+                    class="btn-voltar"
+                >
+
+                    ← Voltar ao portal
+
+                </a>
+
+            </section>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<script>
+
+
+    // ==========================================
+    // PARÂMETROS DA URL
+    // ==========================================
+
+    const parametros =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const cpf =
+        parametros.get("cpf");
+
+
+    const placa =
+        parametros.get("placa");
+
+
+    let metodoSelecionado = null;
+
+    let cobrancasAtuais = [];
+
+    let emissaoAtual = null;
+
+
+    // ==========================================
+    // CHAVE DA EMISSÃO
+    // ==========================================
+
+    function chaveEmissao() {
+
+        return (
+            `freeflow_emissao_${cpf}_${placa}`
+        );
+
+    }
+
+
+    // ==========================================
+    // MOEDA
+    // ==========================================
+
+    function moeda(valor) {
+
+        return Number(
+            valor || 0
+        ).toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+
+    }
+
+
+    // ==========================================
+    // CPF
+    // ==========================================
+
+    function mascararCPF(valor) {
+
+        if (!valor) {
+            return "---";
+        }
+
+
+        const numeros =
+            valor.replace(
+                /\D/g,
+                ""
+            );
+
+
+        if (
+            numeros.length !== 11
+        ) {
+
+            return valor;
+
+        }
+
+
+        return (
+            numeros.substring(0, 3)
+            + ".***.***-"
+            + numeros.substring(9)
+        );
+
+    }
+
+
+    // ==========================================
+    // DATA
+    // ==========================================
+
+    function formatarData(valor) {
+
+        if (!valor) {
+            return "---";
+        }
+
+
+        const data =
+            new Date(valor);
+
+
+        if (
+            isNaN(
+                data.getTime()
+            )
+        ) {
+
+            return valor;
+
+        }
+
+
+        return data.toLocaleString(
+            "pt-BR"
+        );
+
+    }
+
+
+    // ==========================================
+    // CONSULTA AS COBRANÇAS
+    // ==========================================
+
+    async function carregarCobrancas() {
+
+        if (!cpf || !placa) {
+
+            return;
+
+        }
+
+
+        try {
+
+            const resposta =
+                await fetch(
+                    "/portal/consultar",
+                    {
+
+                        method: "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+
+                        },
+
+                        body:
+                            JSON.stringify({
+
+                                cpf: cpf,
+
+                                placa: placa
+
+                            })
+
+                    }
+                );
+
+
+            if (!resposta.ok) {
+
+                return;
+
+            }
+
+
+            const dados =
+                await resposta.json();
+
+
+            preencherTela(
+                dados
+            );
+
+        }
+
+        catch (erro) {
+
+            console.error(
+                erro
+            );
+
+        }
+
+    }
+
+
+    // ==========================================
+    // PREENCHE A TELA
+    // ==========================================
+
+    function preencherTela(dados) {
+
+        const cliente =
+            dados.cliente
+            || dados.proprietario
+            || {};
+
+
+        const veiculo =
+            dados.veiculo
+            || {};
+
+
+        cobrancasAtuais =
+            dados.cobrancas
+            || [];
+
+
+        const nome =
+            cliente.nome
+            || dados.nome
+            || "Cliente";
+
+
+        const cpfTela =
+            cliente.cpf
+            || cliente.cpf_mascarado
+            || dados.cpf_mascarado
+            || mascararCPF(cpf);
+
+
+        const placaTela =
+            veiculo.placa
+            || dados.placa
+            || placa;
+
+
+        const pendentes =
+            cobrancasAtuais.filter(
+
+                cobranca =>
+                    cobranca.status
+                    === "pendente"
+
+            );
+
+
+        const total =
+            pendentes.reduce(
+
+                (
+                    soma,
+                    cobranca
+                ) =>
+
+                    soma
+                    + Number(
+                        cobranca.valor
+                        || 0
+                    ),
+
+                0
+
+            );
+
+
+        // ======================================
+        // CABEÇALHO
+        // ======================================
+
+        document.getElementById(
+            "nomeTopo"
+        ).textContent =
+            nome;
+
+
+        document.getElementById(
+            "cpfTopo"
+        ).textContent =
+            "CPF: "
+            + cpfTela;
+
+
+        // ======================================
+        // DETALHES
+        // ======================================
+
+        document.getElementById(
+            "nomeCliente"
+        ).textContent =
+            nome;
+
+
+        document.getElementById(
+            "placaVeiculo"
+        ).textContent =
+            placaTela;
+
+
+        document.getElementById(
+            "quantidadePendentes"
+        ).textContent =
+            pendentes.length;
+
+
+        document.getElementById(
+            "totalResumo"
+        ).textContent =
+            moeda(
+                total
+            );
+
+
+        document.getElementById(
+            "totalPagamento"
+        ).textContent =
+            moeda(
+                total
+            );
+
+
+        document.getElementById(
+            "statusGeral"
+        ).textContent =
+
+            pendentes.length > 0
+
+                ? "Pagamento pendente"
+
+                : "Sem pendências";
+
+
+        // Se não houver dívida,
+        // não faz sentido emitir nova cobrança
+
+        if (
+            pendentes.length === 0
+        ) {
+
+            document.getElementById(
+                "btnContinuar"
+            ).disabled = true;
+
+        }
+
+
+        desenharPassagens();
+
+
+        verificarSegundaVia();
+
+    }
+
+
+    // ==========================================
+    // DESENHA PASSAGENS
+    // ==========================================
+
+    function desenharPassagens() {
+
+        const lista =
+            document.getElementById(
+                "listaPassagens"
+            );
+
+
+        if (
+            cobrancasAtuais.length === 0
+        ) {
+
+            lista.innerHTML =
+                `
+                <div class="vazio">
+                    Nenhuma cobrança registrada.
+                </div>
+                `;
+
+
+            return;
+
+        }
+
+
+        lista.innerHTML = "";
+
+
+        cobrancasAtuais.forEach(
+
+            cobranca => {
+
+
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                item.className =
+                    "passagem";
+
+
+                const status =
+                    cobranca.status
+                    || "pendente";
+
+
+                const textoStatus =
+
+                    status === "pago"
+
+                        ? "Pago"
+
+                        : "Pendente";
+
+
+                const classeStatus =
+
+                    status === "pago"
+
+                        ? "status-pago"
+
+                        : "status-pendente";
+
+
+                const timestamp =
+
+                    cobranca.timestamp_evento
+
+                    || cobranca.timestamp_criacao;
+
+
+                item.innerHTML =
+                    `
+                    <div class="passagem-data">
+
+                        ${formatarData(timestamp)}
+
+                        <small>
+                            Faixa ${cobranca.faixa || "---"}
+                        </small>
+
+                    </div>
+
+
+                    <div>
+
+                        <span
+                            class="status ${classeStatus}"
+                        >
+
+                            ${textoStatus}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="passagem-valor">
+
+                        ${moeda(cobranca.valor)}
+
+                    </div>
+                    `;
+
+
+                lista.appendChild(
+                    item
+                );
+
+            }
+
+        );
+
+    }
+
+
+    // ==========================================
+    // SELECIONA PIX OU BOLETO
+    // ==========================================
+
+    function selecionarMetodo(
+        elemento
+    ) {
+
+        if (emissaoAtual) {
+
+            return;
+
+        }
+
+
+        document
+            .querySelectorAll(
+                ".metodo"
+            )
+            .forEach(
+
+                item =>
+
+                    item.classList.remove(
+                        "selecionado"
+                    )
+
+            );
+
+
+        elemento.classList.add(
+            "selecionado"
+        );
+
+
+        metodoSelecionado =
+            elemento.dataset.metodo;
+
+
+        const botao =
+            document.getElementById(
+                "btnContinuar"
+            );
+
+
+        if (
+            metodoSelecionado
+            === "pix"
+        ) {
+
+            botao.textContent =
+                "Gerar QR Code PIX";
+
+        }
+
+        else {
+
+            botao.textContent =
+                "Gerar boleto";
+
+        }
+
+    }
+
+
+    // ==========================================
+    // GERA PRIMEIRA VIA
+    // ==========================================
+
+    function continuarPagamento() {
+
+        if (!metodoSelecionado) {
+
+            alert(
+                "Selecione PIX ou boleto."
+            );
+
+
+            return;
+
+        }
+
+
+        if (emissaoAtual) {
+
+            alert(
+                "Já existe uma forma de pagamento emitida."
+            );
+
+
+            return;
+
+        }
+
+
+        const pendentes =
+            cobrancasAtuais.filter(
+
+                cobranca =>
+                    cobranca.status
+                    === "pendente"
+
+            );
+
+
+        if (
+            pendentes.length === 0
+        ) {
+
+            alert(
+                "Não existem cobranças pendentes."
+            );
+
+
+            return;
+
+        }
+
+
+        // ======================================
+        // SALVA QUAL MÉTODO FOI GERADO
+        // ======================================
+
+        emissaoAtual = {
+
+            metodo:
+                metodoSelecionado,
+
+            criadoEm:
+                new Date()
+                .toISOString(),
+
+            cpf:
+                cpf,
+
+            placa:
+                placa
+
+        };
+
+
+        localStorage.setItem(
+
+            chaveEmissao(),
+
+            JSON.stringify(
+                emissaoAtual
+            )
+
+        );
+
+
+        const query =
+
+            `cpf=${encodeURIComponent(cpf || "")}`
+
+            + `&placa=${encodeURIComponent(placa || "")}`;
+
+
+        if (
+            metodoSelecionado
+            === "pix"
+        ) {
+
+            window.location.href =
+                `/pix?${query}`;
+
+        }
+
+        else {
+
+            window.location.href =
+                `/boleto?${query}`;
+
+        }
+
+    }
+
+
+    // ==========================================
+    // VERIFICA SE JÁ EXISTE EMISSÃO
+    // ==========================================
+
+    function verificarSegundaVia() {
+
+        if (!cpf || !placa) {
+
+            return;
+
+        }
+
+
+        const salvo =
+            localStorage.getItem(
+                chaveEmissao()
+            );
+
+
+        if (!salvo) {
+
+            return;
+
+        }
+
+
+        try {
+
+            emissaoAtual =
+                JSON.parse(
+                    salvo
+                );
+
+        }
+
+        catch {
+
+            localStorage.removeItem(
+                chaveEmissao()
+            );
+
+
+            emissaoAtual = null;
+
+
+            return;
+
+        }
+
+
+        // ======================================
+        // MOSTRA BOTÃO DE SEGUNDA VIA
+        // ======================================
+
+        document.getElementById(
+            "btnSegundaVia"
+        ).style.display =
+            "block";
+
+
+        document.getElementById(
+            "avisoEmissao"
+        ).style.display =
+            "block";
+
+
+        // ======================================
+        // BLOQUEIA NOVA EMISSÃO
+        // ======================================
+
+        document.getElementById(
+            "btnContinuar"
+        ).style.display =
+            "none";
+
+
+        document
+            .querySelectorAll(
+                ".metodo"
+            )
+            .forEach(
+
+                elemento => {
+
+                    elemento.classList.add(
+                        "bloqueado"
+                    );
+
+                }
+
+            );
+
+    }
+
+
+    // ==========================================
+    // ABRE SEGUNDA VIA
+    // ==========================================
+
+    function abrirSegundaVia() {
+
+        const salvo =
+            localStorage.getItem(
+                chaveEmissao()
+            );
+
+
+        if (!salvo) {
+
+            return;
+
+        }
+
+
+        const emissao =
+            JSON.parse(
+                salvo
+            );
+
+
+        const query =
+
+            `cpf=${encodeURIComponent(cpf || "")}`
+
+            + `&placa=${encodeURIComponent(placa || "")}`
+
+            + `&segunda=1`;
+
+
+        if (
+            emissao.metodo
+            === "pix"
+        ) {
+
+            window.location.href =
+                `/pix?${query}`;
+
+        }
+
+        else {
+
+            window.location.href =
+                `/boleto?${query}`;
+
+        }
+
+    }
+
+
+    // ==========================================
+    // INICIALIZA
+    // ==========================================
+
+    carregarCobrancas();
+
+
+</script>
+
+
+</body>
+
+</html>

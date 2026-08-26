@@ -1,25 +1,48 @@
-# Ambiente virtual
+# =========================
+# PYTHON
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# AMBIENTE VIRTUAL
+# =========================
 venv/
 .venv/
 env/
 
-# Variáveis de ambiente
+# =========================
+# VARIÁVEIS / SENHAS
+# =========================
 .env
+*.env
+!.env.example
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Banco local
-data/*.db
+# =========================
+# BANCO LOCAL
+# =========================
+*.db
+*.sqlite
 *.sqlite3
 
-# VSCode / IDE
+# =========================
+# VS CODE
+# =========================
 .vscode/
-.idea/
 
-# Sistema
+# =========================
+# SISTEMA
+# =========================
 .DS_Store
 Thumbs.db
+
+# =========================
+# LOGS
+# =========================
+*.log
+
+# =========================
+# CREDENCIAIS ESP32
+# =========================
+scripts/esp32/secrets.h

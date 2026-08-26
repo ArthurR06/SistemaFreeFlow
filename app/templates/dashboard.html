@@ -33,6 +33,26 @@
       margin: 0;
       font-size: 2rem;
     }
+    .topo-acoes {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.btn-cobrancas {
+  background: #1f9d55;
+  color: white;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.btn-cobrancas:hover {
+  opacity: 0.9;
+}
 
     .status-operacao {
       margin-bottom: 20px;
@@ -257,9 +277,18 @@
 </head>
 <body>
   <div class="topo">
-    <h1>MONITORAMENTO DE VEÍCULOS</h1>
-    <div id="refreshTexto">Atualizando a cada 5 segundos</div>
+  <h1>MONITORAMENTO DE VEÍCULOS</h1>
+
+  <div class="topo-acoes">
+    <a href="/portal" class="btn-cobrancas">
+      Portal de Cobranças
+    </a>
+
+    <div id="refreshTexto">
+      Atualizando a cada 5 segundos
+    </div>
   </div>
+</div>
 
   <div id="statusOperacao" class="status-operacao status-ok">
     Recebendo dados normalmente
@@ -304,7 +333,7 @@
       <table>
         <thead>
           <tr>
-            <th>ID do Veículo</th>
+            <th>Placa do Veículo</th>
             <th>Faixa</th>
             <th>Data/Hora</th>
             <th>Valor</th>
@@ -318,7 +347,7 @@
     <div>
       <div class="box-ultima">
         <h2>Última Passagem</h2>
-        <div class="linha-info"><strong>ID do Veículo:</strong> <span id="ultima_id">-</span></div>
+        <div class="linha-info"><strong>Placa do Veículo:</strong> <span id="ultima_id">-</span></div>
         <div class="linha-info"><strong>Faixa:</strong> <span id="ultima_faixa">-</span></div>
         <div class="linha-info"><strong>Data/Hora:</strong> <span id="ultimo_horario">-</span></div>
         <div class="linha-info"><strong>Valor:</strong> <span id="ultimo_valor">R$ 5,00</span></div>

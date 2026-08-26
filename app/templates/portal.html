@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>FreeFlow - Portal do Cliente</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #041426,
+                    #071a2f,
+                    #0c2944
+                );
+
+            color: #ffffff;
+
+            min-height: 100vh;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        /* ============================== */
+        /* CABEÇALHO */
+        /* ============================== */
+
+        .header {
+            background: #041426;
+
+            border-bottom: 1px solid #1f3a56;
+        }
+
+        .header-conteudo {
+            max-width: 1400px;
+
+            margin: auto;
+
+            min-height: 95px;
+
+            padding: 18px 30px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 30px;
+
+            font-weight: 800;
+
+            letter-spacing: 1px;
+        }
+
+        .logo span {
+            color: #37b36b;
+        }
+
+        .portal-label {
+            margin-top: 3px;
+
+            font-size: 19px;
+
+            font-weight: 600;
+        }
+
+        .header-info {
+            text-align: right;
+
+            color: #91a9bf;
+
+            font-size: 14px;
+
+            line-height: 1.5;
+        }
+
+
+        /* ============================== */
+        /* ÁREA PRINCIPAL */
+        /* ============================== */
+
+        .principal {
+            flex: 1;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 45px 20px;
+        }
+
+        .conteudo {
+            width: 100%;
+
+            max-width: 1150px;
+
+            display: grid;
+
+            grid-template-columns:
+                1fr
+                470px;
+
+            gap: 60px;
+
+            align-items: center;
+        }
+
+
+        /* ============================== */
+        /* APRESENTAÇÃO */
+        /* ============================== */
+
+        .apresentacao {
+            padding: 20px;
+        }
+
+        .apresentacao .tag {
+            display: inline-block;
+
+            background: rgba(
+                55,
+                179,
+                107,
+                0.13
+            );
+
+            color: #67e49c;
+
+            border:
+                1px solid
+                rgba(
+                    55,
+                    179,
+                    107,
+                    0.35
+                );
+
+            border-radius: 20px;
+
+            padding: 8px 14px;
+
+            font-size: 13px;
+
+            font-weight: bold;
+
+            margin-bottom: 22px;
+        }
+
+        .apresentacao h1 {
+            font-size: 46px;
+
+            line-height: 1.08;
+
+            margin-bottom: 20px;
+        }
+
+        .apresentacao h1 span {
+            color: #37b36b;
+        }
+
+        .apresentacao p {
+            max-width: 580px;
+
+            color: #a8bbcd;
+
+            font-size: 18px;
+
+            line-height: 1.6;
+        }
+
+        .beneficios {
+            margin-top: 30px;
+
+            display: grid;
+
+            gap: 14px;
+        }
+
+        .beneficio {
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            color: #dce8f2;
+
+            font-size: 15px;
+        }
+
+        .beneficio-icone {
+            width: 26px;
+            height: 26px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 50%;
+
+            background: #143d2a;
+
+            color: #58dc8f;
+
+            font-weight: bold;
+        }
+
+
+        /* ============================== */
+        /* CARD DE CONSULTA */
+        /* ============================== */
+
+        .card {
+            background: #102942;
+
+            border: 1px solid #29445f;
+
+            border-radius: 18px;
+
+            padding: 32px;
+
+            box-shadow:
+                0 20px 50px
+                rgba(0, 0, 0, 0.28);
+        }
+
+        .card h2 {
+            font-size: 25px;
+
+            margin-bottom: 9px;
+        }
+
+        .card-descricao {
+            color: #9fb3c6;
+
+            font-size: 14px;
+
+            line-height: 1.5;
+
+            margin-bottom: 28px;
+        }
+
+
+        /* ============================== */
+        /* CAMPOS */
+        /* ============================== */
+
+        .campo {
+            margin-bottom: 20px;
+        }
+
+        .campo label {
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: #dbe7f1;
+
+            font-size: 14px;
+
+            font-weight: bold;
+        }
+
+        .campo input {
+            width: 100%;
+
+            padding: 15px 16px;
+
+            border:
+                1px solid #34516c;
+
+            border-radius: 10px;
+
+            background: #071d32;
+
+            color: #ffffff;
+
+            font-size: 16px;
+
+            outline: none;
+
+            transition: 0.2s;
+        }
+
+        .campo input:focus {
+            border-color: #37b36b;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(
+                    55,
+                    179,
+                    107,
+                    0.13
+                );
+        }
+
+        .campo input::placeholder {
+            color: #6e859a;
+        }
+
+        #placa {
+            text-transform: uppercase;
+        }
+
+
+        /* ============================== */
+        /* BOTÃO */
+        /* ============================== */
+
+        .btn-consultar {
+            width: 100%;
+
+            border: 0;
+
+            border-radius: 10px;
+
+            padding: 16px;
+
+            margin-top: 4px;
+
+            background: #23a65d;
+
+            color: #ffffff;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .btn-consultar:hover {
+            background: #1d914f;
+
+            transform:
+                translateY(-1px);
+        }
+
+        .btn-consultar:disabled {
+            opacity: 0.6;
+
+            cursor: not-allowed;
+
+            transform: none;
+        }
+
+
+        /* ============================== */
+        /* MENSAGENS */
+        /* ============================== */
+
+        .mensagem {
+            display: none;
+
+            margin-top: 18px;
+
+            padding: 14px 15px;
+
+            border-radius: 9px;
+
+            font-size: 14px;
+
+            line-height: 1.5;
+        }
+
+        .mensagem.erro {
+            display: block;
+
+            background: #432026;
+
+            border: 1px solid #80414c;
+
+            color: #ffb9c0;
+        }
+
+        .mensagem.sucesso {
+            display: block;
+
+            background: #163c2a;
+
+            border: 1px solid #29764e;
+
+            color: #7de5a7;
+        }
+
+
+        /* ============================== */
+        /* RODAPÉ DO CARD */
+        /* ============================== */
+
+        .seguranca {
+            margin-top: 24px;
+
+            padding-top: 18px;
+
+            border-top:
+                1px solid #29445f;
+
+            text-align: center;
+
+            color: #7890a6;
+
+            font-size: 12px;
+        }
+
+
+        /* ============================== */
+        /* RODAPÉ DA PÁGINA */
+        /* ============================== */
+
+        .footer {
+            text-align: center;
+
+            padding: 20px;
+
+            color: #617b92;
+
+            font-size: 13px;
+        }
+
+
+        /* ============================== */
+        /* RESPONSIVO */
+        /* ============================== */
+
+        @media (
+            max-width: 900px
+        ) {
+
+            .conteudo {
+                grid-template-columns: 1fr;
+
+                max-width: 520px;
+
+                gap: 35px;
+            }
+
+            .apresentacao {
+                text-align: center;
+            }
+
+            .apresentacao p {
+                margin: auto;
+            }
+
+            .beneficios {
+                display: none;
+            }
+
+            .apresentacao h1 {
+                font-size: 36px;
+            }
+
+            .header-info {
+                display: none;
+            }
+
+        }
+
+
+        @media (
+            max-width: 520px
+        ) {
+
+            .header-conteudo {
+                padding: 18px;
+            }
+
+            .principal {
+                padding:
+                    28px
+                    15px;
+            }
+
+            .apresentacao {
+                padding: 5px;
+            }
+
+            .apresentacao h1 {
+                font-size: 31px;
+            }
+
+            .apresentacao p {
+                font-size: 16px;
+            }
+
+            .card {
+                padding:
+                    27px
+                    22px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- ====================================== -->
+<!-- CABEÇALHO -->
+<!-- ====================================== -->
+
+<header class="header">
+
+    <div class="header-conteudo">
+
+        <div>
+
+            <div class="logo">
+                FREE<span>FLOW</span>
+            </div>
+
+            <div class="portal-label">
+                Portal do Cliente
+            </div>
+
+        </div>
+
+
+        <div class="header-info">
+
+            Sistema de cobrança automática
+
+            <br>
+
+            Consulta de passagens e débitos
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- ====================================== -->
+<!-- PRINCIPAL -->
+<!-- ====================================== -->
+
+<main class="principal">
+
+    <div class="conteudo">
+
+
+        <!-- ================================= -->
+        <!-- TEXTO ESQUERDO -->
+        <!-- ================================= -->
+
+        <section class="apresentacao">
+
+            <span class="tag">
+                PORTAL FREEFLOW
+            </span>
+
+
+            <h1>
+
+                Consulte seus débitos
+                de forma
+                <span>rápida.</span>
+
+            </h1>
+
+
+            <p>
+
+                Informe os dados do veículo
+                para visualizar as passagens
+                registradas, valores pendentes
+                e opções de pagamento.
+
+            </p>
+
+
+            <div class="beneficios">
+
+                <div class="beneficio">
+
+                    <div class="beneficio-icone">
+                        ✓
+                    </div>
+
+                    Consulta das passagens registradas
+
+                </div>
+
+
+                <div class="beneficio">
+
+                    <div class="beneficio-icone">
+                        ✓
+                    </div>
+
+                    Visualização de cobranças pendentes
+
+                </div>
+
+
+                <div class="beneficio">
+
+                    <div class="beneficio-icone">
+                        ✓
+                    </div>
+
+                    Pagamento por PIX ou boleto
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================================= -->
+        <!-- FORMULÁRIO -->
+        <!-- ================================= -->
+
+        <section class="card">
+
+            <h2>
+                Acessar cobranças
+            </h2>
+
+            <p class="card-descricao">
+
+                Digite o CPF do proprietário
+                e a placa vinculada ao veículo.
+
+            </p>
+
+
+            <form id="formConsulta">
+
+
+                <!-- CPF -->
+
+                <div class="campo">
+
+                    <label for="cpf">
+                        CPF
+                    </label>
+
+                    <input
+                        id="cpf"
+                        type="text"
+                        inputmode="numeric"
+                        maxlength="14"
+                        placeholder="000.000.000-00"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- PLACA -->
+
+                <div class="campo">
+
+                    <label for="placa">
+                        Placa
+                    </label>
+
+                    <input
+                        id="placa"
+                        type="text"
+                        maxlength="10"
+                        placeholder="Digite a placa"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- BOTÃO -->
+
+                <button
+                    id="btnConsultar"
+                    class="btn-consultar"
+                    type="submit"
+                >
+
+                    Consultar débitos
+
+                </button>
+
+
+                <!-- MENSAGEM -->
+
+                <div
+                    id="mensagem"
+                    class="mensagem"
+                ></div>
+
+
+            </form>
+
+
+            <div class="seguranca">
+
+                Os dados informados são utilizados
+                somente para localizar as cobranças
+                vinculadas ao veículo.
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+
+<footer class="footer">
+
+    FreeFlow • Portal de Cobranças
+
+</footer>
+
+
+<script>
+
+
+    // ==========================================
+    // ELEMENTOS
+    // ==========================================
+
+    const formulario =
+        document.getElementById(
+            "formConsulta"
+        );
+
+
+    const campoCpf =
+        document.getElementById(
+            "cpf"
+        );
+
+
+    const campoPlaca =
+        document.getElementById(
+            "placa"
+        );
+
+
+    const botao =
+        document.getElementById(
+            "btnConsultar"
+        );
+
+
+    const mensagem =
+        document.getElementById(
+            "mensagem"
+        );
+
+
+    // ==========================================
+    // MÁSCARA CPF
+    // ==========================================
+
+    campoCpf.addEventListener(
+        "input",
+        function () {
+
+            let valor =
+                campoCpf.value
+                    .replace(
+                        /\D/g,
+                        ""
+                    )
+                    .slice(
+                        0,
+                        11
+                    );
+
+
+            if (
+                valor.length > 9
+            ) {
+
+                valor =
+                    valor.replace(
+                        /(\d{3})(\d{3})(\d{3})(\d{1,2})/,
+                        "$1.$2.$3-$4"
+                    );
+
+            }
+
+            else if (
+                valor.length > 6
+            ) {
+
+                valor =
+                    valor.replace(
+                        /(\d{3})(\d{3})(\d{1,3})/,
+                        "$1.$2.$3"
+                    );
+
+            }
+
+            else if (
+                valor.length > 3
+            ) {
+
+                valor =
+                    valor.replace(
+                        /(\d{3})(\d{1,3})/,
+                        "$1.$2"
+                    );
+
+            }
+
+
+            campoCpf.value =
+                valor;
+
+        }
+    );
+
+
+    // ==========================================
+    // PLACA EM MAIÚSCULA
+    // ==========================================
+
+    campoPlaca.addEventListener(
+        "input",
+        function () {
+
+            campoPlaca.value =
+                campoPlaca.value
+                    .toUpperCase()
+                    .replace(
+                        /\s/g,
+                        ""
+                    );
+
+        }
+    );
+
+
+    // ==========================================
+    // LIMPA CPF
+    // ==========================================
+
+    function limparCPF(
+        valor
+    ) {
+
+        return valor.replace(
+            /\D/g,
+            ""
+        );
+
+    }
+
+
+    // ==========================================
+    // MOSTRA ERRO
+    // ==========================================
+
+    function mostrarErro(
+        texto
+    ) {
+
+        mensagem.className =
+            "mensagem erro";
+
+
+        mensagem.textContent =
+            texto;
+
+    }
+
+
+    // ==========================================
+    // CONSULTA
+    // ==========================================
+
+    formulario.addEventListener(
+        "submit",
+
+        async function (
+            evento
+        ) {
+
+            evento.preventDefault();
+
+
+            const cpf =
+                limparCPF(
+                    campoCpf.value
+                );
+
+
+            const placa =
+                campoPlaca.value
+                    .trim()
+                    .toUpperCase();
+
+
+            // ==================================
+            // VALIDAÇÃO
+            // ==================================
+
+            if (
+                cpf.length !== 11
+            ) {
+
+                mostrarErro(
+                    "Informe um CPF com 11 dígitos."
+                );
+
+                return;
+
+            }
+
+
+            if (!placa) {
+
+                mostrarErro(
+                    "Informe a placa do veículo."
+                );
+
+                return;
+
+            }
+
+
+            // ==================================
+            // ESTADO DO BOTÃO
+            // ==================================
+
+            botao.disabled =
+                true;
+
+
+            botao.textContent =
+                "Consultando...";
+
+
+            mensagem.style.display =
+                "none";
+
+
+            try {
+
+
+                // ==============================
+                // API
+                // ==============================
+
+                const resposta =
+                    await fetch(
+                        "/portal/consultar",
+                        {
+
+                            method:
+                                "POST",
+
+                            headers: {
+
+                                "Content-Type":
+                                    "application/json"
+
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    {
+
+                                        cpf:
+                                            cpf,
+
+                                        placa:
+                                            placa
+
+                                    }
+                                )
+
+                        }
+                    );
+
+
+                const dados =
+                    await resposta.json();
+
+
+                // ==============================
+                // ERRO DA API
+                // ==============================
+
+                if (!resposta.ok) {
+
+                    mostrarErro(
+
+                        dados.detail
+                        || "Não foi possível localizar o veículo."
+
+                    );
+
+
+                    return;
+
+                }
+
+
+                // ==============================
+                // SUCESSO
+                // ==============================
+
+                mensagem.className =
+                    "mensagem sucesso";
+
+
+                mensagem.textContent =
+                    "Dados encontrados. Abrindo cobranças...";
+
+
+                // ==============================
+                // REDIRECIONA
+                // ==============================
+
+                const destino =
+
+                    "/cobrancas"
+
+                    + "?cpf="
+
+                    + encodeURIComponent(
+                        cpf
+                    )
+
+                    + "&placa="
+
+                    + encodeURIComponent(
+                        placa
+                    );
+
+
+                setTimeout(
+                    function () {
+
+                        window.location.href =
+                            destino;
+
+                    },
+
+                    500
+                );
+
+
+            }
+
+            catch (erro) {
+
+
+                console.error(
+                    erro
+                );
+
+
+                mostrarErro(
+                    "Não foi possível conectar ao servidor."
+                );
+
+            }
+
+            finally {
+
+
+                botao.disabled =
+                    false;
+
+
+                botao.textContent =
+                    "Consultar débitos";
+
+            }
+
+        }
+
+    );
+
+
+</script>
+
+
+</body>
+
+</html>

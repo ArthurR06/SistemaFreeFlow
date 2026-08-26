@@ -1,190 +1,1456 @@
-# api principal
-from fastapi import FastAPI, Depends, Request
+# ==========================================
+# FREEFLOW - API PRINCIPAL
+# ==========================================
+
+from fastapi import FastAPI, Depends, Request, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+import numpy as np
+import csv
+import io
+
+from datetime import datetime
+
 from app.database import Base, engine, get_db
-from app import schemas, crud, anomaly
+from app import schemas, crud, anomaly, models
+
 from app.config import (
     VALOR_PASSAGEM,
     TEMPO_SEM_DADOS_ALERTA,
     REFRESH_SEGUNDOS
 )
 
-import csv
-import io
-from datetime import datetime
 
-# cria tabelas
-Base.metadata.create_all(bind=engine)
+# ==========================================
+# BANCO DE DADOS
+# ==========================================
 
-# app
-app = FastAPI(title="Free Flow Dashboard AWS Ready")
-
-# templates
-templates = Jinja2Templates(directory="app/templates")
+Base.metadata.create_all(
+    bind=engine
+)
 
 
-# formata tempo em segundos, minutos ou horas
-def formatar_tempo(segundos: int) -> str:
+# ==========================================
+# APLICAÇÃO FASTAPI
+# ==========================================
+
+app = FastAPI(
+    title="FreeFlow"
+)
+
+
+# ==========================================
+# TEMPLATES HTML
+# ==========================================
+
+templates = Jinja2Templates(
+    directory="app/templates"
+)
+# ==========================================
+# CLIENTE DEMONSTRATIVO
+# ==========================================
+
+NOME_CLIENTE_DEMO = "Cliente FreeFlow"
+CPF_CLIENTE_DEMO = "12345678900"
+
+
+def obter_ou_criar_veiculo_demo(
+    db: Session,
+    uid: str
+):
+
+    uid = uid.strip().upper()
+
+    # Procura primeiro pelo UID RFID
+    veiculo = (
+        db.query(models.Veiculo)
+        .filter(
+            models.Veiculo.uid_rfid == uid
+        )
+        .first()
+    )
+
+    if veiculo:
+
+        # No protótipo, a própria UID
+        # será exibida como placa
+        if veiculo.placa != uid:
+
+            veiculo.placa = uid
+
+            db.commit()
+            db.refresh(veiculo)
+
+        return veiculo
+
+
+    # ======================================
+    # CLIENTE DEMONSTRATIVO
+    # ======================================
+
+    proprietario = (
+        db.query(models.Proprietario)
+        .filter(
+            models.Proprietario.cpf
+            == CPF_CLIENTE_DEMO
+        )
+        .first()
+    )
+
+
+    if not proprietario:
+
+        proprietario = models.Proprietario(
+            nome=NOME_CLIENTE_DEMO,
+            cpf=CPF_CLIENTE_DEMO
+        )
+
+        db.add(proprietario)
+        db.commit()
+        db.refresh(proprietario)
+
+
+    # ======================================
+    # VEÍCULO
+    # ======================================
+
+    veiculo = models.Veiculo(
+        placa=uid,
+        uid_rfid=uid,
+        proprietario_id=proprietario.id
+    )
+
+    db.add(veiculo)
+
+    db.commit()
+    db.refresh(veiculo)
+
+    print("")
+    print("==============================")
+    print("NOVO VEÍCULO CADASTRADO")
+    print("==============================")
+    print(f"Cliente: {proprietario.nome}")
+    print(f"CPF: {proprietario.cpf}")
+    print(f"Placa/UID: {uid}")
+    print("==============================")
+
+    return veiculo
+
+# ==========================================
+# FUNÇÃO AUXILIAR DE TEMPO
+# ==========================================
+
+def formatar_tempo(
+    segundos: int
+) -> str:
+
     if segundos < 60:
-        return f"{segundos} segundo(s)"
+
+        return (
+            f"{segundos} segundo(s)"
+        )
+
     elif segundos < 3600:
-        minutos = segundos // 60
-        return f"{minutos} minuto(s)"
+
+        minutos = (
+            segundos // 60
+        )
+
+        return (
+            f"{minutos} minuto(s)"
+        )
+
     else:
-        horas = segundos // 3600
-        return f"{horas} hora(s)"
+
+        horas = (
+            segundos // 3600
+        )
+
+        return (
+            f"{horas} hora(s)"
+        )
 
 
-# teste
+# ==========================================
+# ROTA PRINCIPAL
+# ==========================================
+
 @app.get("/")
 def raiz():
-    return {"mensagem": "API Free Flow funcionando"}
-
-
-# cria evento
-@app.post("/evento", response_model=schemas.EventoResponse)
-def criar_evento(evento: schemas.EventoCreate, db: Session = Depends(get_db)):
-    return crud.criar_evento(db, evento)
-
-
-# roda análise
-@app.post("/analisar")
-def analisar(db: Session = Depends(get_db)):
-    anomaly.analisar_eventos(db)
-    return {"mensagem": "Análise concluída"}
-
-
-# lista eventos
-@app.get("/eventos", response_model=list[schemas.EventoResponse])
-def listar_eventos(db: Session = Depends(get_db)):
-    return crud.listar_eventos(db)
-
-
-# dashboard
-@app.get("/dashboard", response_class=HTMLResponse)
-def dashboard(request: Request):
-    return templates.TemplateResponse("dashboard.html", {"request": request})
-
-
-# dados do dashboard
-@app.get("/dashboard-data")
-def dashboard_data(db: Session = Depends(get_db)):
-    eventos = crud.listar_eventos(db, limite=20)
-    total_eventos = crud.contar_eventos(db)
-    total_duplicidades = crud.contar_duplicidades(db)
-    total_gerado = crud.total_gerado(db)
-    duplicidades_recentes = crud.ultimas_duplicidades(db, limite=5)
-
-    # última passagem: tenta pegar uma sem anomalia
-    ultimo_evento_ok = next((e for e in eventos if e.anomalia is None), None)
-    ultimo_evento = ultimo_evento_ok if ultimo_evento_ok else (eventos[0] if eventos else None)
-
-    # monitoramento
-    status_operacao = "Recebendo dados normalmente"
-    segundos_sem_evento = 0
-    nivel_atualizacao = "ok"
-    mensagem_atualizacao = "✅ Última atualização há 0 segundo(s)"
-
-    if eventos:
-        try:
-            horario_ultimo_evento = datetime.fromisoformat(eventos[0].timestamp_evento)
-            agora = datetime.now()
-            segundos_sem_evento = int((agora - horario_ultimo_evento).total_seconds())
-            tempo_formatado = formatar_tempo(segundos_sem_evento)
-
-            if segundos_sem_evento <= 30:
-                nivel_atualizacao = "ok"
-                mensagem_atualizacao = f"✅ Última atualização há {tempo_formatado}"
-                status_operacao = "Recebendo dados normalmente"
-
-            elif segundos_sem_evento <= TEMPO_SEM_DADOS_ALERTA:
-                nivel_atualizacao = "atencao"
-                mensagem_atualizacao = f"⚠️ Atenção: última atualização há {tempo_formatado}"
-                status_operacao = "Atenção: atraso na atualização"
-
-            else:
-                nivel_atualizacao = "alerta"
-                mensagem_atualizacao = f"🚨 Alerta: última atualização há {tempo_formatado}"
-                status_operacao = "Alerta: sem dados recentes"
-
-        except ValueError:
-            nivel_atualizacao = "alerta"
-            mensagem_atualizacao = "🚨 Alerta: horário inválido no último evento"
-            status_operacao = "Alerta: horário inválido no último evento"
-    else:
-        nivel_atualizacao = "alerta"
-        mensagem_atualizacao = "🚨 Alerta: nenhum evento recebido"
-        status_operacao = "Alerta: nenhum evento recebido"
 
     return {
-        "total_veiculos": total_eventos,
-        "total_gerado": total_gerado,
-        "valor_por_passagem": VALOR_PASSAGEM,
-        "refresh_segundos": REFRESH_SEGUNDOS,
-        "ultima_passagem": {
-            "id_veiculo": ultimo_evento.id_veiculo if ultimo_evento else "-",
-            "faixa": ultimo_evento.faixa if ultimo_evento else "-",
-            "timestamp_evento": ultimo_evento.timestamp_evento if ultimo_evento else "-",
-            "valor": ultimo_evento.valor if ultimo_evento else VALOR_PASSAGEM,
-            "anomalia": ultimo_evento.anomalia if ultimo_evento else None,
-        },
-        "eventos": [
-            {
-                "id_veiculo": e.id_veiculo,
-                "faixa": e.faixa,
-                "timestamp_evento": e.timestamp_evento,
-                "valor": e.valor,
-                "anomalia": e.anomalia,
-            }
-            for e in eventos
-        ],
-        "total_duplicidades": total_duplicidades,
-        "duplicidades_recentes": [
-            {
-                "id_veiculo": e.id_veiculo,
-                "timestamp_evento": e.timestamp_evento
-            }
-            for e in duplicidades_recentes
-        ],
-        "status_operacao": status_operacao,
-        "segundos_sem_evento": segundos_sem_evento,
-        "nivel_atualizacao": nivel_atualizacao,
-        "mensagem_atualizacao": mensagem_atualizacao
+        "mensagem":
+            "API FreeFlow funcionando"
     }
 
 
-# exporta csv
-@app.get("/exportar-csv")
-def exportar_csv(anomalia: str = "todos", db: Session = Depends(get_db)):
-    eventos = crud.listar_todos_eventos(db)
+# ==========================================
+# EVENTOS RFID
+# ==========================================
 
-    if anomalia == "duplicidade":
-        eventos = [e for e in eventos if e.anomalia == "duplicidade"]
-    elif anomalia == "ok":
-        eventos = [e for e in eventos if e.anomalia is None]
+@app.post(
+    "/evento",
+    response_model=schemas.EventoResponse
+)
+def criar_evento(
+    evento: schemas.EventoCreate,
+    db: Session = Depends(get_db)
+):
+
+    # ======================================
+    # 1. SALVA A PASSAGEM
+    # ======================================
+
+    novo_evento = crud.criar_evento(
+        db,
+        evento
+    )
+
+
+    # ======================================
+    # 2. ANALISA IMEDIATAMENTE
+    # ======================================
+
+    anomaly.analisar_eventos(
+        db
+    )
+
+    db.refresh(
+        novo_evento
+    )
+
+
+    # ======================================
+    # 3. SOMENTE EVENTO NORMAL PODE COBRAR
+    # ======================================
+
+    if novo_evento.anomalia is None:
+
+        uid = (
+            novo_evento.id_veiculo
+            .strip()
+            .upper()
+        )
+
+
+        # Descobre ou cria o veículo
+        veiculo = obter_ou_criar_veiculo_demo(
+            db,
+            uid
+        )
+
+
+        # Evita cobrança duplicada
+        cobranca_existente = (
+            db.query(models.Cobranca)
+            .filter(
+                models.Cobranca.evento_id
+                == novo_evento.id
+            )
+            .first()
+        )
+
+
+        if not cobranca_existente:
+
+            nova_cobranca = models.Cobranca(
+                evento_id=novo_evento.id,
+                veiculo_id=veiculo.id,
+                valor=novo_evento.valor,
+                status="pendente",
+                timestamp_criacao=(
+                    datetime.now()
+                    .isoformat(
+                        timespec="seconds"
+                    )
+                )
+            )
+
+
+            db.add(
+                nova_cobranca
+            )
+
+            db.commit()
+
+
+            print("")
+            print("==============================")
+            print("COBRANÇA GERADA")
+            print("==============================")
+            print(f"Placa: {veiculo.placa}")
+            print(
+                f"Valor: R$ {novo_evento.valor:.2f}"
+            )
+            print("Status: PENDENTE")
+            print("==============================")
+
+
+    else:
+
+        print("")
+        print("==============================")
+        print("COBRANÇA NÃO GERADA")
+        print("==============================")
+        print(
+            f"Motivo: {novo_evento.anomalia}"
+        )
+        print("==============================")
+
+
+    return novo_evento
+
+
+# ==========================================
+# ANÁLISE MANUAL
+# ==========================================
+
+@app.post("/analisar")
+def analisar(
+    db: Session = Depends(get_db)
+):
+
+    anomaly.analisar_eventos(
+        db
+    )
+
+    return {
+        "mensagem":
+            "Análise concluída"
+    }
+
+
+# ==========================================
+# LISTA EVENTOS
+# ==========================================
+
+@app.get(
+    "/eventos",
+    response_model=list[
+        schemas.EventoResponse
+    ]
+)
+def listar_eventos(
+    db: Session = Depends(get_db)
+):
+
+    return crud.listar_eventos(
+        db
+    )
+
+
+# ==========================================
+# PÁGINA DASHBOARD
+# ==========================================
+
+@app.get(
+    "/dashboard",
+    response_class=HTMLResponse
+)
+def dashboard(
+    request: Request
+):
+
+   return templates.TemplateResponse(
+    request=request,
+    name="dashboard.html"
+)
+
+
+# ==========================================
+# PÁGINA PORTAL DO CLIENTE
+# ==========================================
+
+@app.get(
+    "/portal",
+    response_class=HTMLResponse
+)
+def portal_cliente(
+    request: Request
+):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="portal.html"
+    )
+
+# ==========================================
+# PÁGINA DE COBRANÇAS
+# ==========================================
+
+@app.get(
+    "/cobrancas",
+    response_class=HTMLResponse
+)
+def portal_cobrancas(
+    request: Request
+):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="cobrancas.html"
+    )
+
+# ==========================================
+# PÁGINA PIX
+# ==========================================
+
+@app.get(
+    "/pix",
+    response_class=HTMLResponse
+)
+def pagina_pix(
+    request: Request
+):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pix.html"
+    )
+
+
+
+# ==========================================
+# PÁGINA BOLETO
+# ==========================================
+
+@app.get(
+    "/boleto",
+    response_class=HTMLResponse
+)
+def pagina_boleto(
+    request: Request
+):
+
+    return templates.TemplateResponse(
+        request=request,
+        name="boleto.html"
+    )
+
+# ==========================================
+# CONSULTA PORTAL
+# ==========================================
+
+@app.post(
+    "/portal/consultar"
+)
+def consultar_portal(
+    consulta: schemas.PortalConsulta,
+    db: Session = Depends(get_db)
+):
+
+    # Normaliza CPF
+    cpf = (
+        consulta.cpf
+        .replace(".", "")
+        .replace("-", "")
+        .strip()
+    )
+
+    # Normaliza placa
+    placa = (
+        consulta.placa
+        .strip()
+        .upper()
+    )
+
+
+    # ======================================
+    # PROPRIETÁRIO
+    # ======================================
+
+    proprietario = (
+        crud.buscar_proprietario_por_cpf(
+            db,
+            cpf
+        )
+    )
+
+
+    if not proprietario:
+
+        raise HTTPException(
+            status_code=404,
+            detail="CPF não encontrado."
+        )
+
+
+    # ======================================
+    # VEÍCULO
+    # ======================================
+
+    veiculo = (
+        crud.buscar_veiculo_por_placa(
+            db,
+            placa
+        )
+    )
+
+
+    if not veiculo:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Veículo não encontrado."
+        )
+
+
+    # Verifica se pertence ao CPF
+    if (
+        veiculo.proprietario_id
+        != proprietario.id
+    ):
+
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "A placa informada "
+                "não pertence a este CPF."
+            )
+        )
+
+
+    # ======================================
+    # COBRANÇAS DO VEÍCULO
+    # ======================================
+
+    cobrancas = [
+
+        cobranca
+
+        for cobranca
+        in crud.listar_cobrancas(db)
+
+        if (
+            cobranca.veiculo_id
+            == veiculo.id
+        )
+
+    ]
+
+
+    total_pendentes = sum(
+
+        1
+
+        for cobranca
+        in cobrancas
+
+        if (
+            cobranca.status
+            == "pendente"
+        )
+
+    )
+
+
+    total_pagas = sum(
+
+        1
+
+        for cobranca
+        in cobrancas
+
+        if (
+            cobranca.status
+            == "pago"
+        )
+
+    )
+
+
+    valor_pendente = sum(
+
+        cobranca.valor
+
+        for cobranca
+        in cobrancas
+
+        if (
+            cobranca.status
+            == "pendente"
+        )
+
+    )
+
+
+    # ======================================
+    # CPF MASCARADO
+    # ======================================
+
+    cpf_mascarado = (
+
+        f"***.***.***-{cpf[-2:]}"
+
+        if len(cpf) == 11
+
+        else "***"
+
+    )
+
+
+    # ======================================
+    # RESPOSTA
+    # ======================================
+
+    return {
+
+        "proprietario": {
+
+            "nome":
+                proprietario.nome,
+
+            "cpf":
+                cpf_mascarado
+
+        },
+
+
+        "veiculo": {
+
+            "placa":
+                veiculo.placa
+
+        },
+
+
+        "valor_pendente":
+            valor_pendente,
+
+
+        "total_pendentes":
+            total_pendentes,
+
+
+        "total_pagas":
+            total_pagas,
+
+
+        "cobrancas": [
+
+            {
+
+                "id":
+                    cobranca.id,
+
+
+                "timestamp_evento": (
+
+                    cobranca.evento
+                    .timestamp_evento
+
+                    if cobranca.evento
+
+                    else "-"
+
+                ),
+
+
+                "faixa": (
+
+                    cobranca.evento.faixa
+
+                    if cobranca.evento
+
+                    else "-"
+
+                ),
+
+
+                "valor":
+                    cobranca.valor,
+
+
+                "status":
+                    cobranca.status
+
+            }
+
+            for cobranca
+            in cobrancas
+
+        ]
+
+    }
+
+
+# ==========================================
+# PAGAMENTO SIMULADO
+# ==========================================
+
+@app.post(
+    "/portal/cobrancas/{cobranca_id}/pagar"
+)
+def pagar_cobranca(
+    cobranca_id: int,
+    pagamento: schemas.PortalPagamento,
+    db: Session = Depends(get_db)
+):
+
+    # Normaliza CPF
+    cpf = (
+        pagamento.cpf
+        .replace(".", "")
+        .replace("-", "")
+        .strip()
+    )
+
+
+    # Normaliza placa
+    placa = (
+        pagamento.placa
+        .strip()
+        .upper()
+    )
+
+
+    proprietario = (
+        crud.buscar_proprietario_por_cpf(
+            db,
+            cpf
+        )
+    )
+
+
+    veiculo = (
+        crud.buscar_veiculo_por_placa(
+            db,
+            placa
+        )
+    )
+
+
+    if (
+        not proprietario
+        or not veiculo
+    ):
+
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Cliente ou veículo "
+                "não encontrado."
+            )
+        )
+
+
+    # ======================================
+    # SEGURANÇA DO PORTAL
+    # ======================================
+
+    if (
+        veiculo.proprietario_id
+        != proprietario.id
+    ):
+
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Veículo não pertence "
+                "ao CPF informado."
+            )
+        )
+
+
+    # ======================================
+    # COBRANÇA
+    # ======================================
+
+    cobranca = (
+
+        db.query(
+            models.Cobranca
+        )
+
+        .filter(
+            models.Cobranca.id
+            == cobranca_id
+        )
+
+        .first()
+
+    )
+
+
+    if not cobranca:
+
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Cobrança não encontrada."
+            )
+        )
+
+
+    # Impede pagar cobrança
+    # de outro veículo
+    if (
+        cobranca.veiculo_id
+        != veiculo.id
+    ):
+
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Esta cobrança não pertence "
+                "ao veículo informado."
+            )
+        )
+
+
+    # Já estava paga
+    if (
+        cobranca.status
+        == "pago"
+    ):
+
+        return {
+
+            "mensagem":
+                "Cobrança já estava paga.",
+
+            "cobranca_id":
+                cobranca.id,
+
+            "status":
+                cobranca.status
+
+        }
+
+
+    # Marca como pago
+    cobranca.status = "pago"
+
+
+    db.commit()
+
+    db.refresh(
+        cobranca
+    )
+
+
+    return {
+
+        "mensagem":
+            "Pagamento realizado com sucesso.",
+
+        "cobranca_id":
+            cobranca.id,
+
+        "status":
+            cobranca.status
+
+    }
+
+
+# ==========================================
+# DADOS DO DASHBOARD
+# ==========================================
+
+@app.get(
+    "/dashboard-data"
+)
+def dashboard_data(
+    db: Session = Depends(get_db)
+):
+
+    eventos = (
+        crud.listar_eventos(
+            db,
+            limite=20
+        )
+    )
+
+
+    total_eventos = (
+        crud.contar_eventos(
+            db
+        )
+    )
+
+
+    total_duplicidades = (
+        crud.contar_duplicidades(
+            db
+        )
+    )
+
+
+    total_gerado = (
+        crud.total_gerado(
+            db
+        )
+    )
+
+
+    duplicidades_recentes = (
+        crud.ultimas_duplicidades(
+            db,
+            limite=5
+        )
+    )
+
+
+    # ======================================
+    # ÚLTIMA PASSAGEM NORMAL
+    # ======================================
+
+    ultimo_evento_ok = next(
+
+        (
+            evento
+
+            for evento
+            in eventos
+
+            if evento.anomalia
+            is None
+        ),
+
+        None
+
+    )
+
+
+    ultimo_evento = (
+
+        ultimo_evento_ok
+
+        if ultimo_evento_ok
+
+        else (
+            eventos[0]
+            if eventos
+            else None
+        )
+
+    )
+
+
+    # ======================================
+    # MONITORAMENTO
+    # ======================================
+
+    status_operacao = (
+        "Recebendo dados normalmente"
+    )
+
+
+    segundos_sem_evento = 0
+
+
+    nivel_atualizacao = "ok"
+
+
+    mensagem_atualizacao = (
+        "✅ Última atualização "
+        "há 0 segundo(s)"
+    )
+
+
+    if eventos:
+
+        try:
+
+            horario_ultimo_evento = (
+                datetime.fromisoformat(
+                    eventos[
+                        0
+                    ].timestamp_evento
+                )
+            )
+
+
+            agora = (
+                datetime.now()
+            )
+
+
+            segundos_sem_evento = int(
+
+                (
+                    agora
+                    - horario_ultimo_evento
+                )
+                .total_seconds()
+
+            )
+
+
+            tempo_formatado = (
+                formatar_tempo(
+                    segundos_sem_evento
+                )
+            )
+
+
+            if (
+                segundos_sem_evento
+                <= 30
+            ):
+
+                nivel_atualizacao = (
+                    "ok"
+                )
+
+
+                mensagem_atualizacao = (
+
+                    "✅ Última atualização há "
+                    f"{tempo_formatado}"
+
+                )
+
+
+                status_operacao = (
+                    "Recebendo dados normalmente"
+                )
+
+
+            elif (
+                segundos_sem_evento
+                <= TEMPO_SEM_DADOS_ALERTA
+            ):
+
+                nivel_atualizacao = (
+                    "atencao"
+                )
+
+
+                mensagem_atualizacao = (
+
+                    "⚠️ Atenção: "
+                    "última atualização há "
+                    f"{tempo_formatado}"
+
+                )
+
+
+                status_operacao = (
+                    "Atenção: atraso na atualização"
+                )
+
+
+            else:
+
+                nivel_atualizacao = (
+                    "alerta"
+                )
+
+
+                mensagem_atualizacao = (
+
+                    "🚨 Alerta: "
+                    "última atualização há "
+                    f"{tempo_formatado}"
+
+                )
+
+
+                status_operacao = (
+                    "Alerta: sem dados recentes"
+                )
+
+
+        except ValueError:
+
+            nivel_atualizacao = (
+                "alerta"
+            )
+
+
+            mensagem_atualizacao = (
+                "🚨 Alerta: horário inválido "
+                "no último evento"
+            )
+
+
+            status_operacao = (
+                "Alerta: horário inválido "
+                "no último evento"
+            )
+
+
+    else:
+
+        nivel_atualizacao = (
+            "alerta"
+        )
+
+
+        mensagem_atualizacao = (
+            "🚨 Alerta: nenhum evento recebido"
+        )
+
+
+        status_operacao = (
+            "Alerta: nenhum evento recebido"
+        )
+
+
+    # ======================================
+    # RETORNO DASHBOARD
+    # ======================================
+
+    return {
+
+        "total_veiculos":
+            total_eventos,
+
+
+        "total_gerado":
+            total_gerado,
+
+
+        "valor_por_passagem":
+            VALOR_PASSAGEM,
+
+
+        "refresh_segundos":
+            REFRESH_SEGUNDOS,
+
+
+        "ultima_passagem": {
+
+            "id_veiculo": (
+
+                ultimo_evento.id_veiculo
+
+                if ultimo_evento
+
+                else "-"
+
+            ),
+
+
+            "faixa": (
+
+                ultimo_evento.faixa
+
+                if ultimo_evento
+
+                else "-"
+
+            ),
+
+
+            "timestamp_evento": (
+
+                ultimo_evento.timestamp_evento
+
+                if ultimo_evento
+
+                else "-"
+
+            ),
+
+
+            "valor": (
+
+                ultimo_evento.valor
+
+                if ultimo_evento
+
+                else VALOR_PASSAGEM
+
+            ),
+
+
+            "anomalia": (
+
+                ultimo_evento.anomalia
+
+                if ultimo_evento
+
+                else None
+
+            )
+
+        },
+
+
+        "eventos": [
+
+            {
+
+                "id_veiculo":
+                    evento.id_veiculo,
+
+                "faixa":
+                    evento.faixa,
+
+                "timestamp_evento":
+                    evento.timestamp_evento,
+
+                "valor":
+                    evento.valor,
+
+                "anomalia":
+                    evento.anomalia
+
+            }
+
+            for evento
+            in eventos
+
+        ],
+
+
+        "total_duplicidades":
+            total_duplicidades,
+
+
+        "duplicidades_recentes": [
+
+            {
+
+                "id_veiculo":
+                    evento.id_veiculo,
+
+                "timestamp_evento":
+                    evento.timestamp_evento
+
+            }
+
+            for evento
+            in duplicidades_recentes
+
+        ],
+
+
+        "status_operacao":
+            status_operacao,
+
+
+        "segundos_sem_evento":
+            segundos_sem_evento,
+
+
+        "nivel_atualizacao":
+            nivel_atualizacao,
+
+
+        "mensagem_atualizacao":
+            mensagem_atualizacao
+
+    }
+
+
+# ==========================================
+# EXPORTAÇÃO CSV
+# ==========================================
+
+@app.get(
+    "/exportar-csv"
+)
+def exportar_csv(
+    anomalia: str = "todos",
+    db: Session = Depends(get_db)
+):
+
+    eventos = (
+        crud.listar_todos_eventos(
+            db
+        )
+    )
+
+
+    if (
+        anomalia
+        == "duplicidade"
+    ):
+
+        eventos = [
+
+            evento
+
+            for evento
+            in eventos
+
+            if (
+                evento.anomalia
+                == "duplicidade"
+            )
+
+        ]
+
+
+    elif (
+        anomalia
+        == "ok"
+    ):
+
+        eventos = [
+
+            evento
+
+            for evento
+            in eventos
+
+            if (
+                evento.anomalia
+                is None
+            )
+
+        ]
+
 
     output = io.StringIO()
-    writer = csv.writer(output)
 
-    writer.writerow(["ID do Veículo", "Faixa", "Data/Hora", "Valor", "Anomalia"])
 
-    for e in eventos:
-        writer.writerow([
-            e.id_veiculo,
-            e.faixa,
-            e.timestamp_evento,
-            e.valor,
-            e.anomalia if e.anomalia else "OK"
-        ])
+    writer = csv.writer(
+        output
+    )
+
+
+    writer.writerow(
+        [
+            "ID do Veículo",
+            "Faixa",
+            "Data/Hora",
+            "Valor",
+            "Anomalia"
+        ]
+    )
+
+
+    for evento in eventos:
+
+        writer.writerow(
+            [
+                evento.id_veiculo,
+                evento.faixa,
+                evento.timestamp_evento,
+                evento.valor,
+
+                (
+                    evento.anomalia
+
+                    if evento.anomalia
+
+                    else "OK"
+                )
+            ]
+        )
+
 
     output.seek(0)
-    nome_arquivo = f"relatorio_freeflow_{anomalia}.csv"
+
+
+    nome_arquivo = (
+
+        "relatorio_freeflow_"
+        f"{anomalia}.csv"
+
+    )
+
 
     return StreamingResponse(
-        iter([output.getvalue()]),
+
+        iter(
+            [
+                output.getvalue()
+            ]
+        ),
+
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={nome_arquivo}"}
+
+        headers={
+            "Content-Disposition":
+                (
+                    "attachment; "
+                    f"filename={nome_arquivo}"
+                )
+        }
+
     )
+
+
+# ==========================================
+# TESTE DO MODELO DE IA
+# ==========================================
+
+@app.get(
+    "/ia/teste"
+)
+def testar_ia_api():
+
+    # Usa o modelo que já está
+    # carregado em memória pelo anomaly.py
+    modelo = (
+        anomaly.MODELO_IA
+    )
+
+
+    evento_normal = np.array(
+        [
+            [
+                1,
+                120,
+                14
+            ]
+        ]
+    )
+
+
+    evento_atipico = np.array(
+        [
+            [
+                9,
+                10000,
+                100
+            ]
+        ]
+    )
+
+
+    resultado_normal = (
+        modelo.predict(
+            evento_normal
+        )[0]
+    )
+
+
+    resultado_atipico = (
+        modelo.predict(
+            evento_atipico
+        )[0]
+    )
+
+
+    return {
+
+        "modelo":
+            "Isolation Forest",
+
+
+        "status":
+            "carregado",
+
+
+        "teste_normal": (
+
+            "NORMAL"
+
+            if resultado_normal
+            == 1
+
+            else "ANOMALIA"
+
+        ),
+
+
+        "teste_atipico": (
+
+            "NORMAL"
+
+            if resultado_atipico
+            == 1
+
+            else "ANOMALIA"
+
+        )
+
+    }

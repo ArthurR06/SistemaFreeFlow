@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>FreeFlow - Boleto</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            margin: 0;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background:
+                #071a2f;
+
+            color: white;
+        }
+
+
+        header {
+            background: #041426;
+
+            padding: 22px 30px;
+
+            border-bottom:
+                1px solid #1f3a56;
+        }
+
+
+        .header {
+            max-width: 1100px;
+
+            margin: auto;
+        }
+
+
+        .logo {
+            font-size: 30px;
+
+            font-weight: 800;
+        }
+
+
+        .logo span {
+            color: #37b36b;
+        }
+
+
+        .subtitulo {
+            margin-top: 3px;
+
+            font-size: 19px;
+
+            font-weight: 600;
+        }
+
+
+        main {
+            max-width: 950px;
+
+            margin: auto;
+
+            padding: 40px 25px;
+        }
+
+
+        .boleto {
+            background: white;
+
+            color: #111;
+
+            padding: 30px;
+
+            border-radius: 10px;
+        }
+
+
+        .boleto-topo {
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            border-bottom:
+                3px solid #111;
+
+            padding-bottom: 16px;
+        }
+
+
+        .boleto-logo {
+            font-size: 26px;
+
+            font-weight: bold;
+        }
+
+
+        .linha-digitavel {
+            margin:
+                22px
+                0;
+
+            font-size: 19px;
+
+            font-weight: bold;
+
+            letter-spacing: 1px;
+
+            word-break:
+                break-all;
+        }
+
+
+        .grid {
+            display: grid;
+
+            grid-template-columns:
+                1fr
+                1fr;
+
+            border-top:
+                1px solid #aaa;
+        }
+
+
+        .campo {
+            padding: 12px;
+
+            border-bottom:
+                1px solid #aaa;
+
+            border-right:
+                1px solid #aaa;
+        }
+
+
+        .campo label {
+            display: block;
+
+            color: #666;
+
+            font-size: 11px;
+
+            margin-bottom: 5px;
+        }
+
+
+        .campo strong {
+            font-size: 15px;
+        }
+
+
+        .codigo-barras {
+            height: 85px;
+
+            margin-top: 30px;
+
+            background:
+                repeating-linear-gradient(
+                    90deg,
+                    #000 0px,
+                    #000 2px,
+                    transparent 2px,
+                    transparent 4px,
+                    #000 4px,
+                    #000 7px,
+                    transparent 7px,
+                    transparent 10px
+                );
+        }
+
+
+        .aviso {
+            margin-top: 20px;
+
+            text-align: center;
+
+            color: #aebfd0;
+        }
+
+
+        .acoes {
+            margin-top: 25px;
+
+            display: grid;
+
+            grid-template-columns:
+                1fr
+                1fr;
+
+            gap: 12px;
+        }
+
+
+        button,
+        a {
+            text-align: center;
+
+            padding: 14px;
+
+            border-radius: 9px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            text-decoration: none;
+
+            border: 0;
+        }
+
+
+        .baixar {
+            background: #23a65d;
+
+            color: white;
+        }
+
+
+        .imprimir {
+            background: #267aad;
+
+            color: white;
+        }
+
+
+        .pagar {
+            margin-top: 12px;
+
+            width: 100%;
+
+            background: #176d48;
+
+            color: white;
+        }
+
+
+        .voltar {
+            display: block;
+
+            margin-top: 18px;
+
+            color: #9cd0f5;
+        }
+
+
+        .sucesso {
+            display: none;
+
+            margin-top: 20px;
+
+            padding: 15px;
+
+            background: #153d2d;
+
+            border-radius: 9px;
+
+            color: #89ecb4;
+
+            text-align: center;
+        }
+
+
+        @media print {
+
+            body {
+                background: white;
+            }
+
+
+            header,
+            .acoes,
+            .pagar,
+            .voltar,
+            .aviso,
+            .sucesso {
+                display: none;
+            }
+
+
+            main {
+                padding: 0;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<header>
+
+    <div class="header">
+
+        <div class="logo">
+            FREE<span>FLOW</span>
+        </div>
+
+        <div class="subtitulo">
+            Boleto bancário
+        </div>
+
+    </div>
+
+</header>
+
+
+<main>
+
+    <section
+        id="boleto"
+        class="boleto"
+    >
+
+        <div class="boleto-topo">
+
+            <div class="boleto-logo">
+                FREEFLOW
+            </div>
+
+            <strong>
+                BOLETO DEMONSTRATIVO
+            </strong>
+
+        </div>
+
+
+        <div
+            id="linhaDigitavel"
+            class="linha-digitavel"
+        >
+            ---
+        </div>
+
+
+        <div class="grid">
+
+            <div class="campo">
+
+                <label>
+                    Beneficiário
+                </label>
+
+                <strong>
+                    FreeFlow - Protótipo Acadêmico
+                </strong>
+
+            </div>
+
+
+            <div class="campo">
+
+                <label>
+                    Documento
+                </label>
+
+                <strong id="documento">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="campo">
+
+                <label>
+                    Placa do veículo
+                </label>
+
+                <strong id="placaTela">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="campo">
+
+                <label>
+                    Valor
+                </label>
+
+                <strong id="valor">
+                    R$ 0,00
+                </strong>
+
+            </div>
+
+
+            <div class="campo">
+
+                <label>
+                    Data de emissão
+                </label>
+
+                <strong id="emissao">
+                    ---
+                </strong>
+
+            </div>
+
+
+            <div class="campo">
+
+                <label>
+                    Vencimento
+                </label>
+
+                <strong id="vencimento">
+                    ---
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="codigo-barras">
+        </div>
+
+    </section>
+
+
+    <p class="aviso">
+        Documento demonstrativo,
+        sem validade bancária.
+    </p>
+
+
+    <div class="acoes">
+
+        <button
+            class="baixar"
+            onclick="baixarBoleto()"
+        >
+            Baixar boleto
+        </button>
+
+
+        <button
+            class="imprimir"
+            onclick="window.print()"
+        >
+            Imprimir / Salvar PDF
+        </button>
+
+    </div>
+
+
+    <button
+        class="pagar"
+        onclick="simularPagamento()"
+    >
+        Confirmar pagamento
+    </button>
+
+
+    <div
+        id="sucesso"
+        class="sucesso"
+    >
+        Pagamento confirmado com sucesso.
+    </div>
+
+
+    <a
+        id="voltar"
+        class="voltar"
+        href="/cobrancas"
+    >
+        ← Voltar às cobranças
+    </a>
+
+</main>
+
+
+<script>
+
+    const parametros =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const cpf =
+        parametros.get("cpf");
+
+
+    const placa =
+        parametros.get("placa");
+
+
+    let cobrancasPendentes = [];
+
+    let total = 0;
+
+
+    function moeda(valor) {
+
+        return Number(
+            valor || 0
+        ).toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+
+    }
+
+
+    function numeroFake() {
+
+        let texto =
+            `${cpf}${placa}${Date.now()}`;
+
+
+        let numeros = "";
+
+
+        for (
+            let i = 0;
+            i < texto.length;
+            i++
+        ) {
+
+            numeros +=
+                texto.charCodeAt(i)
+                % 10;
+
+        }
+
+
+        return (
+            (
+                numeros
+                + "34191790010104351004791020150008291070000000000"
+            )
+            .substring(
+                0,
+                47
+            )
+        );
+
+    }
+
+
+    function formatarLinha(
+        numeros
+    ) {
+
+        return (
+            numeros.substring(0, 5)
+            + "."
+            + numeros.substring(5, 10)
+            + " "
+            + numeros.substring(10, 15)
+            + "."
+            + numeros.substring(15, 21)
+            + " "
+            + numeros.substring(21, 26)
+            + "."
+            + numeros.substring(26, 32)
+            + " "
+            + numeros.substring(32, 33)
+            + " "
+            + numeros.substring(33)
+        );
+
+    }
+
+
+    async function carregar() {
+
+        if (!cpf || !placa) {
+            return;
+        }
+
+
+        const resposta =
+            await fetch(
+                "/portal/consultar",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            cpf: cpf,
+                            placa: placa
+                        })
+                }
+            );
+
+
+        if (!resposta.ok) {
+            return;
+        }
+
+
+        const dados =
+            await resposta.json();
+
+
+        cobrancasPendentes =
+            (dados.cobrancas || [])
+            .filter(
+                cobranca =>
+                    cobranca.status
+                    === "pendente"
+            );
+
+
+        total =
+            cobrancasPendentes.reduce(
+                (
+                    soma,
+                    cobranca
+                ) =>
+                    soma
+                    + Number(
+                        cobranca.valor || 0
+                    ),
+                0
+            );
+
+
+        const agora =
+            new Date();
+
+
+        const vencimento =
+            new Date();
+
+
+        vencimento.setDate(
+            vencimento.getDate()
+            + 7
+        );
+
+
+        const numero =
+            numeroFake();
+
+
+        document.getElementById(
+            "linhaDigitavel"
+        ).textContent =
+            formatarLinha(
+                numero
+            );
+
+
+        document.getElementById(
+            "documento"
+        ).textContent =
+            "FF-"
+            + Date.now()
+            .toString()
+            .slice(-8);
+
+
+        document.getElementById(
+            "placaTela"
+        ).textContent =
+            placa;
+
+
+        document.getElementById(
+            "valor"
+        ).textContent =
+            moeda(
+                total
+            );
+
+
+        document.getElementById(
+            "emissao"
+        ).textContent =
+            agora.toLocaleDateString(
+                "pt-BR"
+            );
+
+
+        document.getElementById(
+            "vencimento"
+        ).textContent =
+            vencimento.toLocaleDateString(
+                "pt-BR"
+            );
+
+
+        document.getElementById(
+            "voltar"
+        ).href =
+            `/cobrancas?cpf=${encodeURIComponent(cpf)}`
+            + `&placa=${encodeURIComponent(placa)}`;
+
+    }
+
+
+    function baixarBoleto() {
+
+        const conteudo =
+            document.getElementById(
+                "boleto"
+            ).outerHTML;
+
+
+        const arquivo =
+            `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+
+                <title>
+                    Boleto FreeFlow
+                </title>
+
+                <style>
+
+                    body {
+                        font-family: Arial;
+                        padding: 30px;
+                    }
+
+                    .boleto {
+                        color: #111;
+                    }
+
+                    .boleto-topo {
+                        display: flex;
+                        justify-content: space-between;
+                        border-bottom: 3px solid #111;
+                        padding-bottom: 15px;
+                    }
+
+                    .linha-digitavel {
+                        font-weight: bold;
+                        font-size: 18px;
+                        margin: 22px 0;
+                    }
+
+                    .grid {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                    }
+
+                    .campo {
+                        padding: 12px;
+                        border: 1px solid #aaa;
+                    }
+
+                    .campo label {
+                        display: block;
+                        color: #666;
+                        font-size: 11px;
+                    }
+
+                    .codigo-barras {
+                        height: 85px;
+                        margin-top: 30px;
+
+                        background:
+                            repeating-linear-gradient(
+                                90deg,
+                                #000 0px,
+                                #000 2px,
+                                transparent 2px,
+                                transparent 4px,
+                                #000 4px,
+                                #000 7px,
+                                transparent 7px,
+                                transparent 10px
+                            );
+                    }
+
+                </style>
+
+            </head>
+
+            <body>
+
+                ${conteudo}
+
+                <p>
+                    Documento demonstrativo,
+                    sem validade bancária.
+                </p>
+
+            </body>
+
+            </html>
+            `;
+
+
+        const blob =
+            new Blob(
+                [arquivo],
+                {
+                    type:
+                        "text/html;charset=utf-8"
+                }
+            );
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+
+        link.href =
+            url;
+
+
+        link.download =
+            `boleto_freeflow_${placa}.html`;
+
+
+        link.click();
+
+
+        URL.revokeObjectURL(
+            url
+        );
+
+    }
+
+
+    async function simularPagamento() {
+
+        if (
+            cobrancasPendentes.length
+            === 0
+        ) {
+
+            alert(
+                "Não existem cobranças pendentes."
+            );
+
+            return;
+
+        }
+
+
+        for (
+            const cobranca
+            of cobrancasPendentes
+        ) {
+
+            const resposta =
+                await fetch(
+                    `/portal/cobrancas/${cobranca.id}/pagar`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                cpf: cpf,
+                                placa: placa
+                            })
+                    }
+                );
+
+
+            if (!resposta.ok) {
+
+                alert(
+                    "Erro ao simular pagamento."
+                );
+
+                return;
+
+            }
+
+        }
+
+
+        document.getElementById(
+            "sucesso"
+        ).style.display =
+            "block";
+
+    }
+
+
+    carregar();
+
+</script>
+
+</body>
+
+</html>

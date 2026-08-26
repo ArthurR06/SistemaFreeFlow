@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>FreeFlow - PIX</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+
+            background: #071a2f;
+
+            color: white;
+
+            min-height: 100vh;
+        }
+
+
+        header {
+            background: #041426;
+
+            border-bottom: 1px solid #1f3a56;
+
+            padding: 22px 30px;
+        }
+
+
+        .header {
+            max-width: 1100px;
+
+            margin: auto;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+        }
+
+
+        .logo {
+            font-size: 30px;
+
+            font-weight: 800;
+        }
+
+
+        .logo span {
+            color: #37b36b;
+        }
+
+
+        .subtitulo {
+            margin-top: 3px;
+
+            font-size: 19px;
+
+            font-weight: 600;
+        }
+
+
+        main {
+            max-width: 1100px;
+
+            margin: auto;
+
+            padding: 40px 30px;
+        }
+
+
+        .card {
+            max-width: 650px;
+
+            margin: auto;
+
+            background: #102942;
+
+            border: 1px solid #29445f;
+
+            border-radius: 16px;
+
+            padding: 30px;
+
+            text-align: center;
+        }
+
+
+        .badge {
+            display: inline-block;
+
+            background: #143e31;
+
+            color: #6fe7a4;
+
+            padding: 8px 12px;
+
+            border-radius: 8px;
+
+            margin-bottom: 18px;
+
+            font-weight: bold;
+        }
+
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+
+        .descricao {
+            color: #a6bbcf;
+
+            line-height: 1.5;
+
+            margin-bottom: 25px;
+        }
+
+
+        .valor {
+            font-size: 35px;
+
+            color: #20d77a;
+
+            font-weight: bold;
+
+            margin-bottom: 25px;
+        }
+
+
+        .qr-area {
+            width: 290px;
+
+            margin: auto;
+
+            background: white;
+
+            border-radius: 15px;
+
+            padding: 18px;
+        }
+
+
+        canvas {
+            display: block;
+
+            width: 254px;
+
+            height: 254px;
+
+            image-rendering: pixelated;
+        }
+
+
+        .aviso {
+            margin-top: 18px;
+
+            color: #f7ce6a;
+
+            font-size: 13px;
+        }
+
+
+        .codigo-area {
+            margin-top: 25px;
+
+            text-align: left;
+        }
+
+
+        .codigo-area label {
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: #b6c9da;
+        }
+
+
+        .codigo {
+            display: flex;
+
+            gap: 8px;
+        }
+
+
+        .codigo input {
+            flex: 1;
+
+            background: #081d32;
+
+            color: white;
+
+            border: 1px solid #31516e;
+
+            border-radius: 9px;
+
+            padding: 13px;
+        }
+
+
+        button {
+            border: 0;
+
+            border-radius: 9px;
+
+            padding: 13px 18px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+        }
+
+
+        .copiar {
+            background: #237caf;
+
+            color: white;
+        }
+
+
+        .pagar {
+            width: 100%;
+
+            margin-top: 22px;
+
+            background: #23a65d;
+
+            color: white;
+
+            font-size: 16px;
+        }
+
+
+        .voltar {
+            display: inline-block;
+
+            margin-top: 20px;
+
+            color: #99c9ef;
+
+            text-decoration: none;
+        }
+
+
+        .dados {
+            margin-top: 24px;
+
+            padding-top: 20px;
+
+            border-top: 1px solid #2b4762;
+
+            text-align: left;
+
+            color: #a9bdd0;
+        }
+
+
+        .dados p {
+            margin-bottom: 8px;
+        }
+
+
+        .sucesso {
+            display: none;
+
+            margin-top: 20px;
+
+            padding: 15px;
+
+            border-radius: 10px;
+
+            background: #143d2d;
+
+            color: #82e9af;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<header>
+
+    <div class="header">
+
+        <div>
+
+            <div class="logo">
+                FREE<span>FLOW</span>
+            </div>
+
+            <div class="subtitulo">
+                Pagamento via PIX
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main>
+
+    <section class="card">
+
+        <div
+            id="tipoVia"
+            class="badge"
+        >
+            PIX
+        </div>
+
+
+        <h1>
+            Pagamento via PIX
+        </h1>
+
+
+        <p class="descricao">
+            Utilize o QR Code demonstrativo abaixo
+            para simular o pagamento das passagens.
+        </p>
+
+
+        <div
+            id="valor"
+            class="valor"
+        >
+            R$ 0,00
+        </div>
+
+
+        <div class="qr-area">
+
+            <canvas
+                id="qrCanvas"
+                width="290"
+                height="290"
+            >
+            </canvas>
+
+        </div>
+
+
+        <p class="aviso">
+            QR Code demonstrativo.
+            Não possui validade bancária.
+        </p>
+
+
+        <div class="codigo-area">
+
+            <label>
+                PIX Copia e Cola
+            </label>
+
+
+            <div class="codigo">
+
+                <input
+                    id="codigoPix"
+                    readonly
+                >
+
+                <button
+                    class="copiar"
+                    onclick="copiarPix()"
+                >
+                    Copiar
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="dados">
+
+            <p>
+                <strong>Placa:</strong>
+                <span id="placaTela">---</span>
+            </p>
+
+            <p>
+                <strong>Gerado em:</strong>
+                <span id="dataGeracao">---</span>
+            </p>
+
+            <p>
+                <strong>Identificador:</strong>
+                <span id="idPix">---</span>
+            </p>
+
+        </div>
+
+
+        <button
+            class="pagar"
+            onclick="simularPagamento()"
+        >
+            Confirmar pagamento
+        </button>
+
+
+        <div
+            id="sucesso"
+            class="sucesso"
+        >
+            Pagamento confirmado com sucesso.
+        </div>
+
+
+        <a
+            id="voltar"
+            class="voltar"
+            href="/cobrancas"
+        >
+            ← Voltar às cobranças
+        </a>
+
+    </section>
+
+</main>
+
+
+<script>
+
+    const parametros =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const cpf =
+        parametros.get("cpf");
+
+
+    const placa =
+        parametros.get("placa");
+
+
+    const segundaVia =
+        parametros.get("segunda")
+        === "1";
+
+
+    let cobrancasPendentes = [];
+
+    let registroPix = null;
+
+
+    function moeda(valor) {
+
+        return Number(
+            valor || 0
+        ).toLocaleString(
+            "pt-BR",
+            {
+                style: "currency",
+                currency: "BRL"
+            }
+        );
+
+    }
+
+
+    function chavePix() {
+
+        return (
+            `freeflow_pix_${cpf}_${placa}`
+        );
+
+    }
+
+
+    function gerarId() {
+
+        return (
+            "FFPIX"
+            + Date.now()
+            + Math.floor(
+                Math.random() * 9000 + 1000
+            )
+        );
+
+    }
+
+
+    function criarCodigoPix(
+        id,
+        valor
+    ) {
+
+        return (
+            "FREEFLOW.PIX."
+            + id
+            + "."
+            + placa
+            + "."
+            + Number(valor).toFixed(2)
+        );
+
+    }
+
+
+    async function carregar() {
+
+        if (!cpf || !placa) {
+            return;
+        }
+
+
+        const resposta =
+            await fetch(
+                "/portal/consultar",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            cpf: cpf,
+                            placa: placa
+                        })
+                }
+            );
+
+
+        if (!resposta.ok) {
+            return;
+        }
+
+
+        const dados =
+            await resposta.json();
+
+
+        cobrancasPendentes =
+            (dados.cobrancas || [])
+            .filter(
+                cobranca =>
+                    cobranca.status
+                    === "pendente"
+            );
+
+
+        const total =
+            cobrancasPendentes.reduce(
+                (
+                    soma,
+                    cobranca
+                ) =>
+                    soma
+                    + Number(
+                        cobranca.valor || 0
+                    ),
+                0
+            );
+
+
+        const salvo =
+            localStorage.getItem(
+                chavePix()
+            );
+
+
+        if (salvo) {
+
+            registroPix =
+                JSON.parse(
+                    salvo
+                );
+
+        }
+
+        else {
+
+            registroPix = {
+
+                id:
+                    gerarId(),
+
+                valor:
+                    total,
+
+                criadoEm:
+                    new Date()
+                    .toISOString()
+
+            };
+
+
+            registroPix.codigo =
+                criarCodigoPix(
+                    registroPix.id,
+                    registroPix.valor
+                );
+
+
+            localStorage.setItem(
+                chavePix(),
+                JSON.stringify(
+                    registroPix
+                )
+            );
+
+        }
+
+
+        document.getElementById(
+            "valor"
+        ).textContent =
+            moeda(
+                registroPix.valor
+            );
+
+
+        document.getElementById(
+            "codigoPix"
+        ).value =
+            registroPix.codigo;
+
+
+        document.getElementById(
+            "placaTela"
+        ).textContent =
+            placa;
+
+
+        document.getElementById(
+            "idPix"
+        ).textContent =
+            registroPix.id;
+
+
+        document.getElementById(
+            "dataGeracao"
+        ).textContent =
+            new Date(
+                registroPix.criadoEm
+            ).toLocaleString(
+                "pt-BR"
+            );
+
+
+        if (segundaVia) {
+
+            document.getElementById(
+                "tipoVia"
+            ).textContent =
+                "2ª VIA DO PIX";
+
+        }
+
+
+        desenharQrFake(
+            registroPix.codigo
+        );
+
+
+        document.getElementById(
+            "voltar"
+        ).href =
+            `/cobrancas?cpf=${encodeURIComponent(cpf)}`
+            + `&placa=${encodeURIComponent(placa)}`;
+
+    }
+
+
+    function desenharQrFake(
+        texto
+    ) {
+
+        const canvas =
+            document.getElementById(
+                "qrCanvas"
+            );
+
+
+        const ctx =
+            canvas.getContext(
+                "2d"
+            );
+
+
+        const tamanho =
+            29;
+
+
+        const modulo =
+            10;
+
+
+        ctx.fillStyle =
+            "#ffffff";
+
+
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        let seed = 0;
+
+
+        for (
+            let i = 0;
+            i < texto.length;
+            i++
+        ) {
+
+            seed =
+                (
+                    seed * 31
+                    + texto.charCodeAt(i)
+                )
+                >>> 0;
+
+        }
+
+
+        function aleatorio() {
+
+            seed =
+                (
+                    seed * 1664525
+                    + 1013904223
+                )
+                >>> 0;
+
+
+            return (
+                seed / 4294967296
+            );
+
+        }
+
+
+        ctx.fillStyle =
+            "#000000";
+
+
+        for (
+            let y = 0;
+            y < tamanho;
+            y++
+        ) {
+
+            for (
+                let x = 0;
+                x < tamanho;
+                x++
+            ) {
+
+                if (
+                    aleatorio() > 0.52
+                ) {
+
+                    ctx.fillRect(
+                        x * modulo,
+                        y * modulo,
+                        modulo,
+                        modulo
+                    );
+
+                }
+
+            }
+
+        }
+
+
+        function marcador(
+            inicioX,
+            inicioY
+        ) {
+
+            ctx.fillStyle =
+                "#000000";
+
+
+            ctx.fillRect(
+                inicioX * modulo,
+                inicioY * modulo,
+                7 * modulo,
+                7 * modulo
+            );
+
+
+            ctx.fillStyle =
+                "#ffffff";
+
+
+            ctx.fillRect(
+                (inicioX + 1) * modulo,
+                (inicioY + 1) * modulo,
+                5 * modulo,
+                5 * modulo
+            );
+
+
+            ctx.fillStyle =
+                "#000000";
+
+
+            ctx.fillRect(
+                (inicioX + 2) * modulo,
+                (inicioY + 2) * modulo,
+                3 * modulo,
+                3 * modulo
+            );
+
+        }
+
+
+        marcador(
+            1,
+            1
+        );
+
+
+        marcador(
+            21,
+            1
+        );
+
+
+        marcador(
+            1,
+            21
+        );
+
+    }
+
+
+    async function copiarPix() {
+
+        await navigator.clipboard.writeText(
+            registroPix.codigo
+        );
+
+
+        alert(
+            "Código PIX demonstrativo copiado."
+        );
+
+    }
+
+
+    async function simularPagamento() {
+
+        if (
+            cobrancasPendentes.length
+            === 0
+        ) {
+
+            alert(
+                "Não existem cobranças pendentes."
+            );
+
+            return;
+
+        }
+
+
+        for (
+            const cobranca
+            of cobrancasPendentes
+        ) {
+
+            const resposta =
+                await fetch(
+                    `/portal/cobrancas/${cobranca.id}/pagar`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                cpf: cpf,
+                                placa: placa
+                            })
+                    }
+                );
+
+
+            if (!resposta.ok) {
+
+                alert(
+                    "Erro ao simular pagamento."
+                );
+
+                return;
+
+            }
+
+        }
+
+
+        document.getElementById(
+            "sucesso"
+        ).style.display =
+            "block";
+
+    }
+
+
+    carregar();
+
+</script>
+
+</body>
+
+</html>
