@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FreeFlow - Vínculos</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #071426;
+            color: white;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        .subtitulo {
+            color: #a9b8ca;
+            margin-bottom: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #0d2038;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #263b55;
+        }
+
+        th {
+            background: #102944;
+            color: #21c77a;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .vazio {
+            text-align: center;
+            color: #a9b8ca;
+            padding: 25px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Vínculos de Veículos</h1>
+
+    <div class="subtitulo">
+        Consulta administrativa de placa, RFID e proprietário
+    </div>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Placa</th>
+                <th>UID RFID</th>
+                <th>Proprietário</th>
+                <th>CPF</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for veiculo in veiculos %}
+
+            <tr>
+                <td>{{ veiculo.placa }}</td>
+
+                <td>
+                    {{ veiculo.uid_rfid or "-" }}
+                </td>
+
+                <td>
+                    {{ veiculo.proprietario.nome }}
+                </td>
+
+                <td>
+                    {{ veiculo.proprietario.cpf }}
+                </td>
+            </tr>
+
+        {% else %}
+
+            <tr>
+                <td colspan="4" class="vazio">
+                    Nenhum veículo cadastrado.
+                </td>
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+</body>
+</html>

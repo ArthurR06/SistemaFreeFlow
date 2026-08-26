@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreeFlow - Admin</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #071426;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .login {
+            width: 340px;
+            background: #0d2038;
+            padding: 32px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+        }
+
+        h1 {
+            margin-top: 0;
+            text-align: center;
+        }
+
+        p {
+            text-align: center;
+            color: #a9b8ca;
+        }
+
+        input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 14px;
+            border: 1px solid #314965;
+            border-radius: 7px;
+            background: #08182a;
+            color: white;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: 0;
+            border-radius: 7px;
+            background: #21c77a;
+            color: #071426;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .erro {
+            color: #ff7777;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login">
+
+    <h1>FreeFlow</h1>
+    <p>Acesso administrativo</p>
+
+    {% if erro %}
+        <div class="erro">
+            {{ erro }}
+        </div>
+    {% endif %}
+
+    <form method="post" action="/admin/login">
+
+        <input
+            type="text"
+            name="usuario"
+            placeholder="Usuário"
+            required
+        >
+
+        <input
+            type="password"
+            name="senha"
+            placeholder="Senha"
+            required
+        >
+
+        <button type="submit">
+            Entrar
+        </button>
+
+    </form>
+
+</div>
+
+</body>
+</html>

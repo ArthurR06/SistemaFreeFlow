@@ -3,7 +3,7 @@
 # ==========================================
 
 from fastapi import FastAPI, Depends, Request, HTTPException
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
@@ -12,14 +12,17 @@ import csv
 import io
 
 from datetime import datetime
-
+from starlette.middleware.sessions import SessionMiddleware
 from app.database import Base, engine, get_db
 from app import schemas, crud, anomaly, models
 
 from app.config import (
     VALOR_PASSAGEM,
     TEMPO_SEM_DADOS_ALERTA,
-    REFRESH_SEGUNDOS
+    REFRESH_SEGUNDOS,
+    SESSION_SECRET,
+    ADMIN_USER,
+    ADMIN_PASSWORD
 )
 
 
@@ -40,6 +43,10 @@ app = FastAPI(
     title="FreeFlow"
 )
 
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SESSION_SECRET
+)
 
 # ==========================================
 # TEMPLATES HTML
@@ -49,21 +56,76 @@ templates = Jinja2Templates(
     directory="app/templates"
 )
 # ==========================================
-# CLIENTE DEMONSTRATIVO
+
+# ==========================================
+# CLIENTES DEMONSTRATIVOS
 # ==========================================
 
-NOME_CLIENTE_DEMO = "Cliente FreeFlow"
-CPF_CLIENTE_DEMO = "12345678900"
+CLIENTES_DEMO = [
+    {"nome": "Cliente Demo 01", "cpf": "10000000001"},
+    {"nome": "Cliente Demo 02", "cpf": "10000000002"},
+    {"nome": "Cliente Demo 03", "cpf": "10000000003"},
+    {"nome": "Cliente Demo 04", "cpf": "10000000004"},
+    {"nome": "Cliente Demo 05", "cpf": "10000000005"},
+    {"nome": "Cliente Demo 06", "cpf": "10000000006"},
+    {"nome": "Cliente Demo 07", "cpf": "10000000007"},
+    {"nome": "Cliente Demo 08", "cpf": "10000000008"},
+    {"nome": "Cliente Demo 09", "cpf": "10000000009"},
+    {"nome": "Cliente Demo 10", "cpf": "10000000010"},
+]
+
+CPF_DEMO_ANTIGO = "12345678900"
+
+
+def obter_proprietario_demo_disponivel(
+    db: Session
+):
+    for dados in CLIENTES_DEMO:
+
+        proprietario = (
+            db.query(models.Proprietario)
+            .filter(
+                models.Proprietario.cpf == dados["cpf"]
+            )
+            .first()
+        )
+
+        # Cliente ainda não existe
+        if not proprietario:
+            proprietario = models.Proprietario(
+                nome=dados["nome"],
+                cpf=dados["cpf"]
+            )
+
+            db.add(proprietario)
+            db.commit()
+            db.refresh(proprietario)
+
+            return proprietario
+
+        # Cliente existe, mas ainda não tem veículo
+        veiculo_existente = (
+            db.query(models.Veiculo)
+            .filter(
+                models.Veiculo.proprietario_id
+                == proprietario.id
+            )
+            .first()
+        )
+
+        if not veiculo_existente:
+            return proprietario
+
+    return None
 
 
 def obter_ou_criar_veiculo_demo(
     db: Session,
     uid: str
 ):
-
     uid = uid.strip().upper()
 
-    # Procura primeiro pelo UID RFID
+    # Procura a placa/UID
     veiculo = (
         db.query(models.Veiculo)
         .filter(
@@ -72,49 +134,52 @@ def obter_ou_criar_veiculo_demo(
         .first()
     )
 
+    # ======================================
+    # VEÍCULO JÁ CADASTRADO
+    # ======================================
+
     if veiculo:
 
-        # No protótipo, a própria UID
-        # será exibida como placa
         if veiculo.placa != uid:
-
             veiculo.placa = uid
 
-            db.commit()
-            db.refresh(veiculo)
+        # Corrige os veículos antigos que
+        # estavam todos no mesmo CPF demo
+        if (
+            veiculo.proprietario
+            and veiculo.proprietario.cpf
+            == CPF_DEMO_ANTIGO
+        ):
+            novo_proprietario = (
+                obter_proprietario_demo_disponivel(db)
+            )
+
+            if novo_proprietario:
+                veiculo.proprietario_id = (
+                    novo_proprietario.id
+                )
+
+        db.commit()
+        db.refresh(veiculo)
 
         return veiculo
 
-
     # ======================================
-    # CLIENTE DEMONSTRATIVO
+    # NOVA PLACA / UID
     # ======================================
 
     proprietario = (
-        db.query(models.Proprietario)
-        .filter(
-            models.Proprietario.cpf
-            == CPF_CLIENTE_DEMO
-        )
-        .first()
+        obter_proprietario_demo_disponivel(db)
     )
 
-
     if not proprietario:
-
-        proprietario = models.Proprietario(
-            nome=NOME_CLIENTE_DEMO,
-            cpf=CPF_CLIENTE_DEMO
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Não há clientes demonstrativos "
+                "disponíveis para vincular."
+            )
         )
-
-        db.add(proprietario)
-        db.commit()
-        db.refresh(proprietario)
-
-
-    # ======================================
-    # VEÍCULO
-    # ======================================
 
     veiculo = models.Veiculo(
         placa=uid,
@@ -123,7 +188,6 @@ def obter_ou_criar_veiculo_demo(
     )
 
     db.add(veiculo)
-
     db.commit()
     db.refresh(veiculo)
 
@@ -131,9 +195,9 @@ def obter_ou_criar_veiculo_demo(
     print("==============================")
     print("NOVO VEÍCULO CADASTRADO")
     print("==============================")
+    print(f"Placa/UID: {uid}")
     print(f"Cliente: {proprietario.nome}")
     print(f"CPF: {proprietario.cpf}")
-    print(f"Placa/UID: {uid}")
     print("==============================")
 
     return veiculo
@@ -374,6 +438,91 @@ def portal_cliente(
     return templates.TemplateResponse(
         request=request,
         name="portal.html"
+    )
+
+# ==========================================
+# ÁREA ADMINISTRATIVA - LOGIN
+# ==========================================
+
+@app.get(
+    "/admin/login",
+    response_class=HTMLResponse
+)
+def admin_login_page(
+    request: Request
+):
+    return templates.TemplateResponse(
+        request=request,
+        name="admin_login.html",
+        context={
+            "erro": None
+        }
+    )
+
+
+@app.post(
+    "/admin/login"
+)
+async def admin_login(
+    request: Request
+):
+    form = await request.form()
+
+    usuario = form.get("usuario")
+    senha = form.get("senha")
+
+    if (
+        usuario == ADMIN_USER
+        and senha == ADMIN_PASSWORD
+    ):
+        request.session["admin_logado"] = True
+
+        return RedirectResponse(
+            url="/admin/vinculos",
+            status_code=303
+        )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin_login.html",
+        context={
+            "erro": "Usuário ou senha inválidos."
+        },
+        status_code=401
+    )
+
+# ==========================================
+# ÁREA ADMINISTRATIVA - VÍNCULOS
+# ==========================================
+
+@app.get(
+    "/admin/vinculos",
+    response_class=HTMLResponse
+)
+def admin_vinculos(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+
+    # Só permite acesso se estiver logado
+    if not request.session.get("admin_logado"):
+        return RedirectResponse(
+            url="/admin/login",
+            status_code=303
+        )
+
+    veiculos = (
+        db.query(models.Veiculo)
+        .order_by(models.Veiculo.placa.asc())
+        .all()
+    )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin_vinculos.html",
+        context={
+            "veiculos": veiculos
+        }
     )
 
 # ==========================================
