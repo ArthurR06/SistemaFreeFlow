@@ -11,7 +11,7 @@
     >
 
     <title>
-        FreeFlow | Portal da Concessionária
+        FreeFlow - Portal da Concessionária
     </title>
 
     <style>
@@ -24,9 +24,6 @@
 
 
         body {
-
-            min-height: 100vh;
-
             font-family:
                 Arial,
                 Helvetica,
@@ -35,55 +32,43 @@
             background:
                 linear-gradient(
                     135deg,
-                    #04111f,
+                    #041426,
                     #071a2f,
-                    #0b2745
+                    #0c2944
                 );
 
-            color: white;
+            color: #ffffff;
 
+            min-height: 100vh;
+
+            display: flex;
+            flex-direction: column;
         }
 
 
-        /* ===================================== */
+        /* ============================== */
         /* CABEÇALHO */
-        /* ===================================== */
+        /* ============================== */
 
-        header {
-
-            width: 100%;
-
-            background:
-                rgba(
-                    3,
-                    15,
-                    28,
-                    0.85
-                );
+        .header {
+            background: #041426;
 
             border-bottom:
                 1px solid
-                rgba(
-                    255,
-                    255,
-                    255,
-                    0.10
-                );
-
+                #1f3a56;
         }
 
 
-        .header-container {
+        .header-conteudo {
+            max-width: 1400px;
 
-            width: 100%;
+            margin: auto;
 
-            max-width: 1180px;
-
-            margin: 0 auto;
+            min-height: 95px;
 
             padding:
                 18px
-                28px;
+                30px;
 
             display: flex;
 
@@ -91,222 +76,51 @@
 
             justify-content:
                 space-between;
-
-            gap: 20px;
-
         }
 
 
-        .logo-area h1 {
-
-            font-size: 1.8rem;
+        .logo {
+            font-size: 30px;
 
             font-weight: 800;
 
             letter-spacing: 1px;
-
         }
 
 
-        .logo-area h1 span {
-
-            color: #2f80c0;
-
+        .logo span {
+            color: #378fd1;
         }
 
 
-        .logo-area p {
-
+        .portal-label {
             margin-top: 3px;
 
-            font-size: 0.95rem;
+            font-size: 19px;
 
-            font-weight: bold;
+            font-weight: 600;
 
             color: #ffffff;
-
         }
 
 
         .header-info {
-
             text-align: right;
 
-            font-size: 0.82rem;
+            color: #91a9bf;
+
+            font-size: 14px;
 
             line-height: 1.5;
-
-            color: #9ab5cc;
-
         }
 
 
-        /* ===================================== */
-        /* CONTEÚDO */
-        /* ===================================== */
-
-        main {
-
-            width: 100%;
-
-            max-width: 1180px;
-
-            margin: 0 auto;
-
-            padding:
-                50px
-                28px;
-
-        }
-
-
-        .conteudo {
-
-            display: grid;
-
-            grid-template-columns:
-                1.15fr
-                0.85fr;
-
-            gap: 70px;
-
-            align-items: center;
-
-            min-height:
-                calc(
-                    100vh - 145px
-                );
-
-        }
-
-
-        /* ===================================== */
-        /* LADO ESQUERDO */
-        /* ===================================== */
-
-        .apresentacao {
-
-            max-width: 620px;
-
-        }
-
-
-        .tag {
-
-            display: inline-block;
-
-            padding:
-                7px
-                13px;
-
-            margin-bottom: 22px;
-
-            border-radius: 20px;
-
-            background:
-                rgba(
-                    47,
-                    128,
-                    192,
-                    0.14
-                );
-
-            border:
-                1px solid
-                rgba(
-                    70,
-                    150,
-                    210,
-                    0.32
-                );
-
-            color: #6eb6e8;
-
-            font-size: 0.78rem;
-
-            font-weight: bold;
-
-        }
-
-
-        .apresentacao h2 {
-
-            font-size: 3.1rem;
-
-            line-height: 1.08;
-
-            margin-bottom: 20px;
-
-        }
-
-
-        .apresentacao h2 span {
-
-            color: #4696cf;
-
-        }
-
-
-        .descricao {
-
-            max-width: 560px;
-
-            color: #c4d4e2;
-
-            font-size: 1.05rem;
-
-            line-height: 1.65;
-
-            margin-bottom: 32px;
-
-        }
-
-
-        .recursos {
-
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 15px;
-
-        }
-
-
-        .recurso {
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 12px;
-
-            color: #ffffff;
-
-            font-size: 0.95rem;
-
-            font-weight: 600;
-
-        }
-
-
-        .check {
-
-            width: 24px;
-
-            height: 24px;
-
-            border-radius: 50%;
-
-            background:
-                rgba(
-                    47,
-                    128,
-                    192,
-                    0.20
-                );
-
-            color: #69b8ee;
+        /* ============================== */
+        /* ÁREA PRINCIPAL */
+        /* ============================== */
+
+        .principal {
+            flex: 1;
 
             display: flex;
 
@@ -314,177 +128,266 @@
 
             justify-content: center;
 
-            flex-shrink: 0;
-
-            font-size: 0.8rem;
-
-            font-weight: bold;
-
+            padding:
+                45px
+                20px;
         }
 
 
-        /* ===================================== */
-        /* LOGIN */
-        /* ===================================== */
+        .conteudo {
+            width: 100%;
 
-        .login-card {
+            max-width: 1150px;
 
-            background: #102d49;
+            display: grid;
+
+            grid-template-columns:
+                1fr
+                470px;
+
+            gap: 60px;
+
+            align-items: center;
+        }
+
+
+        /* ============================== */
+        /* APRESENTAÇÃO */
+        /* ============================== */
+
+        .apresentacao {
+            padding: 20px;
+        }
+
+
+        .tag {
+            display: inline-block;
+
+            background:
+                rgba(
+                    55,
+                    143,
+                    209,
+                    0.13
+                );
+
+            color: #70baf0;
 
             border:
                 1px solid
                 rgba(
-                    255,
-                    255,
-                    255,
-                    0.12
+                    55,
+                    143,
+                    209,
+                    0.35
                 );
 
-            border-radius: 16px;
+            border-radius: 20px;
 
-            padding: 30px;
+            padding:
+                8px
+                14px;
+
+            font-size: 13px;
+
+            font-weight: bold;
+
+            margin-bottom: 22px;
+        }
+
+
+        .apresentacao h1 {
+            font-size: 46px;
+
+            line-height: 1.08;
+
+            margin-bottom: 20px;
+        }
+
+
+        .apresentacao h1 span {
+            color: #378fd1;
+        }
+
+
+        .apresentacao p {
+            max-width: 580px;
+
+            color: #a8bbcd;
+
+            font-size: 18px;
+
+            line-height: 1.6;
+        }
+
+
+        /* ============================== */
+        /* BENEFÍCIOS */
+        /* ============================== */
+
+        .beneficios {
+            margin-top: 30px;
+
+            display: grid;
+
+            gap: 14px;
+        }
+
+
+        .beneficio {
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            color: #dce8f2;
+
+            font-size: 15px;
+        }
+
+
+        .beneficio-icone {
+            width: 26px;
+            height: 26px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 50%;
+
+            background: #103653;
+
+            color: #65b5ed;
+
+            font-weight: bold;
+        }
+
+
+        /* ============================== */
+        /* CARD */
+        /* ============================== */
+
+        .card {
+            background: #102942;
+
+            border:
+                1px solid
+                #29445f;
+
+            border-radius: 18px;
+
+            padding: 32px;
 
             box-shadow:
                 0
                 20px
-                45px
+                50px
                 rgba(
                     0,
                     0,
                     0,
                     0.28
                 );
-
         }
 
 
-        .login-card h2 {
+        .card h2 {
+            font-size: 25px;
 
-            font-size: 1.7rem;
-
-            margin-bottom: 8px;
-
+            margin-bottom: 9px;
         }
 
 
-        .login-card > p {
+        .card-descricao {
+            color: #9fb3c6;
 
-            color: #adc2d4;
-
-            font-size: 0.9rem;
+            font-size: 14px;
 
             line-height: 1.5;
 
-            margin-bottom: 25px;
-
+            margin-bottom: 28px;
         }
 
 
-        /* ===================================== */
+        /* ============================== */
         /* ERRO */
-        /* ===================================== */
+        /* ============================== */
 
         .erro {
-
-            margin-bottom: 18px;
+            margin-bottom: 20px;
 
             padding:
-                12px
-                14px;
+                14px
+                15px;
 
             border-radius: 9px;
 
-            background:
-                rgba(
-                    212,
-                    63,
-                    63,
-                    0.16
-                );
+            font-size: 14px;
+
+            line-height: 1.5;
+
+            background: #432026;
 
             border:
                 1px solid
-                rgba(
-                    230,
-                    80,
-                    80,
-                    0.28
-                );
+                #80414c;
 
-            color: #ffb6b6;
-
-            font-size: 0.88rem;
-
-            font-weight: bold;
-
+            color: #ffb9c0;
         }
 
 
-        /* ===================================== */
+        /* ============================== */
         /* CAMPOS */
-        /* ===================================== */
+        /* ============================== */
 
         .campo {
-
-            margin-bottom: 18px;
-
+            margin-bottom: 20px;
         }
 
 
         .campo label {
-
             display: block;
 
             margin-bottom: 8px;
 
-            color: white;
+            color: #dbe7f1;
 
-            font-size: 0.88rem;
+            font-size: 14px;
 
             font-weight: bold;
-
         }
 
 
         .campo input {
-
             width: 100%;
 
-            height: 48px;
-
             padding:
-                0
-                13px;
-
-            border-radius: 9px;
+                15px
+                16px;
 
             border:
                 1px solid
-                #315473;
+                #34516c;
+
+            border-radius: 10px;
+
+            background: #071d32;
+
+            color: #ffffff;
+
+            font-size: 16px;
 
             outline: none;
 
-            background: #09233a;
-
-            color: white;
-
-            font-size: 0.95rem;
-
             transition: 0.2s;
-
-        }
-
-
-        .campo input::placeholder {
-
-            color: #718da6;
-
         }
 
 
         .campo input:focus {
-
-            border-color: #4696cf;
+            border-color: #378fd1;
 
             box-shadow:
                 0
@@ -492,191 +395,190 @@
                 0
                 3px
                 rgba(
-                    70,
-                    150,
-                    207,
-                    0.12
+                    55,
+                    143,
+                    209,
+                    0.13
                 );
-
         }
 
 
-        /* ===================================== */
+        .campo input::placeholder {
+            color: #6e859a;
+        }
+
+
+        /* ============================== */
         /* BOTÃO */
-        /* ===================================== */
+        /* ============================== */
 
         .btn-login {
-
             width: 100%;
 
-            height: 49px;
+            border: 0;
 
-            margin-top: 3px;
+            border-radius: 10px;
 
-            border: none;
+            padding: 16px;
 
-            border-radius: 9px;
+            margin-top: 4px;
 
-            background: #2f7fb7;
+            background: #378fd1;
 
-            color: white;
+            color: #ffffff;
 
-            font-size: 0.95rem;
+            font-size: 16px;
 
             font-weight: bold;
 
             cursor: pointer;
 
             transition: 0.2s;
-
         }
 
 
         .btn-login:hover {
-
-            background: #398dca;
+            background: #2e7db8;
 
             transform:
                 translateY(-1px);
-
         }
 
 
-        /* ===================================== */
-        /* RODAPÉ CARD */
-        /* ===================================== */
+        /* ============================== */
+        /* RODAPÉ DO CARD */
+        /* ============================== */
 
-        .acesso-restrito {
+        .seguranca {
+            margin-top: 24px;
 
-            margin-top: 20px;
-
-            padding-top: 17px;
+            padding-top: 18px;
 
             border-top:
                 1px solid
-                rgba(
-                    255,
-                    255,
-                    255,
-                    0.10
-                );
-
-            display: flex;
-
-            justify-content: center;
-
-            align-items: center;
-
-            gap: 8px;
-
-            color: #8fa8bd;
-
-            font-size: 0.78rem;
+                #29445f;
 
             text-align: center;
 
+            color: #7890a6;
+
+            font-size: 12px;
         }
 
 
-        .status {
+        .seguranca-status {
+            display: inline-flex;
 
+            align-items: center;
+
+            gap: 7px;
+        }
+
+
+        .status-ponto {
             width: 7px;
-
             height: 7px;
 
             border-radius: 50%;
 
-            background: #32ad6d;
-
+            background: #378fd1;
         }
 
 
-        /* ===================================== */
+        /* ============================== */
+        /* RODAPÉ DA PÁGINA */
+        /* ============================== */
+
+        .footer {
+            text-align: center;
+
+            padding: 20px;
+
+            color: #617b92;
+
+            font-size: 13px;
+        }
+
+
+        /* ============================== */
         /* RESPONSIVO */
-        /* ===================================== */
+        /* ============================== */
 
         @media (
             max-width: 900px
         ) {
 
             .conteudo {
-
                 grid-template-columns: 1fr;
 
-                gap: 40px;
+                max-width: 520px;
 
-                min-height: auto;
-
+                gap: 35px;
             }
 
 
-            .apresentacao h2 {
-
-                font-size: 2.5rem;
-
+            .apresentacao {
+                text-align: center;
             }
 
 
-            .login-card {
+            .apresentacao p {
+                margin: auto;
+            }
 
-                max-width: 550px;
 
-                width: 100%;
+            .beneficios {
+                display: none;
+            }
 
+
+            .apresentacao h1 {
+                font-size: 36px;
+            }
+
+
+            .header-info {
+                display: none;
             }
 
         }
 
 
         @media (
-            max-width: 600px
+            max-width: 520px
         ) {
 
-            main {
+            .header-conteudo {
+                padding: 18px;
+            }
 
+
+            .principal {
                 padding:
-                    35px
-                    18px;
-
+                    28px
+                    15px;
             }
 
 
-            .header-container {
+            .apresentacao {
+                padding: 5px;
+            }
 
+
+            .apresentacao h1 {
+                font-size: 31px;
+            }
+
+
+            .apresentacao p {
+                font-size: 16px;
+            }
+
+
+            .card {
                 padding:
-                    16px
-                    18px;
-
-            }
-
-
-            .header-info {
-
-                display: none;
-
-            }
-
-
-            .apresentacao h2 {
-
-                font-size: 2rem;
-
-            }
-
-
-            .descricao {
-
-                font-size: 0.95rem;
-
-            }
-
-
-            .login-card {
-
-                padding:
-                    24px
-                    20px;
-
+                    27px
+                    22px;
             }
 
         }
@@ -689,37 +591,36 @@
 <body>
 
 
-    <!-- ===================================== -->
+    <!-- ====================================== -->
     <!-- CABEÇALHO -->
-    <!-- ===================================== -->
+    <!-- ====================================== -->
 
-    <header>
+    <header class="header">
 
-        <div class="header-container">
+        <div class="header-conteudo">
 
 
-            <div class="logo-area">
+            <div>
 
-                <h1>
+                <div class="logo">
                     FREE<span>FLOW</span>
-                </h1>
+                </div>
 
-                <p>
+
+                <div class="portal-label">
                     Portal da Concessionária
-                </p>
+                </div>
 
             </div>
 
 
             <div class="header-info">
 
-                <div>
-                    Sistema de cobrança automática
-                </div>
+                Sistema de cobrança automática
 
-                <div>
-                    Monitoramento operacional
-                </div>
+                <br>
+
+                Monitoramento operacional
 
             </div>
 
@@ -729,40 +630,38 @@
     </header>
 
 
-    <!-- ===================================== -->
-    <!-- CONTEÚDO -->
-    <!-- ===================================== -->
+    <!-- ====================================== -->
+    <!-- PRINCIPAL -->
+    <!-- ====================================== -->
 
-    <main>
+    <main class="principal">
 
 
         <div class="conteudo">
 
 
             <!-- ================================= -->
-            <!-- APRESENTAÇÃO -->
+            <!-- TEXTO ESQUERDO -->
             <!-- ================================= -->
 
             <section class="apresentacao">
 
 
-                <div class="tag">
+                <span class="tag">
                     AMBIENTE ADMINISTRATIVO
-                </div>
+                </span>
 
 
-                <h2>
+                <h1>
 
-                    Gerencie o fluxo de forma
+                    Gerencie o fluxo
+                    de forma
+                    <span>inteligente.</span>
 
-                    <span>
-                        inteligente.
-                    </span>
-
-                </h2>
+                </h1>
 
 
-                <p class="descricao">
+                <p>
 
                     Acesse os dados operacionais
                     da concessionária para acompanhar
@@ -772,46 +671,38 @@
                 </p>
 
 
-                <div class="recursos">
+                <div class="beneficios">
 
 
-                    <div class="recurso">
+                    <div class="beneficio">
 
-                        <div class="check">
+                        <div class="beneficio-icone">
                             ✓
                         </div>
 
-                        <span>
-                            Monitoramento das passagens
-                            em tempo real
-                        </span>
+                        Monitoramento das passagens em tempo real
 
                     </div>
 
 
-                    <div class="recurso">
+                    <div class="beneficio">
 
-                        <div class="check">
+                        <div class="beneficio-icone">
                             ✓
                         </div>
 
-                        <span>
-                            Identificação de duplicidades
-                        </span>
+                        Identificação de duplicidades
 
                     </div>
 
 
-                    <div class="recurso">
+                    <div class="beneficio">
 
-                        <div class="check">
+                        <div class="beneficio-icone">
                             ✓
                         </div>
 
-                        <span>
-                            Relatórios e exportação
-                            de dados em CSV
-                        </span>
+                        Relatórios e exportação de dados em CSV
 
                     </div>
 
@@ -823,10 +714,10 @@
 
 
             <!-- ================================= -->
-            <!-- CARD LOGIN -->
+            <!-- LOGIN -->
             <!-- ================================= -->
 
-            <section class="login-card">
+            <section class="card">
 
 
                 <h2>
@@ -834,9 +725,11 @@
                 </h2>
 
 
-                <p>
+                <p class="card-descricao">
+
                     Entre com as credenciais
                     fornecidas à concessionária.
+
                 </p>
 
 
@@ -859,17 +752,15 @@
 
                     <div class="campo">
 
-                        <label
-                            for="usuario"
-                        >
+                        <label for="usuario">
                             Usuário
                         </label>
 
 
                         <input
-                            type="text"
                             id="usuario"
                             name="usuario"
+                            type="text"
                             placeholder="Digite seu usuário"
                             autocomplete="username"
                             required
@@ -881,17 +772,15 @@
 
                     <div class="campo">
 
-                        <label
-                            for="senha"
-                        >
+                        <label for="senha">
                             Senha
                         </label>
 
 
                         <input
-                            type="password"
                             id="senha"
                             name="senha"
+                            type="password"
                             placeholder="Digite sua senha"
                             autocomplete="current-password"
                             required
@@ -901,23 +790,27 @@
 
 
                     <button
-                        type="submit"
                         class="btn-login"
+                        type="submit"
                     >
+
                         Entrar no painel
+
                     </button>
 
 
                 </form>
 
 
-                <div class="acesso-restrito">
+                <div class="seguranca">
 
-                    <div class="status"></div>
+                    <span class="seguranca-status">
 
-                    <span>
+                        <span class="status-ponto"></span>
+
                         Ambiente administrativo
                         de acesso restrito
+
                     </span>
 
                 </div>
@@ -930,6 +823,13 @@
 
 
     </main>
+
+
+    <footer class="footer">
+
+        FreeFlow • Portal da Concessionária
+
+    </footer>
 
 
 </body>

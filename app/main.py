@@ -519,6 +519,24 @@ async def admin_login(
         status_code=401
     )
 
+    # ==========================================
+# LOGOUT ADMINISTRATIVO
+# ==========================================
+
+@app.get(
+    "/admin/logout"
+)
+def admin_logout(
+    request: Request
+):
+
+    request.session.clear()
+
+    return RedirectResponse(
+        url="/admin/login",
+        status_code=303
+    )
+
 # ==========================================
 # PÁGINA DE COBRANÇAS
 # ==========================================
@@ -987,6 +1005,264 @@ def pagar_cobranca(
 
     }
 
+# ==========================================
+# COBRANÇAS DA CONCESSIONÁRIA
+# ==========================================
+
+@app.get(
+    "/admin/cobrancas",
+    response_class=HTMLResponse
+)
+def admin_cobrancas(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+
+    # ======================================
+    # PROTEÇÃO
+    # ======================================
+
+    if not request.session.get(
+        "admin_logado"
+    ):
+        return RedirectResponse(
+            url="/admin/login",
+            status_code=303
+        )
+
+
+    faixas_permitidas = (
+        request.session.get(
+            "faixas_permitidas",
+            []
+        )
+    )
+
+
+    # ======================================
+    # COBRANÇAS DA CONCESSIONÁRIA
+    # ======================================
+
+    cobrancas = (
+        db.query(
+            models.Cobranca
+        )
+        .join(
+            models.EventoPassagem,
+            models.Cobranca.evento_id
+            == models.EventoPassagem.id
+        )
+        .filter(
+            models.EventoPassagem.faixa.in_(
+                faixas_permitidas
+            )
+        )
+        .order_by(
+            models.Cobranca.id.desc()
+        )
+        .all()
+    )
+
+
+    # ======================================
+    # AGRUPA POR VEÍCULO
+    # ======================================
+
+    resumo = {}
+
+
+    for cobranca in cobrancas:
+
+        veiculo = cobranca.veiculo
+
+        if not veiculo:
+            continue
+
+
+        proprietario = (
+            veiculo.proprietario
+        )
+
+
+        if veiculo.id not in resumo:
+
+            cpf = (
+                proprietario.cpf
+                if proprietario
+                else ""
+            )
+
+
+            cpf_mascarado = (
+                f"***.***.***-{cpf[-2:]}"
+                if len(cpf) == 11
+                else "***"
+            )
+
+
+            resumo[veiculo.id] = {
+
+                "id":
+                    veiculo.id,
+
+                "placa":
+                    veiculo.placa,
+
+                "proprietario": (
+                    proprietario.nome
+                    if proprietario
+                    else "-"
+                ),
+
+                "cpf":
+                    cpf_mascarado,
+
+                "total_gerado":
+                    0.0,
+
+                "total_pago":
+                    0.0,
+
+                "total_pendente":
+                    0.0,
+
+                "pagas":
+                    0,
+
+                "pendentes":
+                    0,
+
+                "cobrancas":
+                    []
+
+            }
+
+
+        item = resumo[
+            veiculo.id
+        ]
+
+
+        item["total_gerado"] += (
+            cobranca.valor
+        )
+
+
+        if cobranca.status == "pago":
+
+            item["pagas"] += 1
+
+            item["total_pago"] += (
+                cobranca.valor
+            )
+
+        else:
+
+            item["pendentes"] += 1
+
+            item["total_pendente"] += (
+                cobranca.valor
+            )
+
+
+        item["cobrancas"].append(
+            {
+                "id":
+                    cobranca.id,
+
+                "data": (
+                    cobranca.evento
+                    .timestamp_evento
+
+                    if cobranca.evento
+
+                    else "-"
+                ),
+
+                "faixa": (
+                    cobranca.evento.faixa
+
+                    if cobranca.evento
+
+                    else "-"
+                ),
+
+                "valor":
+                    cobranca.valor,
+
+                "status":
+                    cobranca.status
+            }
+        )
+
+
+    veiculos = sorted(
+        resumo.values(),
+        key=lambda item:
+            item["placa"]
+    )
+
+
+    # ======================================
+    # TOTAIS
+    # ======================================
+
+    total_veiculos = len(
+        veiculos
+    )
+
+
+    total_gerado = sum(
+        cobranca.valor
+        for cobranca in cobrancas
+    )
+
+
+    total_pendente = sum(
+        cobranca.valor
+        for cobranca in cobrancas
+        if cobranca.status == "pendente"
+    )
+
+
+    total_recebido = sum(
+        cobranca.valor
+        for cobranca in cobrancas
+        if cobranca.status == "pago"
+    )
+
+
+    # ======================================
+    # PÁGINA
+    # ======================================
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin_cobrancas.html",
+        context={
+
+            "concessionaria_nome":
+                request.session.get(
+                    "concessionaria_nome"
+                ),
+
+            "veiculos":
+                veiculos,
+
+            "total_veiculos":
+                total_veiculos,
+
+            "total_gerado":
+                total_gerado,
+
+            "total_pendente":
+                total_pendente,
+
+            "total_recebido":
+                total_recebido
+
+        }
+    )
 
 # ==========================================
 # DADOS DO DASHBOARD

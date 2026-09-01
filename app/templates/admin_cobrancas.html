@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        FreeFlow | Cobranças
+    </title>
+
+
+    <style>
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+
+    body {
+        min-height: 100vh;
+
+        font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+
+        background:
+            linear-gradient(
+                135deg,
+                #04111f,
+                #071a2f,
+                #0b2745
+            );
+
+        color: white;
+    }
+
+
+    /* ================================= */
+    /* TOPO */
+    /* ================================= */
+
+    header {
+        width: 100%;
+
+        background: #051626;
+
+        border-top:
+            3px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.18
+            );
+
+        border-bottom:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.10
+            );
+    }
+
+
+    .header-container {
+        width: 100%;
+        max-width: 1480px;
+
+        margin: 0 auto;
+
+        padding:
+            22px
+            36px;
+
+        display: flex;
+
+        justify-content:
+            space-between;
+
+        align-items: center;
+
+        gap: 25px;
+    }
+
+
+    .marca h1 {
+        margin: 0;
+
+        font-size: 2.15rem;
+
+        letter-spacing: 1px;
+
+        font-weight: 800;
+    }
+
+
+    .marca h1 span {
+        color: #4696cf;
+    }
+
+
+    .marca p {
+        margin-top: 5px;
+
+        color: #9fb6c9;
+
+        font-size: 1rem;
+    }
+
+
+    .topo-direita {
+        display: flex;
+
+        align-items: center;
+
+        gap: 12px;
+    }
+
+
+    .concessionaria {
+        color: #c0d1df;
+
+        font-size: 0.95rem;
+
+        font-weight: 600;
+
+        margin-right: 10px;
+    }
+
+
+    .btn-topo {
+        display: inline-block;
+
+        text-decoration: none;
+
+        color: white;
+
+        padding:
+            11px
+            18px;
+
+        border-radius: 8px;
+
+        font-size: 0.93rem;
+
+        font-weight: bold;
+
+        transition: 0.2s;
+    }
+
+
+    .dashboard {
+        background: #173c59;
+
+        border:
+            1px solid
+            #285978;
+    }
+
+
+    .dashboard:hover {
+        background: #205072;
+    }
+
+
+    .sair {
+        background: #b73d3d;
+    }
+
+
+    .sair:hover {
+        background: #d14a4a;
+    }
+
+
+    /* ================================= */
+    /* CONTEÚDO */
+    /* ================================= */
+
+    main {
+        width: 100%;
+        max-width: 1480px;
+
+        margin: 0 auto;
+
+        padding:
+            42px
+            36px
+            60px;
+    }
+
+
+    .titulo {
+        margin-bottom: 30px;
+    }
+
+
+    .titulo h2 {
+        margin: 0 0 9px 0;
+
+        font-size: 2.45rem;
+
+        line-height: 1.1;
+    }
+
+
+    .titulo p {
+        color: #a7bdcf;
+
+        font-size: 1.08rem;
+
+        line-height: 1.5;
+    }
+
+
+    /* ================================= */
+    /* CARDS DE RESUMO */
+    /* ================================= */
+
+    .cards {
+        display: grid;
+
+        grid-template-columns:
+            repeat(
+                4,
+                1fr
+            );
+
+        gap: 18px;
+
+        margin-bottom: 30px;
+    }
+
+
+    .card {
+        min-height: 135px;
+
+        background: #123452;
+
+        border:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.11
+            );
+
+        border-radius: 14px;
+
+        padding:
+            23px
+            24px;
+
+        display: flex;
+
+        flex-direction: column;
+
+        justify-content:
+            space-between;
+    }
+
+
+    .card-label {
+        color: #a8bdce;
+
+        font-size: 0.95rem;
+
+        margin-bottom: 14px;
+    }
+
+
+    .card-valor {
+        font-size: 2rem;
+
+        font-weight: 800;
+
+        line-height: 1.1;
+    }
+
+
+    .verde {
+        color: #37d17d;
+    }
+
+
+    .amarelo {
+        color: #f0b84d;
+    }
+
+
+    /* ================================= */
+    /* PAINEL PRINCIPAL */
+    /* ================================= */
+
+    .painel {
+        width: 100%;
+
+        background: #0e2943;
+
+        border:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.11
+            );
+
+        border-radius: 15px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0
+            10px
+            30px
+            rgba(
+                0,
+                0,
+                0,
+                0.12
+            );
+    }
+
+
+    .painel-topo {
+        min-height: 80px;
+
+        padding:
+            20px
+            22px;
+
+        display: flex;
+
+        justify-content:
+            space-between;
+
+        align-items: center;
+
+        gap: 18px;
+
+        flex-wrap: wrap;
+
+        border-bottom:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.08
+            );
+    }
+
+
+    .painel-topo h3 {
+        margin: 0;
+
+        font-size: 1.35rem;
+    }
+
+
+    /* ================================= */
+    /* BUSCA */
+    /* ================================= */
+
+    .busca {
+        width: 350px;
+
+        height: 48px;
+
+        padding:
+            0
+            15px;
+
+        border-radius: 9px;
+
+        border:
+            1px solid
+            #315876;
+
+        background: #092239;
+
+        color: white;
+
+        outline: none;
+
+        font-size: 0.95rem;
+
+        transition: 0.2s;
+    }
+
+
+    .busca::placeholder {
+        color: #8099af;
+    }
+
+
+    .busca:focus {
+        border-color: #4696cf;
+
+        box-shadow:
+            0
+            0
+            0
+            3px
+            rgba(
+                70,
+                150,
+                207,
+                0.12
+            );
+    }
+
+
+    /* ================================= */
+    /* TABELA DE VEÍCULOS */
+    /* ================================= */
+
+    .tabela-scroll {
+        width: 100%;
+
+        max-height: 500px;
+
+        overflow-y: auto;
+
+        overflow-x: auto;
+    }
+
+
+    .tabela-scroll::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+
+    .tabela-scroll::-webkit-scrollbar-track {
+        background: #092037;
+    }
+
+
+    .tabela-scroll::-webkit-scrollbar-thumb {
+        background: #3c607b;
+
+        border-radius: 8px;
+    }
+
+
+    table {
+        width: 100%;
+
+        min-width: 1000px;
+
+        border-collapse: collapse;
+    }
+
+
+    th {
+        position: sticky;
+
+        top: 0;
+
+        z-index: 2;
+
+        background: #173b59;
+
+        padding:
+            17px
+            20px;
+
+        text-align: left;
+
+        color: #d7e5ef;
+
+        font-size: 0.87rem;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.3px;
+    }
+
+
+    td {
+        padding:
+            19px
+            20px;
+
+        border-bottom:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.07
+            );
+
+        color: #e8f0f6;
+
+        font-size: 1rem;
+
+        vertical-align: middle;
+    }
+
+
+    tbody tr {
+        transition: 0.15s;
+    }
+
+
+    tbody tr:hover {
+        background:
+            rgba(
+                255,
+                255,
+                255,
+                0.04
+            );
+    }
+
+
+    /* ================================= */
+    /* STATUS */
+    /* ================================= */
+
+    .status {
+        display: inline-block;
+
+        padding:
+            7px
+            11px;
+
+        border-radius: 7px;
+
+        font-weight: bold;
+
+        font-size: 0.85rem;
+
+        white-space: nowrap;
+    }
+
+
+    .status-pendente {
+        background:
+            rgba(
+                220,
+                161,
+                57,
+                0.18
+            );
+
+        color: #f4c567;
+    }
+
+
+    .status-ok {
+        background:
+            rgba(
+                44,
+                177,
+                105,
+                0.18
+            );
+
+        color: #53dc91;
+    }
+
+
+    /* ================================= */
+    /* BOTÃO DETALHES */
+    /* ================================= */
+
+    .btn-detalhes {
+        border: none;
+
+        border-radius: 8px;
+
+        background: #2979b0;
+
+        color: white;
+
+        padding:
+            10px
+            15px;
+
+        cursor: pointer;
+
+        font-size: 0.9rem;
+
+        font-weight: bold;
+
+        white-space: nowrap;
+
+        transition: 0.2s;
+    }
+
+
+    .btn-detalhes:hover {
+        background: #358bc6;
+
+        transform:
+            translateY(-1px);
+    }
+
+
+    .vazio {
+        text-align: center;
+
+        padding: 50px;
+
+        color: #829cb2;
+
+        font-size: 1rem;
+    }
+
+
+    /* ================================= */
+    /* FUNDO DO MODAL */
+    /* ================================= */
+
+    .modal-fundo {
+        display: none;
+
+        position: fixed;
+
+        inset: 0;
+
+        z-index: 50;
+
+        background:
+            rgba(
+                1,
+                9,
+                17,
+                0.80
+            );
+
+        backdrop-filter:
+            blur(4px);
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 25px;
+    }
+
+
+    .modal-fundo.aberto {
+        display: flex;
+    }
+
+
+    /* ================================= */
+    /* CARD DE DETALHES */
+    /* ================================= */
+
+    .modal {
+        width: 100%;
+
+        max-width: 1050px;
+
+        max-height:
+            calc(
+                100vh - 50px
+            );
+
+        background: #0e2943;
+
+        border:
+            1px solid
+            #315875;
+
+        border-radius: 17px;
+
+        box-shadow:
+            0
+            25px
+            70px
+            rgba(
+                0,
+                0,
+                0,
+                0.50
+            );
+
+        overflow: hidden;
+    }
+
+
+    .modal-topo {
+        padding:
+            23px
+            25px;
+
+        display: flex;
+
+        justify-content:
+            space-between;
+
+        align-items:
+            flex-start;
+
+        gap: 20px;
+
+        border-bottom:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.08
+            );
+    }
+
+
+    .modal-topo h3 {
+        margin: 0 0 7px 0;
+
+        font-size: 1.7rem;
+    }
+
+
+    .modal-topo p {
+        margin: 0;
+
+        color: #a6bdcf;
+
+        font-size: 0.95rem;
+    }
+
+
+    .fechar {
+        width: 40px;
+
+        height: 40px;
+
+        padding: 0;
+
+        border: none;
+
+        border-radius: 8px;
+
+        background: #193d59;
+
+        color: white;
+
+        font-size: 1.15rem;
+
+        cursor: pointer;
+    }
+
+
+    .fechar:hover {
+        background: #24516f;
+    }
+
+
+    /* ================================= */
+    /* RESUMO DO MODAL */
+    /* ================================= */
+
+    .modal-resumo {
+        display: grid;
+
+        grid-template-columns:
+            repeat(
+                3,
+                1fr
+            );
+
+        gap: 15px;
+
+        padding:
+            22px
+            24px;
+    }
+
+
+    .modal-card {
+        min-height: 105px;
+
+        background: #123451;
+
+        border:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.07
+            );
+
+        border-radius: 11px;
+
+        padding: 18px;
+
+        display: flex;
+
+        flex-direction: column;
+
+        justify-content:
+            space-between;
+    }
+
+
+    .modal-label {
+        color: #9db3c5;
+
+        font-size: 0.85rem;
+
+        margin-bottom: 9px;
+    }
+
+
+    .modal-valor {
+        font-size: 1.55rem;
+
+        font-weight: bold;
+    }
+
+
+    /* ================================= */
+    /* HISTÓRICO */
+    /* ================================= */
+
+    .historico-titulo {
+        padding:
+            4px
+            24px
+            15px;
+
+        font-size: 1.15rem;
+    }
+
+
+    /* ================================= */
+    /* HISTÓRICO COM SCROLL */
+    /* ================================= */
+
+    .historico-scroll {
+        width: 100%;
+
+        max-height: 360px;
+
+        overflow-y: auto;
+
+        overflow-x: auto;
+
+        border-top:
+            1px solid
+            rgba(
+                255,
+                255,
+                255,
+                0.06
+            );
+    }
+
+
+    .historico-scroll::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+
+    .historico-scroll::-webkit-scrollbar-track {
+        background: #092037;
+    }
+
+
+    .historico-scroll::-webkit-scrollbar-thumb {
+        background: #456982;
+
+        border-radius: 8px;
+    }
+
+
+    .historico-scroll table {
+        min-width: 760px;
+    }
+
+
+    .historico-scroll th {
+        background: #173b59;
+
+        padding:
+            15px
+            20px;
+    }
+
+
+    .historico-scroll td {
+        padding:
+            16px
+            20px;
+    }
+
+
+    /* ================================= */
+    /* RESPONSIVO */
+    /* ================================= */
+
+    @media (
+        max-width: 1100px
+    ) {
+
+        .cards {
+            grid-template-columns:
+                repeat(
+                    2,
+                    1fr
+                );
+        }
+
+
+        .header-container,
+        main {
+            max-width: 100%;
+        }
+
+    }
+
+
+    @media (
+        max-width: 700px
+    ) {
+
+        .header-container {
+            padding:
+                17px
+                16px;
+        }
+
+
+        main {
+            padding:
+                28px
+                16px
+                40px;
+        }
+
+
+        .marca h1 {
+            font-size: 1.7rem;
+        }
+
+
+        .concessionaria {
+            display: none;
+        }
+
+
+        .titulo h2 {
+            font-size: 2rem;
+        }
+
+
+        .cards {
+            grid-template-columns: 1fr;
+        }
+
+
+        .card {
+            min-height: 110px;
+        }
+
+
+        .painel-topo {
+            align-items:
+                flex-start;
+        }
+
+
+        .busca {
+            width: 100%;
+        }
+
+
+        .modal-resumo {
+            grid-template-columns: 1fr;
+        }
+
+
+        .modal {
+            max-height:
+                calc(
+                    100vh - 25px
+                );
+        }
+
+    }
+
+</style>
+
+</head>
+
+
+<body>
+
+
+    <!-- TOPO -->
+
+    <header>
+
+        <div class="header-container">
+
+
+            <div class="marca">
+
+                <h1>
+                    FREE<span>FLOW</span>
+                </h1>
+
+                <p>
+                    Gestão de Cobranças - {{ concessionaria_nome }}
+                </p>
+
+            </div>
+
+            <div class="topo-direita">
+
+                <a
+                    href="/dashboard"
+                    class="btn-topo dashboard"
+                >
+                    Dashboard
+                </a>
+
+
+                <a
+                    href="/admin/logout"
+                    class="btn-topo sair"
+                >
+                    Sair
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </header>
+
+
+    <main>
+
+
+        <!-- TÍTULO -->
+
+        <section class="titulo">
+
+            <h2>
+                Cobranças da concessionária
+            </h2>
+
+            <p>
+                Consulte a situação financeira
+                dos veículos registrados.
+            </p>
+
+        </section>
+
+
+        <!-- RESUMO -->
+
+        <section class="cards">
+
+
+            <div class="card">
+
+                <div class="card-label">
+                    Veículos
+                </div>
+
+                <div class="card-valor">
+                    {{ total_veiculos }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-label">
+                    Total gerado
+                </div>
+
+                <div class="card-valor">
+
+                    R$
+                    {{
+                        "%.2f"|format(
+                            total_gerado
+                        )|replace(".", ",")
+                    }}
+
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-label">
+                    Pendente
+                </div>
+
+                <div
+                    class="card-valor amarelo"
+                >
+
+                    R$
+                    {{
+                        "%.2f"|format(
+                            total_pendente
+                        )|replace(".", ",")
+                    }}
+
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-label">
+                    Recebido
+                </div>
+
+                <div
+                    class="card-valor verde"
+                >
+
+                    R$
+                    {{
+                        "%.2f"|format(
+                            total_recebido
+                        )|replace(".", ",")
+                    }}
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- VEÍCULOS -->
+
+        <section class="painel">
+
+
+            <div class="painel-topo">
+
+                <h3>
+                    Veículos e pagamentos
+                </h3>
+
+
+                <input
+                    type="text"
+                    id="busca"
+                    class="busca"
+                    placeholder="Buscar placa ou proprietário..."
+                >
+
+            </div>
+
+
+            <div class="tabela-scroll">
+
+
+                <table>
+
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Placa</th>
+
+                            <th>
+                                Proprietário
+                            </th>
+
+                            <th>
+                                Pendentes
+                            </th>
+
+                            <th>
+                                Pago
+                            </th>
+
+                            <th>
+                                Situação
+                            </th>
+
+                            <th>
+                                Ação
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% for item in veiculos %}
+
+
+                        <tr
+                            class="linha-veiculo"
+                            data-busca="{{
+                                item.placa
+                            }} {{
+                                item.proprietario
+                            }}"
+                        >
+
+
+                            <td>
+
+                                <strong>
+                                    {{ item.placa }}
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+                                {{ item.proprietario }}
+                            </td>
+
+
+                            <td>
+
+                                {{ item.pendentes }}
+
+                                · R$
+
+                                {{
+                                    "%.2f"|format(
+                                        item.total_pendente
+                                    )|replace(".", ",")
+                                }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ item.pagas }}
+
+                                · R$
+
+                                {{
+                                    "%.2f"|format(
+                                        item.total_pago
+                                    )|replace(".", ",")
+                                }}
+
+                            </td>
+
+
+                            <td>
+
+
+                                {% if item.pendentes > 0 %}
+
+                                <span
+                                    class="
+                                        status
+                                        status-pendente
+                                    "
+                                >
+                                    Pendente
+                                </span>
+
+                                {% else %}
+
+                                <span
+                                    class="
+                                        status
+                                        status-ok
+                                    "
+                                >
+                                    Em dia
+                                </span>
+
+                                {% endif %}
+
+
+                            </td>
+
+
+                            <td>
+
+                                <button
+                                    class="btn-detalhes"
+                                    onclick="
+                                        abrirDetalhes(
+                                            'modal-{{ item.id }}'
+                                        )
+                                    "
+                                >
+                                    Ver detalhes
+                                </button>
+
+                            </td>
+
+
+                        </tr>
+
+
+                        {% endfor %}
+
+
+                        {% if not veiculos %}
+
+                        <tr>
+
+                            <td
+                                colspan="6"
+                                class="vazio"
+                            >
+                                Nenhuma cobrança registrada.
+                            </td>
+
+                        </tr>
+
+                        {% endif %}
+
+
+                    </tbody>
+
+
+                </table>
+
+
+            </div>
+
+
+        </section>
+
+
+    </main>
+
+
+    <!-- ================================= -->
+    <!-- MODAIS DOS VEÍCULOS -->
+    <!-- ================================= -->
+
+
+    {% for item in veiculos %}
+
+
+    <div
+        id="modal-{{ item.id }}"
+        class="modal-fundo"
+        onclick="fecharFundo(event)"
+    >
+
+
+        <div class="modal">
+
+
+            <div class="modal-topo">
+
+
+                <div>
+
+                    <h3>
+                        {{ item.placa }}
+                    </h3>
+
+                    <p>
+
+                        {{ item.proprietario }}
+
+                        · CPF
+                        {{ item.cpf }}
+
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="fechar"
+                    onclick="
+                        fecharDetalhes(
+                            'modal-{{ item.id }}'
+                        )
+                    "
+                >
+                    ✕
+                </button>
+
+
+            </div>
+
+
+            <!-- RESUMO DO VEÍCULO -->
+
+
+            <div class="modal-resumo">
+
+
+                <div class="modal-card">
+
+                    <div class="modal-label">
+                        Total gerado
+                    </div>
+
+                    <div class="modal-valor">
+
+                        R$
+
+                        {{
+                            "%.2f"|format(
+                                item.total_gerado
+                            )|replace(".", ",")
+                        }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-card">
+
+                    <div class="modal-label">
+                        Total pago
+                    </div>
+
+                    <div
+                        class="
+                            modal-valor
+                            verde
+                        "
+                    >
+
+                        R$
+
+                        {{
+                            "%.2f"|format(
+                                item.total_pago
+                            )|replace(".", ",")
+                        }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-card">
+
+                    <div class="modal-label">
+                        Total pendente
+                    </div>
+
+                    <div
+                        class="
+                            modal-valor
+                            amarelo
+                        "
+                    >
+
+                        R$
+
+                        {{
+                            "%.2f"|format(
+                                item.total_pendente
+                            )|replace(".", ",")
+                        }}
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="historico-titulo">
+
+                <strong>
+                    Histórico de passagens
+                </strong>
+
+            </div>
+
+
+            <!-- HISTÓRICO COM SCROLL -->
+
+
+            <div class="historico-scroll">
+
+
+                <table>
+
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Data / Hora
+                            </th>
+
+                            <th>
+                                Faixa
+                            </th>
+
+                            <th>
+                                Valor
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% for cobranca in item.cobrancas %}
+
+
+                        <tr>
+
+
+                            <td>
+                                {{ cobranca.data }}
+                            </td>
+
+
+                            <td>
+
+                                Faixa
+                                {{ cobranca.faixa }}
+
+                            </td>
+
+
+                            <td>
+
+                                R$
+
+                                {{
+                                    "%.2f"|format(
+                                        cobranca.valor
+                                    )|replace(".", ",")
+                                }}
+
+                            </td>
+
+
+                            <td>
+
+
+                                {% if cobranca.status == "pago" %}
+
+                                <span
+                                    class="
+                                        status
+                                        status-ok
+                                    "
+                                >
+                                    Pago
+                                </span>
+
+                                {% else %}
+
+                                <span
+                                    class="
+                                        status
+                                        status-pendente
+                                    "
+                                >
+                                    Pendente
+                                </span>
+
+                                {% endif %}
+
+
+                            </td>
+
+
+                        </tr>
+
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+
+                </table>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    {% endfor %}
+
+
+    <script>
+
+
+        // =====================================
+        // ABRIR DETALHES
+        // =====================================
+
+        function abrirDetalhes(
+            id
+        ) {
+
+            document
+                .getElementById(
+                    id
+                )
+                .classList
+                .add(
+                    "aberto"
+                );
+
+
+            document.body.style.overflow =
+                "hidden";
+
+        }
+
+
+        // =====================================
+        // FECHAR DETALHES
+        // =====================================
+
+        function fecharDetalhes(
+            id
+        ) {
+
+            document
+                .getElementById(
+                    id
+                )
+                .classList
+                .remove(
+                    "aberto"
+                );
+
+
+            document.body.style.overflow =
+                "";
+
+        }
+
+
+        // Fecha clicando fora do card
+
+        function fecharFundo(
+            event
+        ) {
+
+            if (
+                event.target
+                .classList
+                .contains(
+                    "modal-fundo"
+                )
+            ) {
+
+                event.target
+                    .classList
+                    .remove(
+                        "aberto"
+                    );
+
+
+                document.body.style.overflow =
+                    "";
+
+            }
+
+        }
+
+
+        // Fecha com ESC
+
+        document.addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key ===
+                    "Escape"
+                ) {
+
+                    document
+                        .querySelectorAll(
+                            ".modal-fundo.aberto"
+                        )
+                        .forEach(
+                            modal =>
+                                modal
+                                    .classList
+                                    .remove(
+                                        "aberto"
+                                    )
+                        );
+
+
+                    document.body.style.overflow =
+                        "";
+
+                }
+
+            }
+        );
+
+
+        // =====================================
+        // BUSCA
+        // =====================================
+
+        const busca =
+            document.getElementById(
+                "busca"
+            );
+
+
+        busca.addEventListener(
+            "input",
+            () => {
+
+                const termo =
+                    busca.value
+                    .toLowerCase()
+                    .trim();
+
+
+                document
+                    .querySelectorAll(
+                        ".linha-veiculo"
+                    )
+                    .forEach(
+                        linha => {
+
+                            const texto =
+                                linha
+                                .dataset
+                                .busca
+                                .toLowerCase();
+
+
+                            linha.style.display =
+                                texto.includes(
+                                    termo
+                                )
+                                ? ""
+                                : "none";
+
+                        }
+                    );
+
+            }
+        );
+
+
+    </script>
+
+
+</body>
+
+</html>
