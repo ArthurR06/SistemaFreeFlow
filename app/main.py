@@ -21,8 +21,7 @@ from app.config import (
     TEMPO_SEM_DADOS_ALERTA,
     REFRESH_SEGUNDOS,
     SESSION_SECRET,
-    ADMIN_USER,
-    ADMIN_PASSWORD
+    CONCESSIONARIAS_ADMIN
 )
 
 
@@ -287,10 +286,10 @@ def criar_evento(
 
 
     # ======================================
-    # 3. SOMENTE EVENTO NORMAL PODE COBRAR
+    # 3. SOMENTE DUPLICIDADE NÃO PODE COBRAR
     # ======================================
 
-    if novo_evento.anomalia is None:
+    if novo_evento.anomalia != "duplicidade":
 
         uid = (
             novo_evento.id_veiculo
@@ -417,11 +416,24 @@ def dashboard(
     request: Request
 ):
 
-   return templates.TemplateResponse(
-    request=request,
-    name="dashboard.html"
-)
+    if not request.session.get(
+        "admin_logado"
+    ):
+        return RedirectResponse(
+            url="/admin/login",
+            status_code=303
+        )
 
+    return templates.TemplateResponse(
+        request=request,
+        name="dashboard.html",
+        context={
+            "concessionaria_nome":
+                request.session.get(
+                    "concessionaria_nome"
+                )
+        }
+    )
 
 # ==========================================
 # PÁGINA PORTAL DO CLIENTE
@@ -471,14 +483,30 @@ async def admin_login(
     usuario = form.get("usuario")
     senha = form.get("senha")
 
+    credencial = CONCESSIONARIAS_ADMIN.get(
+        usuario
+    )
+
     if (
-        usuario == ADMIN_USER
-        and senha == ADMIN_PASSWORD
+        credencial
+        and senha == credencial["senha"]
     ):
         request.session["admin_logado"] = True
 
+        request.session[
+            "concessionaria_id"
+        ] = credencial["id"]
+
+        request.session[
+            "concessionaria_nome"
+        ] = credencial["nome"]
+
+        request.session[
+            "faixas_permitidas"
+        ] = credencial["faixas"]
+
         return RedirectResponse(
-            url="/admin/vinculos",
+            url="/dashboard",
             status_code=303
         )
 
@@ -489,40 +517,6 @@ async def admin_login(
             "erro": "Usuário ou senha inválidos."
         },
         status_code=401
-    )
-
-# ==========================================
-# ÁREA ADMINISTRATIVA - VÍNCULOS
-# ==========================================
-
-@app.get(
-    "/admin/vinculos",
-    response_class=HTMLResponse
-)
-def admin_vinculos(
-    request: Request,
-    db: Session = Depends(get_db)
-):
-
-    # Só permite acesso se estiver logado
-    if not request.session.get("admin_logado"):
-        return RedirectResponse(
-            url="/admin/login",
-            status_code=303
-        )
-
-    veiculos = (
-        db.query(models.Veiculo)
-        .order_by(models.Veiculo.placa.asc())
-        .all()
-    )
-
-    return templates.TemplateResponse(
-        request=request,
-        name="admin_vinculos.html",
-        context={
-            "veiculos": veiculos
-        }
     )
 
 # ==========================================
@@ -1002,45 +996,74 @@ def pagar_cobranca(
     "/dashboard-data"
 )
 def dashboard_data(
+    request: Request,
     db: Session = Depends(get_db)
 ):
 
-    eventos = (
-        crud.listar_eventos(
-            db,
-            limite=20
+    # Protege os dados do monitoramento
+    if not request.session.get(
+        "admin_logado"
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Acesso não autorizado."
+        )
+
+    # Faixas permitidas para a concessionária logada
+    faixas_permitidas = (
+        request.session.get(
+            "faixas_permitidas",
+            []
         )
     )
 
-
-    total_eventos = (
-        crud.contar_eventos(
-            db
+    # Todos os eventos apenas das faixas permitidas
+    eventos_todos = (
+        db.query(
+            models.EventoPassagem
         )
+        .filter(
+            models.EventoPassagem.faixa.in_(
+                faixas_permitidas
+            )
+        )
+        .order_by(
+            models.EventoPassagem.id.desc()
+        )
+        .all()
     )
 
+    # Últimos 20 eventos para a tabela
+    eventos = eventos_todos[:20]
 
-    total_duplicidades = (
-        crud.contar_duplicidades(
-            db
-        )
+    # Quantidade de veículos diferentes
+    total_eventos = len(
+        {
+            evento.id_veiculo
+            for evento in eventos_todos
+        }
     )
 
-
-    total_gerado = (
-        crud.total_gerado(
-            db
-        )
+    # Duplicidades somente desta concessionária
+    total_duplicidades = sum(
+        1
+        for evento in eventos_todos
+        if evento.anomalia == "duplicidade"
     )
 
-
-    duplicidades_recentes = (
-        crud.ultimas_duplicidades(
-            db,
-            limite=5
-        )
+    # Valor gerado somente por passagens normais
+    total_gerado = sum(
+        evento.valor
+        for evento in eventos_todos
+        if evento.anomalia is None
     )
 
+    # Últimas duplicidades desta concessionária
+    duplicidades_recentes = [
+        evento
+        for evento in eventos_todos
+        if evento.anomalia == "duplicidade"
+    ][:5]
 
     # ======================================
     # ÚLTIMA PASSAGEM NORMAL
@@ -1395,59 +1418,81 @@ def dashboard_data(
     "/exportar-csv"
 )
 def exportar_csv(
+    request: Request,
     anomalia: str = "todos",
     db: Session = Depends(get_db)
 ):
 
-    eventos = (
-        crud.listar_todos_eventos(
-            db
+    # ======================================
+    # PROTEÇÃO
+    # ======================================
+
+    if not request.session.get(
+        "admin_logado"
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Acesso não autorizado."
+        )
+
+
+    # ======================================
+    # FAIXAS DA CONCESSIONÁRIA
+    # ======================================
+
+    faixas_permitidas = (
+        request.session.get(
+            "faixas_permitidas",
+            []
         )
     )
 
 
-    if (
-        anomalia
-        == "duplicidade"
-    ):
+    eventos = (
+        db.query(
+            models.EventoPassagem
+        )
+        .filter(
+            models.EventoPassagem.faixa.in_(
+                faixas_permitidas
+            )
+        )
+        .order_by(
+            models.EventoPassagem.id.desc()
+        )
+        .all()
+    )
+
+
+    # ======================================
+    # FILTROS
+    # ======================================
+
+    if anomalia == "duplicidade":
 
         eventos = [
-
             evento
-
-            for evento
-            in eventos
-
-            if (
-                evento.anomalia
-                == "duplicidade"
-            )
-
+            for evento in eventos
+            if evento.anomalia
+            == "duplicidade"
         ]
 
 
-    elif (
-        anomalia
-        == "ok"
-    ):
+    elif anomalia == "ok":
 
         eventos = [
-
             evento
-
-            for evento
-            in eventos
-
-            if (
-                evento.anomalia
-                is None
-            )
-
+            for evento in eventos
+            if evento.anomalia
+            != "duplicidade"
         ]
 
+
+    # ======================================
+    # CSV
+    # ======================================
 
     output = io.StringIO()
-
 
     writer = csv.writer(
         output
@@ -1456,16 +1501,23 @@ def exportar_csv(
 
     writer.writerow(
         [
-            "ID do Veículo",
+            "Placa do Veículo",
             "Faixa",
             "Data/Hora",
             "Valor",
-            "Anomalia"
+            "Status"
         ]
     )
 
 
     for evento in eventos:
+
+        status = (
+            "Duplicidade"
+            if evento.anomalia
+            == "duplicidade"
+            else "OK"
+        )
 
         writer.writerow(
             [
@@ -1473,14 +1525,7 @@ def exportar_csv(
                 evento.faixa,
                 evento.timestamp_evento,
                 evento.valor,
-
-                (
-                    evento.anomalia
-
-                    if evento.anomalia
-
-                    else "OK"
-                )
+                status
             ]
         )
 
@@ -1488,24 +1533,28 @@ def exportar_csv(
     output.seek(0)
 
 
+    concessionaria_id = (
+        request.session.get(
+            "concessionaria_id",
+            "admin"
+        )
+    )
+
+
     nome_arquivo = (
-
         "relatorio_freeflow_"
+        f"concessionaria_{concessionaria_id}_"
         f"{anomalia}.csv"
-
     )
 
 
     return StreamingResponse(
-
         iter(
             [
                 output.getvalue()
             ]
         ),
-
         media_type="text/csv",
-
         headers={
             "Content-Disposition":
                 (
@@ -1513,7 +1562,6 @@ def exportar_csv(
                     f"filename={nome_arquivo}"
                 )
         }
-
     )
 
 

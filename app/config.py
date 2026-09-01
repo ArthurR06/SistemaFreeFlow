@@ -15,6 +15,36 @@ REFRESH_SEGUNDOS = int(os.getenv("REFRESH_SEGUNDOS", "5"))
 ADMIN_USER = os.getenv("ADMIN_USER", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin")
 
+CONCESSIONARIAS_ADMIN = {
+
+    os.getenv(
+        "CONCESSIONARIA_A_USER",
+        "concessionaria_a"
+    ): {
+        "senha": os.getenv(
+            "CONCESSIONARIA_A_PASSWORD",
+            "admin_a"
+        ),
+        "id": "A",
+        "nome": "Concessionária A",
+        "faixas": [1]
+    },
+
+    os.getenv(
+        "CONCESSIONARIA_B_USER",
+        "concessionaria_b"
+    ): {
+        "senha": os.getenv(
+            "CONCESSIONARIA_B_PASSWORD",
+            "admin_b"
+        ),
+        "id": "B",
+        "nome": "Concessionária B",
+        "faixas": [2]
+    }
+
+}
+
 # Chave usada para manter o login do admin na sessão
 SESSION_SECRET = os.getenv(
     "SESSION_SECRET",

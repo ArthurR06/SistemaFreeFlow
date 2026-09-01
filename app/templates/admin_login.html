@@ -1,106 +1,937 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreeFlow - Admin</title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        FreeFlow | Portal da Concessionária
+    </title>
 
     <style>
-        body {
+
+        * {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #071426;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .login {
-            width: 340px;
-            background: #0d2038;
-            padding: 32px;
-            border-radius: 14px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-        }
-
-        h1 {
-            margin-top: 0;
-            text-align: center;
-        }
-
-        p {
-            text-align: center;
-            color: #a9b8ca;
-        }
-
-        input {
+            padding: 0;
             box-sizing: border-box;
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 14px;
-            border: 1px solid #314965;
-            border-radius: 7px;
-            background: #08182a;
-            color: white;
         }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            border: 0;
-            border-radius: 7px;
-            background: #21c77a;
-            color: #071426;
-            font-weight: bold;
-            cursor: pointer;
+
+        body {
+
+            min-height: 100vh;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #04111f,
+                    #071a2f,
+                    #0b2745
+                );
+
+            color: white;
+
         }
+
+
+        /* ===================================== */
+        /* CABEÇALHO */
+        /* ===================================== */
+
+        header {
+
+            width: 100%;
+
+            background:
+                rgba(
+                    3,
+                    15,
+                    28,
+                    0.85
+                );
+
+            border-bottom:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.10
+                );
+
+        }
+
+
+        .header-container {
+
+            width: 100%;
+
+            max-width: 1180px;
+
+            margin: 0 auto;
+
+            padding:
+                18px
+                28px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content:
+                space-between;
+
+            gap: 20px;
+
+        }
+
+
+        .logo-area h1 {
+
+            font-size: 1.8rem;
+
+            font-weight: 800;
+
+            letter-spacing: 1px;
+
+        }
+
+
+        .logo-area h1 span {
+
+            color: #2f80c0;
+
+        }
+
+
+        .logo-area p {
+
+            margin-top: 3px;
+
+            font-size: 0.95rem;
+
+            font-weight: bold;
+
+            color: #ffffff;
+
+        }
+
+
+        .header-info {
+
+            text-align: right;
+
+            font-size: 0.82rem;
+
+            line-height: 1.5;
+
+            color: #9ab5cc;
+
+        }
+
+
+        /* ===================================== */
+        /* CONTEÚDO */
+        /* ===================================== */
+
+        main {
+
+            width: 100%;
+
+            max-width: 1180px;
+
+            margin: 0 auto;
+
+            padding:
+                50px
+                28px;
+
+        }
+
+
+        .conteudo {
+
+            display: grid;
+
+            grid-template-columns:
+                1.15fr
+                0.85fr;
+
+            gap: 70px;
+
+            align-items: center;
+
+            min-height:
+                calc(
+                    100vh - 145px
+                );
+
+        }
+
+
+        /* ===================================== */
+        /* LADO ESQUERDO */
+        /* ===================================== */
+
+        .apresentacao {
+
+            max-width: 620px;
+
+        }
+
+
+        .tag {
+
+            display: inline-block;
+
+            padding:
+                7px
+                13px;
+
+            margin-bottom: 22px;
+
+            border-radius: 20px;
+
+            background:
+                rgba(
+                    47,
+                    128,
+                    192,
+                    0.14
+                );
+
+            border:
+                1px solid
+                rgba(
+                    70,
+                    150,
+                    210,
+                    0.32
+                );
+
+            color: #6eb6e8;
+
+            font-size: 0.78rem;
+
+            font-weight: bold;
+
+        }
+
+
+        .apresentacao h2 {
+
+            font-size: 3.1rem;
+
+            line-height: 1.08;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .apresentacao h2 span {
+
+            color: #4696cf;
+
+        }
+
+
+        .descricao {
+
+            max-width: 560px;
+
+            color: #c4d4e2;
+
+            font-size: 1.05rem;
+
+            line-height: 1.65;
+
+            margin-bottom: 32px;
+
+        }
+
+
+        .recursos {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 15px;
+
+        }
+
+
+        .recurso {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            color: #ffffff;
+
+            font-size: 0.95rem;
+
+            font-weight: 600;
+
+        }
+
+
+        .check {
+
+            width: 24px;
+
+            height: 24px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(
+                    47,
+                    128,
+                    192,
+                    0.20
+                );
+
+            color: #69b8ee;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            font-size: 0.8rem;
+
+            font-weight: bold;
+
+        }
+
+
+        /* ===================================== */
+        /* LOGIN */
+        /* ===================================== */
+
+        .login-card {
+
+            background: #102d49;
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.12
+                );
+
+            border-radius: 16px;
+
+            padding: 30px;
+
+            box-shadow:
+                0
+                20px
+                45px
+                rgba(
+                    0,
+                    0,
+                    0,
+                    0.28
+                );
+
+        }
+
+
+        .login-card h2 {
+
+            font-size: 1.7rem;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .login-card > p {
+
+            color: #adc2d4;
+
+            font-size: 0.9rem;
+
+            line-height: 1.5;
+
+            margin-bottom: 25px;
+
+        }
+
+
+        /* ===================================== */
+        /* ERRO */
+        /* ===================================== */
 
         .erro {
-            color: #ff7777;
-            margin-bottom: 15px;
-            text-align: center;
+
+            margin-bottom: 18px;
+
+            padding:
+                12px
+                14px;
+
+            border-radius: 9px;
+
+            background:
+                rgba(
+                    212,
+                    63,
+                    63,
+                    0.16
+                );
+
+            border:
+                1px solid
+                rgba(
+                    230,
+                    80,
+                    80,
+                    0.28
+                );
+
+            color: #ffb6b6;
+
+            font-size: 0.88rem;
+
+            font-weight: bold;
+
         }
+
+
+        /* ===================================== */
+        /* CAMPOS */
+        /* ===================================== */
+
+        .campo {
+
+            margin-bottom: 18px;
+
+        }
+
+
+        .campo label {
+
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: white;
+
+            font-size: 0.88rem;
+
+            font-weight: bold;
+
+        }
+
+
+        .campo input {
+
+            width: 100%;
+
+            height: 48px;
+
+            padding:
+                0
+                13px;
+
+            border-radius: 9px;
+
+            border:
+                1px solid
+                #315473;
+
+            outline: none;
+
+            background: #09233a;
+
+            color: white;
+
+            font-size: 0.95rem;
+
+            transition: 0.2s;
+
+        }
+
+
+        .campo input::placeholder {
+
+            color: #718da6;
+
+        }
+
+
+        .campo input:focus {
+
+            border-color: #4696cf;
+
+            box-shadow:
+                0
+                0
+                0
+                3px
+                rgba(
+                    70,
+                    150,
+                    207,
+                    0.12
+                );
+
+        }
+
+
+        /* ===================================== */
+        /* BOTÃO */
+        /* ===================================== */
+
+        .btn-login {
+
+            width: 100%;
+
+            height: 49px;
+
+            margin-top: 3px;
+
+            border: none;
+
+            border-radius: 9px;
+
+            background: #2f7fb7;
+
+            color: white;
+
+            font-size: 0.95rem;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+
+        }
+
+
+        .btn-login:hover {
+
+            background: #398dca;
+
+            transform:
+                translateY(-1px);
+
+        }
+
+
+        /* ===================================== */
+        /* RODAPÉ CARD */
+        /* ===================================== */
+
+        .acesso-restrito {
+
+            margin-top: 20px;
+
+            padding-top: 17px;
+
+            border-top:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.10
+                );
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            gap: 8px;
+
+            color: #8fa8bd;
+
+            font-size: 0.78rem;
+
+            text-align: center;
+
+        }
+
+
+        .status {
+
+            width: 7px;
+
+            height: 7px;
+
+            border-radius: 50%;
+
+            background: #32ad6d;
+
+        }
+
+
+        /* ===================================== */
+        /* RESPONSIVO */
+        /* ===================================== */
+
+        @media (
+            max-width: 900px
+        ) {
+
+            .conteudo {
+
+                grid-template-columns: 1fr;
+
+                gap: 40px;
+
+                min-height: auto;
+
+            }
+
+
+            .apresentacao h2 {
+
+                font-size: 2.5rem;
+
+            }
+
+
+            .login-card {
+
+                max-width: 550px;
+
+                width: 100%;
+
+            }
+
+        }
+
+
+        @media (
+            max-width: 600px
+        ) {
+
+            main {
+
+                padding:
+                    35px
+                    18px;
+
+            }
+
+
+            .header-container {
+
+                padding:
+                    16px
+                    18px;
+
+            }
+
+
+            .header-info {
+
+                display: none;
+
+            }
+
+
+            .apresentacao h2 {
+
+                font-size: 2rem;
+
+            }
+
+
+            .descricao {
+
+                font-size: 0.95rem;
+
+            }
+
+
+            .login-card {
+
+                padding:
+                    24px
+                    20px;
+
+            }
+
+        }
+
     </style>
+
 </head>
+
 
 <body>
 
-<div class="login">
 
-    <h1>FreeFlow</h1>
-    <p>Acesso administrativo</p>
+    <!-- ===================================== -->
+    <!-- CABEÇALHO -->
+    <!-- ===================================== -->
 
-    {% if erro %}
-        <div class="erro">
-            {{ erro }}
+    <header>
+
+        <div class="header-container">
+
+
+            <div class="logo-area">
+
+                <h1>
+                    FREE<span>FLOW</span>
+                </h1>
+
+                <p>
+                    Portal da Concessionária
+                </p>
+
+            </div>
+
+
+            <div class="header-info">
+
+                <div>
+                    Sistema de cobrança automática
+                </div>
+
+                <div>
+                    Monitoramento operacional
+                </div>
+
+            </div>
+
+
         </div>
-    {% endif %}
 
-    <form method="post" action="/admin/login">
+    </header>
 
-        <input
-            type="text"
-            name="usuario"
-            placeholder="Usuário"
-            required
-        >
 
-        <input
-            type="password"
-            name="senha"
-            placeholder="Senha"
-            required
-        >
+    <!-- ===================================== -->
+    <!-- CONTEÚDO -->
+    <!-- ===================================== -->
 
-        <button type="submit">
-            Entrar
-        </button>
+    <main>
 
-    </form>
 
-</div>
+        <div class="conteudo">
+
+
+            <!-- ================================= -->
+            <!-- APRESENTAÇÃO -->
+            <!-- ================================= -->
+
+            <section class="apresentacao">
+
+
+                <div class="tag">
+                    AMBIENTE ADMINISTRATIVO
+                </div>
+
+
+                <h2>
+
+                    Gerencie o fluxo de forma
+
+                    <span>
+                        inteligente.
+                    </span>
+
+                </h2>
+
+
+                <p class="descricao">
+
+                    Acesse os dados operacionais
+                    da concessionária para acompanhar
+                    passagens, valores gerados e
+                    ocorrências identificadas pelo sistema.
+
+                </p>
+
+
+                <div class="recursos">
+
+
+                    <div class="recurso">
+
+                        <div class="check">
+                            ✓
+                        </div>
+
+                        <span>
+                            Monitoramento das passagens
+                            em tempo real
+                        </span>
+
+                    </div>
+
+
+                    <div class="recurso">
+
+                        <div class="check">
+                            ✓
+                        </div>
+
+                        <span>
+                            Identificação de duplicidades
+                        </span>
+
+                    </div>
+
+
+                    <div class="recurso">
+
+                        <div class="check">
+                            ✓
+                        </div>
+
+                        <span>
+                            Relatórios e exportação
+                            de dados em CSV
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+            <!-- ================================= -->
+            <!-- CARD LOGIN -->
+            <!-- ================================= -->
+
+            <section class="login-card">
+
+
+                <h2>
+                    Acessar painel
+                </h2>
+
+
+                <p>
+                    Entre com as credenciais
+                    fornecidas à concessionária.
+                </p>
+
+
+                {% if erro %}
+
+                <div class="erro">
+
+                    {{ erro }}
+
+                </div>
+
+                {% endif %}
+
+
+                <form
+                    method="POST"
+                    action="/admin/login"
+                >
+
+
+                    <div class="campo">
+
+                        <label
+                            for="usuario"
+                        >
+                            Usuário
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="usuario"
+                            name="usuario"
+                            placeholder="Digite seu usuário"
+                            autocomplete="username"
+                            required
+                            autofocus
+                        >
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label
+                            for="senha"
+                        >
+                            Senha
+                        </label>
+
+
+                        <input
+                            type="password"
+                            id="senha"
+                            name="senha"
+                            placeholder="Digite sua senha"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="btn-login"
+                    >
+                        Entrar no painel
+                    </button>
+
+
+                </form>
+
+
+                <div class="acesso-restrito">
+
+                    <div class="status"></div>
+
+                    <span>
+                        Ambiente administrativo
+                        de acesso restrito
+                    </span>
+
+                </div>
+
+
+            </section>
+
+
+        </div>
+
+
+    </main>
+
 
 </body>
+
 </html>
