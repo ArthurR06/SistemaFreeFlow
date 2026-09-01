@@ -428,9 +428,7 @@ http://192.168.1.50:8002/evento
 
 O FastAPI deve estar rodando com:
 
-```bash
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8002
-```
 
 Fluxo:
 
