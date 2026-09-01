@@ -1587,97 +1587,142 @@
     // VERIFICA SE JÁ EXISTE EMISSÃO
     // ==========================================
 
-    function verificarSegundaVia() {
+function verificarSegundaVia() {
 
-        if (!cpf || !placa) {
-
-            return;
-
-        }
-
-
-        const salvo =
-            localStorage.getItem(
-                chaveEmissao()
-            );
-
-
-        if (!salvo) {
-
-            return;
-
-        }
-
-
-        try {
-
-            emissaoAtual =
-                JSON.parse(
-                    salvo
-                );
-
-        }
-
-        catch {
-
-            localStorage.removeItem(
-                chaveEmissao()
-            );
-
-
-            emissaoAtual = null;
-
-
-            return;
-
-        }
-
-
-        // ======================================
-        // MOSTRA BOTÃO DE SEGUNDA VIA
-        // ======================================
-
+    const botaoSegundaVia =
         document.getElementById(
             "btnSegundaVia"
-        ).style.display =
-            "block";
+        );
 
-
+    const avisoEmissao =
         document.getElementById(
             "avisoEmissao"
-        ).style.display =
-            "block";
+        );
 
-
-        // ======================================
-        // BLOQUEIA NOVA EMISSÃO
-        // ======================================
-
+    const botaoContinuar =
         document.getElementById(
             "btnContinuar"
-        ).style.display =
+        );
+
+
+    const pendentes =
+        cobrancasAtuais.filter(
+            cobranca =>
+                cobranca.status === "pendente"
+        );
+
+
+    // Se não existem mais cobranças pendentes,
+    // remove qualquer emissão antiga
+    if (pendentes.length === 0) {
+
+        localStorage.removeItem(
+            chaveEmissao()
+        );
+
+        emissaoAtual = null;
+
+        botaoSegundaVia.style.display =
             "none";
 
+        avisoEmissao.style.display =
+            "none";
+
+        botaoContinuar.style.display =
+            "block";
+
+        botaoContinuar.disabled =
+            true;
 
         document
             .querySelectorAll(
                 ".metodo"
             )
             .forEach(
-
                 elemento => {
-
-                    elemento.classList.add(
+                    elemento.classList.remove(
                         "bloqueado"
                     );
-
                 }
+            );
 
+        return;
+    }
+
+
+    if (!cpf || !placa) {
+        return;
+    }
+
+
+    const salvo =
+        localStorage.getItem(
+            chaveEmissao()
+        );
+
+
+    if (!salvo) {
+
+        botaoSegundaVia.style.display =
+            "none";
+
+        avisoEmissao.style.display =
+            "none";
+
+        return;
+    }
+
+
+    try {
+
+        emissaoAtual =
+            JSON.parse(
+                salvo
             );
 
     }
 
+    catch {
 
+        localStorage.removeItem(
+            chaveEmissao()
+        );
+
+        emissaoAtual = null;
+
+        botaoSegundaVia.style.display =
+            "none";
+
+        avisoEmissao.style.display =
+            "none";
+
+        return;
+    }
+
+
+    botaoSegundaVia.style.display =
+        "block";
+
+    avisoEmissao.style.display =
+        "block";
+
+    botaoContinuar.style.display =
+        "none";
+
+
+    document
+        .querySelectorAll(
+            ".metodo"
+        )
+        .forEach(
+            elemento => {
+                elemento.classList.add(
+                    "bloqueado"
+                );
+            }
+        );
+
+}
     // ==========================================
     // ABRE SEGUNDA VIA
     // ==========================================

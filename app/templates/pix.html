@@ -927,6 +927,15 @@
         }
 
 
+                // Remove o PIX antigo depois que todas
+        // as cobranças foram pagas com sucesso
+        localStorage.removeItem(
+            chavePix()
+        );
+
+        registroPix = null;
+        cobrancasPendentes = [];
+
         document.getElementById(
             "sucesso"
         ).style.display =

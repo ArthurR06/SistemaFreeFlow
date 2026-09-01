@@ -434,9 +434,25 @@
       document.getElementById('ultima_faixa').innerText = dados.ultima_passagem.faixa;
       document.getElementById('ultimo_horario').innerText = dados.ultima_passagem.timestamp_evento;
       document.getElementById('ultimo_valor').innerText = formatarMoeda(dados.ultima_passagem.valor);
-      document.getElementById('ultima_anomalia').innerText =
-        dados.ultima_passagem.anomalia === "duplicidade" ? "Duplicidade" : "OK";
+      const ultimaAnomalia =
+  dados.ultima_passagem.anomalia;
 
+if (ultimaAnomalia === null) {
+  document.getElementById('ultima_anomalia').innerText =
+    "OK";
+}
+else if (ultimaAnomalia === "duplicidade") {
+  document.getElementById('ultima_anomalia').innerText =
+    "Duplicidade";
+}
+else if (ultimaAnomalia === "ia_anomalia") {
+  document.getElementById('ultima_anomalia').innerText =
+    "Anomalia IA";
+}
+else {
+  document.getElementById('ultima_anomalia').innerText =
+    ultimaAnomalia;
+}
       const eventosFiltrados = filtrarEventos(dados.eventos);
 
       const tabela = document.getElementById('tabela_eventos');
@@ -445,9 +461,20 @@
       eventosFiltrados.forEach(evento => {
         const linha = document.createElement('tr');
 
-        const badge = evento.anomalia === "duplicidade"
-          ? '<span class="badge-dup">Duplicidade</span>'
-          : '<span class="badge-ok">OK</span>';
+        let badge;
+
+if (evento.anomalia === null) {
+  badge = '<span class="badge-ok">OK</span>';
+}
+else if (evento.anomalia === "duplicidade") {
+  badge = '<span class="badge-dup">Duplicidade</span>';
+}
+else if (evento.anomalia === "ia_anomalia") {
+  badge = '<span class="badge-dup">Anomalia IA</span>';
+}
+else {
+  badge = `<span class="badge-dup">${evento.anomalia}</span>`;
+}
 
         linha.innerHTML = `
           <td>${evento.id_veiculo}</td>
