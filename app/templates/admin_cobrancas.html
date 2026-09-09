@@ -1936,8 +1936,20 @@
 
                                                             {% if cobranca.faixa is defined %}
 
-                                                                · Faixa
-                                                                {{ cobranca.faixa }}
+                                                                ·
+                                                                {% if cobranca.faixa | int == 1 %}
+
+                                                                    Concessionária A
+
+                                                                {% elif cobranca.faixa | int == 2 %}
+
+                                                                    Concessionária B
+
+                                                                {% else %}
+
+                                                                    Concessionária
+
+                                                                {% endif %}
 
                                                             {% endif %}
 

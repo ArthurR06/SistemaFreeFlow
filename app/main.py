@@ -1865,7 +1865,7 @@ def exportar_csv(
     writer.writerow(
         [
             "Placa do Veículo",
-            "Faixa",
+            "Concessionária",
             "Data/Hora",
             "Valor",
             "Status"
@@ -1876,22 +1876,39 @@ def exportar_csv(
     for evento in eventos:
 
         status = (
-            "Duplicidade"
-            if evento.anomalia
-            == "duplicidade"
-            else "OK"
+        "Duplicidade"
+        if evento.anomalia
+        == "duplicidade"
+        else "OK"
+    )
+
+    if evento.faixa == 1:
+
+        concessionaria = (
+            "Concessionária A"
         )
 
-        writer.writerow(
-            [
-                evento.id_veiculo,
-                evento.faixa,
-                evento.timestamp_evento,
-                evento.valor,
-                status
-            ]
+    elif evento.faixa == 2:
+
+        concessionaria = (
+            "Concessionária B"
         )
 
+    else:
+
+        concessionaria = (
+            "Concessionária"
+        )
+
+    writer.writerow(
+        [
+            evento.id_veiculo,
+            concessionaria,
+            evento.timestamp_evento,
+            evento.valor,
+            status
+        ]
+    )
 
     output.seek(0)
 

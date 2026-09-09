@@ -1070,7 +1070,7 @@
               </th>
 
               <th>
-                Faixa
+                Concessionária
               </th>
 
               <th>
@@ -1130,7 +1130,7 @@
         <div class="linha-info">
 
           <strong>
-            Faixa:
+            Concessionária:
           </strong>
 
           <span id="ultima_faixa">
@@ -1272,19 +1272,53 @@
 
     }
 
+/* =================================== */
+/* NOME DA CONCESSIONÁRIA */
+/* =================================== */
 
-    /* =================================== */
-    /* EXPORTAÇÃO */
-    /* =================================== */
+    function nomeConcessionaria(
+      faixa
+    ) {
 
-    function exportarCSV() {
+      const numero =
+        Number(
+          faixa
+        );
 
-      window.open(
-        `/exportar-csv?anomalia=${filtroAtual}`,
-        "_blank"
-      );
 
+      if (
+        numero === 1
+      ) {
+
+        return "Concessionária A";
+
+      }
+
+
+      if (
+        numero === 2
+      ) {
+
+        return "Concessionária B";
+
+      }
+
+
+      return "Concessionária";
     }
+
+        /* =================================== */
+        /* EXPORTAÇÃO */
+        /* =================================== */
+
+        function exportarCSV() {
+
+          window.open(
+            `/exportar-csv?anomalia=${filtroAtual}`,
+            "_blank"
+          );
+
+        }
 
 
     /* =================================== */
@@ -1450,8 +1484,9 @@
         document.getElementById(
           "ultima_faixa"
         ).innerText =
-          ultima.faixa;
-
+          nomeConcessionaria(
+          ultima.faixa
+      );
 
         document.getElementById(
           "ultimo_horario"
@@ -1573,7 +1608,9 @@ else {
                 </td> 
 
                 <td>
-                  Faixa ${evento.faixa}
+                  ${nomeConcessionaria(
+                    evento.faixa
+                  )}
                 </td>
 
                 <td>
