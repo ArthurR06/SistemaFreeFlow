@@ -17,11 +17,13 @@
 
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
 
         body {
-            margin: 0;
+            min-height: 100vh;
 
             font-family:
                 Arial,
@@ -31,24 +33,39 @@
             background:
                 #071a2f;
 
-            color: white;
+            color:
+                white;
         }
 
 
-        header {
-            background: #041426;
+        /* ===================================== */
+        /* HEADER */
+        /* ===================================== */
 
-            padding: 22px 30px;
+        header {
+            background:
+                #041426;
 
             border-bottom:
-                1px solid #1f3a56;
+                1px solid
+                #1f3a56;
         }
 
 
         .header {
             max-width: 1100px;
 
+            min-height: 90px;
+
             margin: auto;
+
+            padding:
+                18px
+                30px;
+
+            display: flex;
+
+            align-items: center;
         }
 
 
@@ -60,244 +77,566 @@
 
 
         .logo span {
-            color: #37b36b;
+            color:
+                #37b36b;
         }
 
 
         .subtitulo {
             margin-top: 3px;
 
-            font-size: 19px;
+            font-size: 18px;
 
             font-weight: 600;
         }
 
 
+        /* ===================================== */
+        /* PRINCIPAL */
+        /* ===================================== */
+
         main {
-            max-width: 950px;
+            max-width: 1100px;
 
             margin: auto;
 
-            padding: 40px 25px;
+            padding:
+                34px
+                30px
+                50px;
         }
 
 
-        .boleto {
-            background: white;
+        .card {
+            max-width: 620px;
 
-            color: #111;
+            margin: auto;
 
-            padding: 30px;
+            background:
+                #102942;
 
-            border-radius: 10px;
+            border:
+                1px solid
+                #29445f;
+
+            border-radius: 16px;
+
+            padding: 24px;
+
+            text-align: center;
         }
 
 
-        .boleto-topo {
+        .badge {
+            display: inline-block;
+
+            margin-bottom: 15px;
+
+            padding:
+                7px
+                11px;
+
+            background:
+                #173957;
+
+            border-radius: 7px;
+
+            color:
+                #8fc9f5;
+
+            font-size: 12px;
+
+            font-weight: bold;
+        }
+
+
+        h1 {
+            margin-bottom: 8px;
+
+            font-size: 25px;
+        }
+
+
+        .descricao {
+            margin-bottom: 20px;
+
+            color:
+                #a6bbcf;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+        }
+
+
+        /* ===================================== */
+        /* VALOR */
+        /* ===================================== */
+
+        .valor-label {
+            color:
+                #9fb3c6;
+
+            font-size: 12px;
+        }
+
+
+        .valor {
+            margin:
+                4px
+                0
+                18px;
+
+            color:
+                #20d77a;
+
+            font-size: 30px;
+
+            font-weight: bold;
+        }
+
+
+        /* ===================================== */
+        /* RESUMO */
+        /* ===================================== */
+
+        .resumo-pagamento {
+            margin-bottom: 18px;
+
+            padding: 14px;
+
+            background:
+                #0b2138;
+
+            border:
+                1px solid
+                #29445f;
+
+            border-radius: 12px;
+
+            text-align: left;
+        }
+
+
+        .resumo-pagamento h2 {
+            margin-bottom: 10px;
+
+            font-size: 15px;
+        }
+
+
+        .resumo-concessionaria {
+            padding:
+                8px
+                0;
+
             display: flex;
 
             justify-content:
                 space-between;
 
-            border-bottom:
-                3px solid #111;
+            align-items: center;
 
-            padding-bottom: 16px;
+            gap: 15px;
+
+            border-bottom:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.08
+                );
+        }
+
+
+        .resumo-concessionaria:last-child {
+            border-bottom: none;
+        }
+
+
+        .resumo-concessionaria-info strong {
+            display: block;
+
+            font-size: 13px;
+        }
+
+
+        .resumo-concessionaria-info span {
+            display: block;
+
+            margin-top: 3px;
+
+            color:
+                #9fb3c6;
+
+            font-size: 11px;
+        }
+
+
+        .resumo-concessionaria-valor {
+            font-size: 14px;
+
+            font-weight: bold;
+        }
+
+
+        /* ===================================== */
+        /* BOLETO */
+        /* ===================================== */
+
+        .boleto {
+            padding:
+                18px;
+
+            background:
+                #ffffff;
+
+            border-radius: 12px;
+
+            color:
+                #122235;
+
+            text-align: left;
+        }
+
+
+        .boleto-topo {
+            padding-bottom: 12px;
+
+            margin-bottom: 14px;
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items: center;
+
+            gap: 10px;
+
+            border-bottom:
+                1px solid
+                #d7e0e8;
         }
 
 
         .boleto-logo {
-            font-size: 26px;
+            font-size: 20px;
+
+            font-weight: 800;
+        }
+
+
+        .boleto-logo span {
+            color:
+                #37b36b;
+        }
+
+
+        .boleto-tipo {
+            color:
+                #61768a;
+
+            font-size: 11px;
 
             font-weight: bold;
         }
 
 
-        .linha-digitavel {
-            margin:
-                22px
-                0;
+        .boleto-dados {
+            display: grid;
 
-            font-size: 19px;
+            grid-template-columns:
+                repeat(
+                    2,
+                    1fr
+                );
+
+            gap: 12px;
+
+            margin-bottom: 17px;
+        }
+
+
+        .boleto-dado span {
+            display: block;
+
+            margin-bottom: 3px;
+
+            color:
+                #718293;
+
+            font-size: 9px;
+
+            text-transform:
+                uppercase;
+        }
+
+
+        .boleto-dado strong {
+            font-size: 12px;
+        }
+
+
+        /* ===================================== */
+        /* CÓDIGO DE BARRAS */
+        /* ===================================== */
+
+        .codigo-barras-area {
+            margin-top: 10px;
+        }
+
+
+        #codigoCanvas {
+            display: block;
+
+            width: 100%;
+            height: 70px;
+
+            background:
+                white;
+        }
+
+
+        .linha-digitavel {
+            margin-top: 9px;
+
+            color:
+                #1a2836;
+
+            font-family:
+                "Courier New",
+                monospace;
+
+            font-size: 11px;
 
             font-weight: bold;
 
-            letter-spacing: 1px;
+            line-height: 1.4;
+
+            text-align: center;
 
             word-break:
                 break-all;
         }
 
 
-        .grid {
-            display: grid;
+        /* ===================================== */
+        /* CÓPIA */
+        /* ===================================== */
 
-            grid-template-columns:
-                1fr
-                1fr;
+        .codigo-area {
+            margin-top: 18px;
 
-            border-top:
-                1px solid #aaa;
+            text-align: left;
         }
 
 
-        .campo {
-            padding: 12px;
-
-            border-bottom:
-                1px solid #aaa;
-
-            border-right:
-                1px solid #aaa;
-        }
-
-
-        .campo label {
+        .codigo-area label {
             display: block;
 
-            color: #666;
+            margin-bottom: 7px;
 
-            font-size: 11px;
+            color:
+                #b6c9da;
 
-            margin-bottom: 5px;
+            font-size: 12px;
         }
 
 
-        .campo strong {
-            font-size: 15px;
+        .codigo {
+            display: flex;
+
+            gap: 7px;
         }
 
 
-        .codigo-barras {
-            height: 85px;
+        .codigo input {
+            min-width: 0;
 
-            margin-top: 30px;
+            flex: 1;
+
+            padding:
+                11px;
 
             background:
-                repeating-linear-gradient(
-                    90deg,
-                    #000 0px,
-                    #000 2px,
-                    transparent 2px,
-                    transparent 4px,
-                    #000 4px,
-                    #000 7px,
-                    transparent 7px,
-                    transparent 10px
-                );
+                #081d32;
+
+            border:
+                1px solid
+                #31516e;
+
+            border-radius: 8px;
+
+            color: white;
+
+            font-family:
+                "Courier New",
+                monospace;
+
+            font-size: 11px;
         }
 
 
-        .aviso {
-            margin-top: 20px;
+        button {
+            border: 0;
 
-            text-align: center;
+            border-radius: 8px;
 
-            color: #aebfd0;
-        }
-
-
-        .acoes {
-            margin-top: 25px;
-
-            display: grid;
-
-            grid-template-columns:
-                1fr
-                1fr;
-
-            gap: 12px;
-        }
-
-
-        button,
-        a {
-            text-align: center;
-
-            padding: 14px;
-
-            border-radius: 9px;
-
-            font-weight: bold;
+            padding:
+                11px
+                15px;
 
             cursor: pointer;
 
-            text-decoration: none;
-
-            border: 0;
+            font-weight: bold;
         }
 
 
-        .baixar {
-            background: #23a65d;
+        .copiar {
+            background:
+                #237caf;
 
             color: white;
         }
 
 
-        .imprimir {
-            background: #267aad;
+        /* ===================================== */
+        /* AVISO */
+        /* ===================================== */
 
-            color: white;
+        .aviso {
+            margin-top: 13px;
+
+            color:
+                #f7ce6a;
+
+            font-size: 11px;
         }
 
+
+        /* ===================================== */
+        /* CONFIRMAR */
+        /* ===================================== */
 
         .pagar {
-            margin-top: 12px;
-
             width: 100%;
 
-            background: #176d48;
+            margin-top: 20px;
+
+            padding: 13px;
+
+            background:
+                #23a65d;
 
             color: white;
+
+            font-size: 14px;
         }
 
 
-        .voltar {
-            display: block;
-
-            margin-top: 18px;
-
-            color: #9cd0f5;
+        .pagar:hover {
+            background:
+                #1d914f;
         }
 
+
+        .pagar:disabled {
+            opacity: 0.45;
+
+            cursor:
+                not-allowed;
+        }
+
+
+        /* ===================================== */
+        /* SUCESSO */
+        /* ===================================== */
 
         .sucesso {
             display: none;
 
-            margin-top: 20px;
+            margin-top: 16px;
 
-            padding: 15px;
+            padding: 13px;
 
-            background: #153d2d;
+            background:
+                #143d2d;
+
+            border:
+                1px solid
+                #29764e;
 
             border-radius: 9px;
 
-            color: #89ecb4;
+            color:
+                #82e9af;
 
-            text-align: center;
+            font-size: 13px;
         }
 
 
-        @media print {
+        /* ===================================== */
+        /* VOLTAR */
+        /* ===================================== */
 
-            body {
-                background: white;
-            }
+        .voltar {
+            display: inline-block;
+
+            margin-top: 17px;
+
+            color:
+                #99c9ef;
+
+            text-decoration: none;
+
+            font-size: 12px;
+        }
 
 
-            header,
-            .acoes,
-            .pagar,
-            .voltar,
-            .aviso,
-            .sucesso {
-                display: none;
+        .voltar:hover {
+            color: white;
+        }
+
+
+        /* ===================================== */
+        /* RESPONSIVO */
+        /* ===================================== */
+
+        @media (
+            max-width: 600px
+        ) {
+
+            .header {
+                padding:
+                    18px;
             }
 
 
             main {
-                padding: 0;
+                padding:
+                    25px
+                    15px
+                    40px;
+            }
+
+
+            .card {
+                padding:
+                    18px;
+            }
+
+
+            .boleto-dados {
+                grid-template-columns:
+                    1fr;
+            }
+
+
+            .codigo {
+                flex-direction:
+                    column;
             }
 
         }
@@ -309,16 +648,21 @@
 
 <body>
 
+
 <header>
 
     <div class="header">
 
-        <div class="logo">
-            FREE<span>FLOW</span>
-        </div>
+        <div>
 
-        <div class="subtitulo">
-            Boleto bancário
+            <div class="logo">
+                FREE<span>FLOW</span>
+            </div>
+
+            <div class="subtitulo">
+                Pagamento via Boleto
+            </div>
+
         </div>
 
     </div>
@@ -328,174 +672,237 @@
 
 <main>
 
-    <section
-        id="boleto"
-        class="boleto"
-    >
 
-        <div class="boleto-topo">
+    <section class="card">
 
-            <div class="boleto-logo">
-                FREEFLOW
-            </div>
 
-            <strong>
-                BOLETO DEMONSTRATIVO
-            </strong>
+        <div class="badge">
+            BOLETO BANCÁRIO
+        </div>
 
+
+        <h1>
+            Boleto demonstrativo
+        </h1>
+
+
+        <p class="descricao">
+
+            Confira as cobranças selecionadas
+            e utilize o boleto abaixo para o pagamento.
+
+        </p>
+
+
+        <div class="valor-label">
+            Valor do boleto
         </div>
 
 
         <div
-            id="linhaDigitavel"
-            class="linha-digitavel"
+            id="valor"
+            class="valor"
         >
-            ---
+            R$ 0,00
         </div>
 
 
-        <div class="grid">
+        <!-- ================================= -->
+        <!-- RESUMO -->
+        <!-- ================================= -->
 
-            <div class="campo">
+        <div class="resumo-pagamento">
 
-                <label>
-                    Beneficiário
-                </label>
+            <h2>
+                Cobranças selecionadas
+            </h2>
 
-                <strong>
-                    FreeFlow - Protótipo Acadêmico
-                </strong>
-
-            </div>
-
-
-            <div class="campo">
-
-                <label>
-                    Documento
-                </label>
-
-                <strong id="documento">
-                    ---
-                </strong>
-
-            </div>
-
-
-            <div class="campo">
-
-                <label>
-                    Placa do veículo
-                </label>
-
-                <strong id="placaTela">
-                    ---
-                </strong>
-
-            </div>
-
-
-            <div class="campo">
-
-                <label>
-                    Valor
-                </label>
-
-                <strong id="valor">
-                    R$ 0,00
-                </strong>
-
-            </div>
-
-
-            <div class="campo">
-
-                <label>
-                    Data de emissão
-                </label>
-
-                <strong id="emissao">
-                    ---
-                </strong>
-
-            </div>
-
-
-            <div class="campo">
-
-                <label>
-                    Vencimento
-                </label>
-
-                <strong id="vencimento">
-                    ---
-                </strong>
-
+            <div id="resumoConcessionarias">
+                Carregando...
             </div>
 
         </div>
 
 
-        <div class="codigo-barras">
+        <!-- ================================= -->
+        <!-- BOLETO VISUAL -->
+        <!-- ================================= -->
+
+        <div class="boleto">
+
+
+            <div class="boleto-topo">
+
+                <div class="boleto-logo">
+                    FREE<span>FLOW</span>
+                </div>
+
+                <div class="boleto-tipo">
+                    BOLETO DEMONSTRATIVO
+                </div>
+
+            </div>
+
+
+            <div class="boleto-dados">
+
+
+                <div class="boleto-dado">
+
+                    <span>
+                        Identificador
+                    </span>
+
+                    <strong id="idBoleto">
+                        ---
+                    </strong>
+
+                </div>
+
+
+                <div class="boleto-dado">
+
+                    <span>
+                        Placa
+                    </span>
+
+                    <strong id="placaTela">
+                        ---
+                    </strong>
+
+                </div>
+
+
+                <div class="boleto-dado">
+
+                    <span>
+                        Emissão
+                    </span>
+
+                    <strong id="dataGeracao">
+                        ---
+                    </strong>
+
+                </div>
+
+
+                <div class="boleto-dado">
+
+                    <span>
+                        Vencimento
+                    </span>
+
+                    <strong id="vencimento">
+                        ---
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="codigo-barras-area">
+
+                <canvas
+                    id="codigoCanvas"
+                    width="520"
+                    height="70"
+                >
+                </canvas>
+
+                <div
+                    id="linhaDigitavelVisual"
+                    class="linha-digitavel"
+                >
+                    ---
+                </div>
+
+            </div>
+
+
         </div>
+
+
+        <p class="aviso">
+
+            Boleto demonstrativo.
+            Não possui validade bancária.
+
+        </p>
+
+
+        <!-- ================================= -->
+        <!-- LINHA DIGITÁVEL -->
+        <!-- ================================= -->
+
+        <div class="codigo-area">
+
+            <label>
+                Linha digitável
+            </label>
+
+
+            <div class="codigo">
+
+                <input
+                    id="linhaDigitavel"
+                    readonly
+                >
+
+                <button
+                    class="copiar"
+                    onclick="copiarCodigo()"
+                >
+                    Copiar
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================= -->
+        <!-- PAGAMENTO -->
+        <!-- ================================= -->
+
+        <button
+            id="btnPagar"
+            class="pagar"
+            onclick="simularPagamento()"
+        >
+            Confirmar pagamento
+        </button>
+
+
+        <div
+            id="sucesso"
+            class="sucesso"
+        >
+            Pagamento confirmado com sucesso.
+        </div>
+
+
+        <a
+            id="voltar"
+            class="voltar"
+            href="/cobrancas"
+        >
+            ← Voltar às cobranças
+        </a>
+
 
     </section>
 
-
-    <p class="aviso">
-        Documento demonstrativo,
-        sem validade bancária.
-    </p>
-
-
-    <div class="acoes">
-
-        <button
-            class="baixar"
-            onclick="baixarBoleto()"
-        >
-            Baixar boleto
-        </button>
-
-
-        <button
-            class="imprimir"
-            onclick="window.print()"
-        >
-            Imprimir / Salvar PDF
-        </button>
-
-    </div>
-
-
-    <button
-        class="pagar"
-        onclick="simularPagamento()"
-    >
-        Confirmar pagamento
-    </button>
-
-
-    <div
-        id="sucesso"
-        class="sucesso"
-    >
-        Pagamento confirmado com sucesso.
-    </div>
-
-
-    <a
-        id="voltar"
-        class="voltar"
-        href="/cobrancas"
-    >
-        ← Voltar às cobranças
-    </a>
 
 </main>
 
 
 <script>
+
+    /* ========================================= */
+    /* PARÂMETROS */
+    /* ========================================= */
 
     const parametros =
         new URLSearchParams(
@@ -504,362 +911,884 @@
 
 
     const cpf =
-        parametros.get("cpf");
+        parametros.get(
+            "cpf"
+        );
 
 
     const placa =
-        parametros.get("placa");
+        parametros.get(
+            "placa"
+        );
+
+
+    const cobrancasParametro =
+        parametros.get(
+            "cobrancas"
+        );
+
+
+    let idsSelecionados = [];
+
+
+    if (
+        cobrancasParametro
+    ) {
+
+        idsSelecionados =
+            cobrancasParametro
+            .split(",")
+            .filter(
+                id => id
+            );
+
+    }
+
+    else {
+
+        try {
+
+            idsSelecionados =
+                JSON.parse(
+                    sessionStorage.getItem(
+                        "freeflow_cobrancas_selecionadas"
+                    )
+                    || "[]"
+                );
+
+        }
+
+        catch {
+
+            idsSelecionados = [];
+
+        }
+
+    }
 
 
     let cobrancasPendentes = [];
 
-    let total = 0;
+    let registroBoleto = null;
 
 
-    function moeda(valor) {
+    /* ========================================= */
+    /* MOEDA */
+    /* ========================================= */
+
+    function moeda(
+        valor
+    ) {
 
         return Number(
             valor || 0
         ).toLocaleString(
             "pt-BR",
             {
-                style: "currency",
-                currency: "BRL"
+
+                style:
+                    "currency",
+
+                currency:
+                    "BRL"
+
             }
         );
 
     }
 
 
-    function numeroFake() {
+    /* ========================================= */
+    /* CONCESSIONÁRIA */
+    /* ========================================= */
 
-        let texto =
-            `${cpf}${placa}${Date.now()}`;
+    function nomeConcessionaria(
+        cobranca
+    ) {
 
+        if (
+            cobranca.concessionaria
+        ) {
+
+            return cobranca.concessionaria;
+
+        }
+
+
+        if (
+            Number(
+                cobranca.faixa
+            ) === 1
+        ) {
+
+            return "Concessionária A";
+
+        }
+
+
+        if (
+            Number(
+                cobranca.faixa
+            ) === 2
+        ) {
+
+            return "Concessionária B";
+
+        }
+
+
+        return "Concessionária";
+
+    }
+
+
+    /* ========================================= */
+    /* CHAVE LOCAL STORAGE */
+    /* ========================================= */
+
+    function chaveBoleto() {
+
+        const ids =
+            [...idsSelecionados]
+            .sort()
+            .join("-");
+
+
+        return (
+            `freeflow_boleto_${cpf}_${placa}_${ids}`
+        );
+
+    }
+
+
+    /* ========================================= */
+    /* IDENTIFICADOR */
+    /* ========================================= */
+
+    function gerarId() {
+
+        return (
+            "FFBOL"
+            + Date.now()
+            + Math.floor(
+                Math.random()
+                * 9000
+                + 1000
+            )
+        );
+
+    }
+
+
+    /* ========================================= */
+    /* LINHA DIGITÁVEL */
+    /* ========================================= */
+
+    function gerarLinhaDigitavel(
+        id,
+        valor
+    ) {
 
         let numeros = "";
 
 
+        const origem =
+            (
+                id
+                + placa
+                + Number(
+                    valor
+                ).toFixed(
+                    2
+                )
+            );
+
+
         for (
             let i = 0;
-            i < texto.length;
+            i < origem.length;
             i++
         ) {
 
             numeros +=
-                texto.charCodeAt(i)
-                % 10;
+                origem
+                .charCodeAt(
+                    i
+                )
+                .toString()
+                .slice(
+                    -2
+                );
+
+        }
+
+
+        numeros =
+            (
+                numeros
+                + "00190500954014481606906809350314337370000000100"
+            )
+            .replace(
+                /\D/g,
+                ""
+            )
+            .slice(
+                0,
+                47
+            );
+
+
+        while (
+            numeros.length
+            < 47
+        ) {
+
+            numeros +=
+                Math.floor(
+                    Math.random()
+                    * 10
+                );
 
         }
 
 
         return (
-            (
-                numeros
-                + "34191790010104351004791020150008291070000000000"
-            )
-            .substring(
+            numeros.slice(
                 0,
-                47
+                5
+            )
+            + "."
+            + numeros.slice(
+                5,
+                10
+            )
+            + " "
+
+            + numeros.slice(
+                10,
+                15
+            )
+            + "."
+            + numeros.slice(
+                15,
+                21
+            )
+            + " "
+
+            + numeros.slice(
+                21,
+                26
+            )
+            + "."
+            + numeros.slice(
+                26,
+                32
+            )
+            + " "
+
+            + numeros.slice(
+                32,
+                33
+            )
+            + " "
+
+            + numeros.slice(
+                33
             )
         );
 
     }
 
 
-    function formatarLinha(
-        numeros
-    ) {
+    /* ========================================= */
+    /* RESUMO */
+    /* ========================================= */
 
-        return (
-            numeros.substring(0, 5)
-            + "."
-            + numeros.substring(5, 10)
-            + " "
-            + numeros.substring(10, 15)
-            + "."
-            + numeros.substring(15, 21)
-            + " "
-            + numeros.substring(21, 26)
-            + "."
-            + numeros.substring(26, 32)
-            + " "
-            + numeros.substring(32, 33)
-            + " "
-            + numeros.substring(33)
+    function renderizarResumoPagamento() {
+
+        const grupos = {};
+
+
+        cobrancasPendentes.forEach(
+            cobranca => {
+
+                const concessionaria =
+                    nomeConcessionaria(
+                        cobranca
+                    );
+
+
+                if (
+                    !grupos[
+                        concessionaria
+                    ]
+                ) {
+
+                    grupos[
+                        concessionaria
+                    ] = {
+
+                        quantidade:
+                            0,
+
+                        valor:
+                            0
+
+                    };
+
+                }
+
+
+                grupos[
+                    concessionaria
+                ].quantidade++;
+
+
+                grupos[
+                    concessionaria
+                ].valor +=
+                    Number(
+                        cobranca.valor
+                        || 0
+                    );
+
+            }
         );
+
+
+        const area =
+            document.getElementById(
+                "resumoConcessionarias"
+            );
+
+
+        area.innerHTML =
+            Object.entries(
+                grupos
+            )
+            .map(
+                (
+                    [
+                        concessionaria,
+                        dados
+                    ]
+                ) => `
+
+                    <div
+                        class="
+                            resumo-concessionaria
+                        "
+                    >
+
+                        <div
+                            class="
+                                resumo-concessionaria-info
+                            "
+                        >
+
+                            <strong>
+                                ${concessionaria}
+                            </strong>
+
+                            <span>
+
+                                ${dados.quantidade}
+
+                                ${
+                                    dados.quantidade
+                                    === 1
+
+                                    ? "passagem"
+
+                                    : "passagens"
+                                }
+
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            class="
+                                resumo-concessionaria-valor
+                            "
+                        >
+
+                            ${moeda(
+                                dados.valor
+                            )}
+
+                        </div>
+
+                    </div>
+
+                `
+            )
+            .join("");
 
     }
 
+
+    /* ========================================= */
+    /* CARREGAR */
+    /* ========================================= */
 
     async function carregar() {
 
-        if (!cpf || !placa) {
+        if (
+            !cpf
+            ||
+            !placa
+        ) {
+
+            window.location.href =
+                "/portal";
+
             return;
+
         }
 
 
-        const resposta =
-            await fetch(
-                "/portal/consultar",
-                {
-                    method: "POST",
+        if (
+            idsSelecionados.length
+            === 0
+        ) {
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-                            cpf: cpf,
-                            placa: placa
-                        })
-                }
+            alert(
+                "Nenhuma cobrança foi selecionada."
             );
 
 
-        if (!resposta.ok) {
+            voltarCobrancas();
+
             return;
+
         }
 
 
-        const dados =
-            await resposta.json();
+        try {
+
+            const resposta =
+                await fetch(
+                    "/portal/consultar",
+                    {
+
+                        method:
+                            "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+
+                        },
+
+                        body:
+                            JSON.stringify(
+                                {
+
+                                    cpf:
+                                        cpf,
+
+                                    placa:
+                                        placa
+
+                                }
+                            )
+
+                    }
+                );
 
 
-        cobrancasPendentes =
-            (dados.cobrancas || [])
-            .filter(
-                cobranca =>
-                    cobranca.status
-                    === "pendente"
-            );
+            if (
+                !resposta.ok
+            ) {
+
+                alert(
+                    "Não foi possível carregar as cobranças."
+                );
+
+                return;
+
+            }
 
 
-        total =
-            cobrancasPendentes.reduce(
+            const dados =
+                await resposta.json();
+
+
+            /* SOMENTE AS SELECIONADAS */
+
+            cobrancasPendentes =
                 (
-                    soma,
-                    cobranca
-                ) =>
-                    soma
-                    + Number(
-                        cobranca.valor || 0
-                    ),
-                0
-            );
+                    dados.cobrancas
+                    || []
+                )
+                .filter(
+                    cobranca =>
+
+                        cobranca.status
+                        === "pendente"
+
+                        &&
+
+                        idsSelecionados.includes(
+                            String(
+                                cobranca.id
+                            )
+                        )
+                );
 
 
-        const agora =
-            new Date();
+            if (
+                cobrancasPendentes.length
+                === 0
+            ) {
+
+                alert(
+                    "As cobranças selecionadas não estão mais pendentes."
+                );
 
 
-        const vencimento =
-            new Date();
+                voltarCobrancas();
+
+                return;
+
+            }
 
 
-        vencimento.setDate(
-            vencimento.getDate()
-            + 7
-        );
+            renderizarResumoPagamento();
 
 
-        const numero =
-            numeroFake();
+            const total =
+                cobrancasPendentes.reduce(
+                    (
+                        soma,
+                        cobranca
+                    ) =>
+
+                        soma
+                        +
+                        Number(
+                            cobranca.valor
+                            || 0
+                        ),
+
+                    0
+                );
 
 
-        document.getElementById(
-            "linhaDigitavel"
-        ).textContent =
-            formatarLinha(
-                numero
-            );
+            /* =============================== */
+            /* BOLETO SALVO */
+            /* =============================== */
+
+            const salvo =
+                localStorage.getItem(
+                    chaveBoleto()
+                );
 
 
-        document.getElementById(
-            "documento"
-        ).textContent =
-            "FF-"
-            + Date.now()
-            .toString()
-            .slice(-8);
+            if (
+                salvo
+            ) {
+
+                registroBoleto =
+                    JSON.parse(
+                        salvo
+                    );
+
+            }
+
+            else {
+
+                const emissao =
+                    new Date();
 
 
-        document.getElementById(
-            "placaTela"
-        ).textContent =
-            placa;
+                const vencimento =
+                    new Date(
+                        emissao
+                    );
 
 
-        document.getElementById(
-            "valor"
-        ).textContent =
-            moeda(
-                total
-            );
+                vencimento.setDate(
+                    vencimento.getDate()
+                    + 3
+                );
 
 
-        document.getElementById(
-            "emissao"
-        ).textContent =
-            agora.toLocaleDateString(
-                "pt-BR"
-            );
+                registroBoleto = {
+
+                    id:
+                        gerarId(),
+
+                    valor:
+                        total,
+
+                    criadoEm:
+                        emissao
+                        .toISOString(),
+
+                    vencimento:
+                        vencimento
+                        .toISOString()
+
+                };
 
 
-        document.getElementById(
-            "vencimento"
-        ).textContent =
-            vencimento.toLocaleDateString(
-                "pt-BR"
-            );
+                registroBoleto.linhaDigitavel =
+                    gerarLinhaDigitavel(
+                        registroBoleto.id,
+                        registroBoleto.valor
+                    );
 
 
-        document.getElementById(
-            "voltar"
-        ).href =
-            `/cobrancas?cpf=${encodeURIComponent(cpf)}`
-            + `&placa=${encodeURIComponent(placa)}`;
+                localStorage.setItem(
+                    chaveBoleto(),
+                    JSON.stringify(
+                        registroBoleto
+                    )
+                );
 
-    }
+            }
 
 
-    function baixarBoleto() {
+            /* =============================== */
+            /* TELA */
+            /* =============================== */
 
-        const conteudo =
             document.getElementById(
-                "boleto"
-            ).outerHTML;
+                "valor"
+            ).textContent =
+                moeda(
+                    registroBoleto.valor
+                );
 
 
-        const arquivo =
-            `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-
-                <title>
-                    Boleto FreeFlow
-                </title>
-
-                <style>
-
-                    body {
-                        font-family: Arial;
-                        padding: 30px;
-                    }
-
-                    .boleto {
-                        color: #111;
-                    }
-
-                    .boleto-topo {
-                        display: flex;
-                        justify-content: space-between;
-                        border-bottom: 3px solid #111;
-                        padding-bottom: 15px;
-                    }
-
-                    .linha-digitavel {
-                        font-weight: bold;
-                        font-size: 18px;
-                        margin: 22px 0;
-                    }
-
-                    .grid {
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                    }
-
-                    .campo {
-                        padding: 12px;
-                        border: 1px solid #aaa;
-                    }
-
-                    .campo label {
-                        display: block;
-                        color: #666;
-                        font-size: 11px;
-                    }
-
-                    .codigo-barras {
-                        height: 85px;
-                        margin-top: 30px;
-
-                        background:
-                            repeating-linear-gradient(
-                                90deg,
-                                #000 0px,
-                                #000 2px,
-                                transparent 2px,
-                                transparent 4px,
-                                #000 4px,
-                                #000 7px,
-                                transparent 7px,
-                                transparent 10px
-                            );
-                    }
-
-                </style>
-
-            </head>
-
-            <body>
-
-                ${conteudo}
-
-                <p>
-                    Documento demonstrativo,
-                    sem validade bancária.
-                </p>
-
-            </body>
-
-            </html>
-            `;
+            document.getElementById(
+                "idBoleto"
+            ).textContent =
+                registroBoleto.id;
 
 
-        const blob =
-            new Blob(
-                [arquivo],
-                {
-                    type:
-                        "text/html;charset=utf-8"
-                }
+            document.getElementById(
+                "placaTela"
+            ).textContent =
+                placa;
+
+
+            document.getElementById(
+                "dataGeracao"
+            ).textContent =
+                new Date(
+                    registroBoleto.criadoEm
+                )
+                .toLocaleDateString(
+                    "pt-BR"
+                );
+
+
+            document.getElementById(
+                "vencimento"
+            ).textContent =
+                new Date(
+                    registroBoleto.vencimento
+                )
+                .toLocaleDateString(
+                    "pt-BR"
+                );
+
+
+            document.getElementById(
+                "linhaDigitavel"
+            ).value =
+                registroBoleto.linhaDigitavel;
+
+
+            document.getElementById(
+                "linhaDigitavelVisual"
+            ).textContent =
+                registroBoleto.linhaDigitavel;
+
+
+            desenharCodigoBarras(
+                registroBoleto.linhaDigitavel
             );
 
 
-        const url =
-            URL.createObjectURL(
-                blob
+            document.getElementById(
+                "voltar"
+            ).href =
+                `/cobrancas?cpf=${encodeURIComponent(cpf)}`
+                + `&placa=${encodeURIComponent(placa)}`;
+
+        }
+
+        catch (
+            erro
+        ) {
+
+            console.error(
+                erro
             );
 
 
-        const link =
-            document.createElement(
-                "a"
+            alert(
+                "Não foi possível conectar ao servidor."
+            );
+
+        }
+
+    }
+
+
+    /* ========================================= */
+    /* VOLTAR */
+    /* ========================================= */
+
+    function voltarCobrancas() {
+
+        window.location.href =
+            `/cobrancas?cpf=${encodeURIComponent(cpf || "")}`
+            + `&placa=${encodeURIComponent(placa || "")}`;
+
+    }
+
+
+    /* ========================================= */
+    /* CÓDIGO DE BARRAS */
+    /* ========================================= */
+
+    function desenharCodigoBarras(
+        texto
+    ) {
+
+        const canvas =
+            document.getElementById(
+                "codigoCanvas"
             );
 
 
-        link.href =
-            url;
+        const ctx =
+            canvas.getContext(
+                "2d"
+            );
 
 
-        link.download =
-            `boleto_freeflow_${placa}.html`;
+        ctx.fillStyle =
+            "#ffffff";
 
 
-        link.click();
+        ctx.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
 
 
-        URL.revokeObjectURL(
-            url
+        const numeros =
+            texto.replace(
+                /\D/g,
+                ""
+            );
+
+
+        let x =
+            8;
+
+
+        ctx.fillStyle =
+            "#000000";
+
+
+        for (
+            let i = 0;
+            i < numeros.length;
+            i++
+        ) {
+
+            const numero =
+                Number(
+                    numeros[i]
+                );
+
+
+            const largura =
+                numero % 3
+                + 1;
+
+
+            const altura =
+                (
+                    i % 4 === 0
+                )
+
+                ? 62
+
+                : 54;
+
+
+            ctx.fillRect(
+                x,
+                4,
+                largura,
+                altura
+            );
+
+
+            x +=
+                largura
+                + (
+                    numero % 2
+                    + 2
+                );
+
+
+            if (
+                x
+                >= canvas.width - 8
+            ) {
+
+                break;
+
+            }
+
+        }
+
+    }
+
+
+    /* ========================================= */
+    /* COPIAR */
+    /* ========================================= */
+
+    async function copiarCodigo() {
+
+        if (
+            !registroBoleto
+        ) {
+
+            return;
+
+        }
+
+
+        await navigator.clipboard.writeText(
+            registroBoleto.linhaDigitavel
+        );
+
+
+        alert(
+            "Linha digitável demonstrativa copiada."
         );
 
     }
 
+
+    /* ========================================= */
+    /* PAGAMENTO */
+    /* ========================================= */
 
     async function simularPagamento() {
 
@@ -869,12 +1798,26 @@
         ) {
 
             alert(
-                "Não existem cobranças pendentes."
+                "Não existem cobranças selecionadas."
             );
 
             return;
 
         }
+
+
+        const botao =
+            document.getElementById(
+                "btnPagar"
+            );
+
+
+        botao.disabled =
+            true;
+
+
+        botao.textContent =
+            "Processando...";
 
 
         for (
@@ -886,26 +1829,48 @@
                 await fetch(
                     `/portal/cobrancas/${cobranca.id}/pagar`,
                     {
-                        method: "POST",
+
+                        method:
+                            "POST",
 
                         headers: {
+
                             "Content-Type":
                                 "application/json"
+
                         },
 
                         body:
-                            JSON.stringify({
-                                cpf: cpf,
-                                placa: placa
-                            })
+                            JSON.stringify(
+                                {
+
+                                    cpf:
+                                        cpf,
+
+                                    placa:
+                                        placa
+
+                                }
+                            )
+
                     }
                 );
 
 
-            if (!resposta.ok) {
+            if (
+                !resposta.ok
+            ) {
+
+                botao.disabled =
+                    false;
+
+
+                botao.textContent =
+                    "Confirmar pagamento";
+
 
                 alert(
-                    "Erro ao simular pagamento."
+                    "Erro ao simular o pagamento."
                 );
 
                 return;
@@ -920,12 +1885,26 @@
         ).style.display =
             "block";
 
+
+        botao.textContent =
+            "Pagamento confirmado";
+
+
+        sessionStorage.removeItem(
+            "freeflow_cobrancas_selecionadas"
+        );
+
     }
 
+
+    /* ========================================= */
+    /* INICIAR */
+    /* ========================================= */
 
     carregar();
 
 </script>
+
 
 </body>
 

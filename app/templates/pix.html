@@ -85,7 +85,7 @@
 
 
         .card {
-            max-width: 650px;
+            max-width: 580px;
 
             margin: auto;
 
@@ -95,7 +95,7 @@
 
             border-radius: 16px;
 
-            padding: 30px;
+            padding: 24px;
 
             text-align: center;
         }
@@ -133,7 +133,7 @@
 
 
         .valor {
-            font-size: 35px;
+            font-size: 30px;
 
             color: #20d77a;
 
@@ -142,26 +142,102 @@
             margin-bottom: 25px;
         }
 
+/* ===================================== */
+/* RESUMO DAS COBRANÇAS */
+/* ===================================== */
+
+        .resumo-pagamento {
+            margin-bottom: 18px;
+
+            padding: 14px;
+
+            background: #0b2138;
+
+            border:
+                1px solid
+                #29445f;
+
+            border-radius: 12px;
+
+            text-align: left;
+        }
+
+        .resumo-pagamento h2 {
+            margin-bottom: 14px;
+
+            font-size: 16px;
+        }
+
+        .resumo-concessionaria {
+            padding:
+                8px
+                0;
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items: center;
+
+            gap: 15px;
+
+            border-bottom:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.08
+                );
+        }
+
+        .resumo-concessionaria:last-child {
+            border-bottom: none;
+        }
+
+        .resumo-concessionaria-info strong {
+            display: block;
+
+            font-size: 14px;
+        }
+
+        .resumo-concessionaria-info span {
+            display: block;
+
+            margin-top: 4px;
+
+            color: #9fb3c6;
+
+            font-size: 12px;
+        }
+
+        .resumo-concessionaria-valor {
+            font-weight: bold;
+
+            font-size: 15px;
+        }
+
 
         .qr-area {
-            width: 290px;
+            width: 230px;
 
             margin: auto;
 
             background: white;
 
-            border-radius: 15px;
+            border-radius: 13px;
 
-            padding: 18px;
+            padding: 12px;
         }
 
 
         canvas {
             display: block;
 
-            width: 254px;
+            width: 206px;
 
-            height: 254px;
+            height: 206px;
 
             image-rendering: pixelated;
         }
@@ -336,8 +412,7 @@
 
 
         <p class="descricao">
-            Utilize o QR Code demonstrativo abaixo
-            para simular o pagamento das passagens.
+            Utilize o QR Code abaixo para pagamento das passagens.
         </p>
 
 
@@ -348,6 +423,19 @@
             R$ 0,00
         </div>
 
+        <div class="resumo-pagamento">
+
+    <h2>
+        Cobranças selecionadas
+    </h2>
+
+    <div id="resumoConcessionarias">
+
+        Carregando...
+
+    </div>
+
+</div>
 
         <div class="qr-area">
 
@@ -457,7 +545,49 @@
     const placa =
         parametros.get("placa");
 
+    const cobrancasParametro =
+    parametros.get(
+        "cobrancas"
+    );
 
+
+let idsSelecionados = [];
+
+
+if (
+    cobrancasParametro
+) {
+
+    idsSelecionados =
+        cobrancasParametro
+        .split(",")
+        .filter(
+            id => id
+        );
+
+}
+
+else {
+
+    try {
+
+        idsSelecionados =
+            JSON.parse(
+                sessionStorage.getItem(
+                    "freeflow_cobrancas_selecionadas"
+                )
+                || "[]"
+            );
+
+    }
+
+    catch {
+
+        idsSelecionados = [];
+
+    }
+
+}    
     const segundaVia =
         parametros.get("segunda")
         === "1";
@@ -485,11 +615,17 @@
 
     function chavePix() {
 
-        return (
-            `freeflow_pix_${cpf}_${placa}`
-        );
+    const ids =
+        [...idsSelecionados]
+        .sort()
+        .join("-");
 
-    }
+
+    return (
+        `freeflow_pix_${cpf}_${placa}_${ids}`
+    );
+
+}
 
 
     function gerarId() {
@@ -521,6 +657,165 @@
 
     }
 
+    function nomeConcessionaria(
+    cobranca
+) {
+
+    if (
+        cobranca.concessionaria
+    ) {
+
+        return cobranca.concessionaria;
+
+    }
+
+
+    if (
+        Number(
+            cobranca.faixa
+        ) === 1
+    ) {
+
+        return "Concessionária A";
+
+    }
+
+
+    if (
+        Number(
+            cobranca.faixa
+        ) === 2
+    ) {
+
+        return "Concessionária B";
+
+    }
+
+
+    return "Concessionária";
+
+}
+
+        function renderizarResumoPagamento() {
+
+    const grupos = {};
+
+
+    cobrancasPendentes.forEach(
+        cobranca => {
+
+            const concessionaria =
+                nomeConcessionaria(
+                    cobranca
+                );
+
+
+            if (
+                !grupos[
+                    concessionaria
+                ]
+            ) {
+
+                grupos[
+                    concessionaria
+                ] = {
+
+                    quantidade:
+                        0,
+
+                    valor:
+                        0
+
+                };
+
+            }
+
+
+            grupos[
+                concessionaria
+            ].quantidade++;
+
+
+            grupos[
+                concessionaria
+            ].valor +=
+                Number(
+                    cobranca.valor
+                    || 0
+                );
+
+        }
+    );
+
+
+    const area =
+        document.getElementById(
+            "resumoConcessionarias"
+        );
+
+
+    area.innerHTML =
+        Object.entries(
+            grupos
+        )
+        .map(
+            (
+                [
+                    concessionaria,
+                    dados
+                ]
+            ) => `
+
+                <div
+                    class="
+                        resumo-concessionaria
+                    "
+                >
+
+                    <div
+                        class="
+                            resumo-concessionaria-info
+                        "
+                    >
+
+                        <strong>
+                            ${concessionaria}
+                        </strong>
+
+                        <span>
+
+                            ${dados.quantidade}
+
+                            ${
+                                dados.quantidade === 1
+                                ? "passagem"
+                                : "passagens"
+                            }
+
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        class="
+                            resumo-concessionaria-valor
+                        "
+                    >
+
+                        ${moeda(
+                            dados.valor
+                        )}
+
+                    </div>
+
+                </div>
+
+            `
+        )
+        .join("");
+
+}
 
     async function carregar() {
 
@@ -558,14 +853,63 @@
             await resposta.json();
 
 
+        if (
+    idsSelecionados.length
+    === 0
+) {
+
+    alert(
+        "Nenhuma cobrança foi selecionada."
+    );
+
+
+    window.location.href =
+        `/cobrancas?cpf=${encodeURIComponent(cpf)}`
+        + `&placa=${encodeURIComponent(placa)}`;
+
+
+    return;
+
+    }
         cobrancasPendentes =
-            (dados.cobrancas || [])
+            (
+                dados.cobrancas
+                || []
+            )
             .filter(
                 cobranca =>
+
                     cobranca.status
                     === "pendente"
+
+                    &&
+
+                    idsSelecionados.includes(
+                        String(
+                            cobranca.id
+                        )
+                    )
+            );
+                if (
+            cobrancasPendentes.length
+            === 0
+        ) {
+
+            alert(
+                "As cobranças selecionadas não estão mais pendentes."
             );
 
+
+            window.location.href =
+                `/cobrancas?cpf=${encodeURIComponent(cpf)}`
+                + `&placa=${encodeURIComponent(placa)}`;
+
+
+                return;
+
+            }
+
+            renderizarResumoPagamento();
 
         const total =
             cobrancasPendentes.reduce(

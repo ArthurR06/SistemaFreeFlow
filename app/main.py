@@ -789,53 +789,45 @@ def consultar_portal(
             total_pagas,
 
 
-        "cobrancas": [
+       "cobrancas": [
+    {
+        "id": cobranca.id,
 
-            {
+        "timestamp_evento": (
+            cobranca.evento.timestamp_evento
+            if cobranca.evento
+            else "-"
+        ),
 
-                "id":
-                    cobranca.id,
+        "faixa": (
+            cobranca.evento.faixa
+            if cobranca.evento
+            else "-"
+        ),
 
-
-                "timestamp_evento": (
-
+        "concessionaria": (
+            "Concessionária A"
+            if (
+                cobranca.evento
+                and cobranca.evento.faixa == 1
+            )
+            else (
+                "Concessionária B"
+                if (
                     cobranca.evento
-                    .timestamp_evento
+                    and cobranca.evento.faixa == 2
+                )
+                else "Concessionária"
+            )
+        ),
 
-                    if cobranca.evento
+        "valor": cobranca.valor,
 
-                    else "-"
-
-                ),
-
-
-                "faixa": (
-
-                    cobranca.evento.faixa
-
-                    if cobranca.evento
-
-                    else "-"
-
-                ),
-
-
-                "valor":
-                    cobranca.valor,
-
-
-                "status":
-                    cobranca.status
-
-            }
-
-            for cobranca
-            in cobrancas
-
-        ]
-
+        "status": cobranca.status
     }
 
+    for cobranca in cobrancas
+]}
 
 # ==========================================
 # PAGAMENTO SIMULADO
@@ -1019,16 +1011,29 @@ def admin_cobrancas(
 ):
 
     # ======================================
-    # PROTEÇÃO
+    # PROTEÇÃO DA ÁREA ADMIN
     # ======================================
 
     if not request.session.get(
         "admin_logado"
     ):
+
         return RedirectResponse(
             url="/admin/login",
             status_code=303
         )
+
+
+    # ======================================
+    # DADOS DA CONCESSIONÁRIA LOGADA
+    # ======================================
+
+    concessionaria_nome = (
+        request.session.get(
+            "concessionaria_nome",
+            "Concessionária"
+        )
+    )
 
 
     faixas_permitidas = (
@@ -1040,27 +1045,35 @@ def admin_cobrancas(
 
 
     # ======================================
-    # COBRANÇAS DA CONCESSIONÁRIA
+    # COBRANÇAS SOMENTE DAS FAIXAS
+    # DA CONCESSIONÁRIA LOGADA
     # ======================================
 
     cobrancas = (
+
         db.query(
             models.Cobranca
         )
+
         .join(
             models.EventoPassagem,
             models.Cobranca.evento_id
-            == models.EventoPassagem.id
+            ==
+            models.EventoPassagem.id
         )
+
         .filter(
             models.EventoPassagem.faixa.in_(
                 faixas_permitidas
             )
         )
+
         .order_by(
             models.Cobranca.id.desc()
         )
+
         .all()
+
     )
 
 
@@ -1068,12 +1081,15 @@ def admin_cobrancas(
     # AGRUPA POR VEÍCULO
     # ======================================
 
-    resumo = {}
+    veiculos_resumo = {}
 
 
     for cobranca in cobrancas:
 
         veiculo = cobranca.veiculo
+
+        evento = cobranca.evento
+
 
         if not veiculo:
             continue
@@ -1084,170 +1100,240 @@ def admin_cobrancas(
         )
 
 
-        if veiculo.id not in resumo:
+        veiculo_id = (
+            veiculo.id
+        )
 
-            cpf = (
+
+        # ==================================
+        # CRIA O VEÍCULO NO RESUMO
+        # ==================================
+
+        if (
+            veiculo_id
+            not in veiculos_resumo
+        ):
+
+
+            # CPF mascarado
+
+            cpf_original = (
                 proprietario.cpf
                 if proprietario
                 else ""
             )
 
 
-            cpf_mascarado = (
-                f"***.***.***-{cpf[-2:]}"
-                if len(cpf) == 11
-                else "***"
-            )
+            if (
+                cpf_original
+                and len(cpf_original) >= 2
+            ):
+
+                cpf_mascarado = (
+                    "***.***.***-"
+                    + cpf_original[-2:]
+                )
+
+            else:
+
+                cpf_mascarado = "***"
 
 
-            resumo[veiculo.id] = {
-
-                "id":
-                    veiculo.id,
+            veiculos_resumo[
+                veiculo_id
+            ] = {
 
                 "placa":
                     veiculo.placa,
 
-                "proprietario": (
-                    proprietario.nome
-                    if proprietario
-                    else "-"
-                ),
+                "nome_proprietario":
+                    (
+                        proprietario.nome
+                        if proprietario
+                        else "Não informado"
+                    ),
 
                 "cpf":
                     cpf_mascarado,
 
+                "uid_rfid":
+                    (
+                        veiculo.uid_rfid
+                        if veiculo.uid_rfid
+                        else "-"
+                    ),
+
+                "quantidade_pendentes":
+                    0,
+
+                "valor_pendente":
+                    0.0,
+
+                "quantidade_pagas":
+                    0,
+
+                "valor_pago":
+                    0.0,
+
                 "total_gerado":
                     0.0,
 
-                "total_pago":
-                    0.0,
-
-                "total_pendente":
-                    0.0,
-
-                "pagas":
-                    0,
-
-                "pendentes":
-                    0,
-
-                "cobrancas":
+                "historico":
                     []
 
             }
 
 
-        item = resumo[
-            veiculo.id
-        ]
-
-
-        item["total_gerado"] += (
-            cobranca.valor
+        resumo = (
+            veiculos_resumo[
+                veiculo_id
+            ]
         )
 
 
-        if cobranca.status == "pago":
+        valor = float(
+            cobranca.valor
+            or 0
+        )
 
-            item["pagas"] += 1
 
-            item["total_pago"] += (
-                cobranca.valor
-            )
+        # ==================================
+        # TOTAL GERADO
+        # ==================================
+
+        resumo[
+            "total_gerado"
+        ] += valor
+
+
+        # ==================================
+        # PENDENTE / PAGO
+        # ==================================
+
+        if (
+            cobranca.status
+            == "pago"
+        ):
+
+            resumo[
+                "quantidade_pagas"
+            ] += 1
+
+
+            resumo[
+                "valor_pago"
+            ] += valor
 
         else:
 
-            item["pendentes"] += 1
-
-            item["total_pendente"] += (
-                cobranca.valor
-            )
+            resumo[
+                "quantidade_pendentes"
+            ] += 1
 
 
-        item["cobrancas"].append(
+            resumo[
+                "valor_pendente"
+            ] += valor
+
+
+        # ==================================
+        # HISTÓRICO
+        # ==================================
+
+        resumo[
+            "historico"
+        ].append(
             {
+
                 "id":
                     cobranca.id,
 
-                "data": (
-                    cobranca.evento
-                    .timestamp_evento
+                "timestamp_evento":
+                    (
+                        evento.timestamp_evento
+                        if evento
+                        else "-"
+                    ),
 
-                    if cobranca.evento
-
-                    else "-"
-                ),
-
-                "faixa": (
-                    cobranca.evento.faixa
-
-                    if cobranca.evento
-
-                    else "-"
-                ),
+                "faixa":
+                    (
+                        evento.faixa
+                        if evento
+                        else "-"
+                    ),
 
                 "valor":
-                    cobranca.valor,
+                    valor,
 
                 "status":
                     cobranca.status
+
             }
         )
 
 
-    veiculos = sorted(
-        resumo.values(),
-        key=lambda item:
-            item["placa"]
+    # ======================================
+    # TRANSFORMA EM LISTA
+    # ======================================
+
+    resumo = list(
+        veiculos_resumo.values()
     )
 
 
     # ======================================
-    # TOTAIS
+    # TOTAIS DA CONCESSIONÁRIA
     # ======================================
 
     total_veiculos = len(
-        veiculos
+        resumo
     )
 
 
     total_gerado = sum(
-        cobranca.valor
-        for cobranca in cobrancas
+        item[
+            "total_gerado"
+        ]
+        for item
+        in resumo
     )
 
 
     total_pendente = sum(
-        cobranca.valor
-        for cobranca in cobrancas
-        if cobranca.status == "pendente"
+        item[
+            "valor_pendente"
+        ]
+        for item
+        in resumo
     )
 
 
     total_recebido = sum(
-        cobranca.valor
-        for cobranca in cobrancas
-        if cobranca.status == "pago"
+        item[
+            "valor_pago"
+        ]
+        for item
+        in resumo
     )
 
 
     # ======================================
-    # PÁGINA
+    # TEMPLATE
     # ======================================
 
     return templates.TemplateResponse(
+
         request=request,
+
         name="admin_cobrancas.html",
+
         context={
 
             "concessionaria_nome":
-                request.session.get(
-                    "concessionaria_nome"
-                ),
+                concessionaria_nome,
 
-            "veiculos":
-                veiculos,
+            "resumo":
+                resumo,
 
             "total_veiculos":
                 total_veiculos,
@@ -1262,6 +1348,7 @@ def admin_cobrancas(
                 total_recebido
 
         }
+
     )
 
 # ==========================================

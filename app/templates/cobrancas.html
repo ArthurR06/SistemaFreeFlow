@@ -10,9 +10,16 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>FreeFlow - Portal de Cobranças</title>
+    <title>
+        FreeFlow - Minhas Cobranças
+    </title>
+
 
     <style>
+
+        /* ===================================== */
+        /* RESET */
+        /* ===================================== */
 
         * {
             margin: 0;
@@ -20,585 +27,1258 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #071a2f;
-            color: #ffffff;
-            min-height: 100vh;
+
+        :root {
+
+            --fundo:
+                #071a2f;
+
+            --fundo-escuro:
+                #041426;
+
+            --card:
+                #102942;
+
+            --card-secundario:
+                #0b2138;
+
+            --borda:
+                #29445f;
+
+            --verde:
+                #37b36b;
+
+            --verde-hover:
+                #2c995a;
+
+            --azul:
+                #378fd1;
+
+            --texto:
+                #ffffff;
+
+            --texto-secundario:
+                #9fb3c6;
+
+            --amarelo:
+                #f4c95d;
         }
 
 
-        /* ============================== */
+        body {
+
+            min-height: 100vh;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #041426,
+                    #071a2f,
+                    #0c2944
+                );
+
+            color:
+                var(--texto);
+        }
+
+
+        /* ===================================== */
         /* CABEÇALHO */
-        /* ============================== */
+        /* ===================================== */
 
         .header {
-            background: #041426;
-            border-bottom: 1px solid #1f3a56;
+
+            background:
+                var(--fundo-escuro);
+
+            border-bottom:
+                1px solid
+                #1f3a56;
         }
+
 
         .header-conteudo {
+
+            width: 100%;
             max-width: 1400px;
-            margin: auto;
+
             min-height: 95px;
 
-            padding: 18px 30px;
+            margin: auto;
+
+            padding:
+                18px
+                30px;
 
             display: flex;
+
+            justify-content:
+                space-between;
+
             align-items: center;
-            justify-content: space-between;
+
+            gap: 20px;
         }
 
+
         .logo {
+
             font-size: 30px;
+
             font-weight: 800;
+
             letter-spacing: 1px;
         }
 
+
         .logo span {
-            color: #37b36b;
+
+            color:
+                var(--verde);
         }
 
+
         .portal-label {
+
             margin-top: 3px;
 
             font-size: 19px;
-            font-weight: 600;
 
-            color: #ffffff;
+            font-weight: 600;
         }
+
 
         .cliente-topo {
-            text-align: left;
 
-            min-width: 180px;
-
-            margin-right: 18px;
+            text-align: right;
         }
+
 
         .cliente-topo strong {
-            font-size: 18px;
+
+            font-size: 16px;
         }
 
-        .cliente-topo p {
-            margin-top: 6px;
 
-            color: #9fb1c5;
+        .cliente-topo p {
+
+            margin-top: 5px;
+
+            color:
+                var(--texto-secundario);
+
+            font-size: 13px;
+        }
+
+
+        /* ===================================== */
+        /* CONTAINER */
+        /* ===================================== */
+
+        .container {
+
+            width: 100%;
+
+            max-width: 1250px;
+
+            margin: auto;
+
+            padding:
+                34px
+                30px
+                55px;
+        }
+
+
+        /* ===================================== */
+        /* TÍTULO */
+        /* ===================================== */
+
+        .titulo-area {
+
+            margin-bottom: 23px;
+        }
+
+
+        .titulo-area h1 {
+
+            margin-bottom: 7px;
+
+            font-size: 30px;
+        }
+
+
+        .titulo-area p {
+
+            color:
+                var(--texto-secundario);
+
+            font-size: 14px;
+
+            line-height: 1.5;
+        }
+
+
+        /* ===================================== */
+        /* DADOS DO VEÍCULO */
+        /* ===================================== */
+
+        .veiculo-card {
+
+            margin-bottom: 22px;
+
+            padding:
+                17px
+                20px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    3,
+                    1fr
+                );
+
+            gap: 15px;
+
+            background:
+                rgba(
+                    16,
+                    41,
+                    66,
+                    0.88
+                );
+
+            border:
+                1px solid
+                var(--borda);
+
+            border-radius: 14px;
+        }
+
+
+        .dado {
+
+            padding:
+                2px
+                5px;
+        }
+
+
+        .dado span {
+
+            display: block;
+
+            margin-bottom: 5px;
+
+            color:
+                #839bb0;
+
+            font-size: 11px;
+
+            text-transform:
+                uppercase;
+        }
+
+
+        .dado strong {
+
+            font-size: 16px;
+        }
+
+
+        /* ===================================== */
+        /* LAYOUT */
+        /* ===================================== */
+
+        .layout {
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(
+                    0,
+                    1fr
+                )
+                340px;
+
+            gap: 22px;
+
+            align-items:
+                start;
+        }
+
+
+        /* ===================================== */
+        /* ÁREA CONCESSIONÁRIAS */
+        /* ===================================== */
+
+        #areaCobrancas {
+
+            display: flex;
+
+            flex-direction:
+                column;
+
+            gap: 14px;
+
+            min-width: 0;
+        }
+
+
+        /* ===================================== */
+        /* CARD CONCESSIONÁRIA */
+        /* ===================================== */
+
+        .concessionaria {
+
+            overflow: hidden;
+
+            background:
+                var(--card);
+
+            border:
+                1px solid
+                var(--borda);
+
+            border-radius: 14px;
+
+            box-shadow:
+                0
+                8px
+                22px
+                rgba(
+                    0,
+                    0,
+                    0,
+                    0.14
+                );
+
+            transition:
+                0.2s;
+        }
+
+
+        .concessionaria.aberta {
+
+            border-color:
+                #3a6382;
+        }
+
+
+        /* ===================================== */
+        /* TOPO CONCESSIONÁRIA */
+        /* ===================================== */
+
+        .concessionaria-topo {
+
+            min-height: 68px;
+
+            padding:
+                12px
+                16px;
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items: center;
+
+            gap: 15px;
+
+            cursor: pointer;
+
+            user-select: none;
+
+            transition:
+                0.2s;
+        }
+
+
+        .concessionaria-topo:hover {
+
+            background:
+                rgba(
+                    55,
+                    143,
+                    209,
+                    0.06
+                );
+        }
+
+
+        .concessionaria-identidade {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            min-width: 0;
+        }
+
+
+        .icone-concessionaria {
+
+            width: 38px;
+            height: 38px;
+
+            border-radius: 9px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #1e8e56,
+                    #37b36b
+                );
+
+            color: white;
+
+            font-size: 14px;
+
+            font-weight: bold;
+        }
+
+
+        .concessionaria-nome {
+
+            min-width: 0;
+        }
+
+
+        .concessionaria-nome h2 {
+
+            margin-bottom: 3px;
+
+            font-size: 17px;
+        }
+
+
+        .concessionaria-nome p {
+
+            color:
+                var(--texto-secundario);
+
+            font-size: 12px;
+        }
+
+
+        .concessionaria-direita {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            flex-shrink: 0;
+        }
+
+
+        .total-concessionaria {
+
+            text-align: right;
+        }
+
+
+        .total-concessionaria span {
+
+            color:
+                var(--texto-secundario);
+
+            font-size: 11px;
+        }
+
+
+        .total-concessionaria strong {
+
+            margin-left: 4px;
 
             font-size: 15px;
         }
 
 
-        /* ============================== */
-        /* CONTEÚDO */
-        /* ============================== */
+        .seta {
 
-        .container {
-            max-width: 1400px;
-
-            margin: auto;
-
-            padding: 35px 30px 60px;
-        }
-
-        .grid-principal {
-            display: grid;
-
-            grid-template-columns:
-                1fr
-                1.15fr;
-
-            gap: 25px;
-
-            align-items: start;
-        }
-
-
-        /* ============================== */
-        /* CARD */
-        /* ============================== */
-
-        .card {
-            background: #102942;
-
-            border: 1px solid #29445f;
-
-            border-radius: 16px;
-
-            padding: 26px;
-
-            box-shadow:
-                0 12px 30px
-                rgba(0, 0, 0, 0.18);
-        }
-
-        .card + .card {
-            margin-top: 22px;
-        }
-
-        .card h2 {
-            font-size: 21px;
-
-            margin-bottom: 20px;
-        }
-
-
-        /* ============================== */
-        /* TOTAL */
-        /* ============================== */
-
-        .resumo-total {
-            background: #173957;
-
-            border-radius: 13px;
-
-            padding: 22px;
+            width: 28px;
+            height: 28px;
 
             display: flex;
 
-            justify-content: space-between;
+            align-items: center;
+
+            justify-content: center;
+
+            color:
+                #a8bfd1;
+
+            font-size: 15px;
+
+            transition:
+                transform
+                0.22s;
+        }
+
+
+        .concessionaria.aberta
+        .seta {
+
+            transform:
+                rotate(
+                    180deg
+                );
+        }
+
+
+        /* ===================================== */
+        /* CORPO RETRÁTIL */
+        /* ===================================== */
+
+        .concessionaria-corpo {
+
+            display: none;
+
+            border-top:
+                1px solid
+                var(--borda);
+        }
+
+
+        .concessionaria.aberta
+        .concessionaria-corpo {
+
+            display: block;
+        }
+
+
+        /* ===================================== */
+        /* SELECIONAR TODAS */
+        /* ===================================== */
+
+        .barra-selecao {
+
+            padding:
+                11px
+                15px;
+
+            background:
+                rgba(
+                    7,
+                    29,
+                    50,
+                    0.28
+                );
+
+            border-bottom:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.05
+                );
+        }
+
+
+        .selecionar-todas {
+
+            display: inline-flex;
 
             align-items: center;
 
-            margin-bottom: 22px;
-        }
+            gap: 8px;
 
-        .resumo-total span {
-            color: #c3d2df;
-
-            font-size: 16px;
-        }
-
-        .resumo-total strong {
-            font-size: 29px;
-
-            color: #20d77a;
-        }
-
-
-        /* ============================== */
-        /* DADOS DO VEÍCULO */
-        /* ============================== */
-
-        .dados-veiculo {
-            display: grid;
-
-            grid-template-columns:
-                1fr
-                1fr;
-
-            gap: 15px;
-        }
-
-        .dado {
-            background: #0b2138;
-
-            border-radius: 10px;
-
-            padding: 16px;
-        }
-
-        .dado span {
-            display: block;
-
-            color: #8fa5ba;
+            color:
+                #cad7e2;
 
             font-size: 12px;
 
-            margin-bottom: 6px;
+            cursor: pointer;
 
-            text-transform: uppercase;
-        }
-
-        .dado strong {
-            font-size: 16px;
+            user-select: none;
         }
 
 
-        /* ============================== */
-        /* PASSAGENS */
-        /* ============================== */
+        .selecionar-todas input {
 
-        .passagem {
-            background: #0b2138;
+            width: 16px;
+            height: 16px;
 
-            border: 1px solid #24415d;
+            accent-color:
+                var(--verde);
 
-            border-radius: 11px;
-
-            padding: 16px;
-
-            margin-bottom: 12px;
-
-            display: grid;
-
-            grid-template-columns:
-                1.5fr
-                0.7fr
-                0.8fr;
-
-            gap: 10px;
-
-            align-items: center;
+            cursor: pointer;
         }
 
-        .passagem:last-child {
-            margin-bottom: 0;
+
+        /* ===================================== */
+        /* LISTA / SCROLL */
+        /* ===================================== */
+
+        .lista-cobrancas {
+
+            max-height: 235px;
+
+            padding: 10px;
+
+            overflow-y: auto;
+
+            overflow-x: hidden;
+
+            scrollbar-width:
+                thin;
+
+            scrollbar-color:
+                #3b627f
+                #0b2138;
         }
 
-        .passagem-data {
+
+        .lista-cobrancas::-webkit-scrollbar {
+
+            width: 7px;
+        }
+
+
+        .lista-cobrancas::-webkit-scrollbar-track {
+
+            background:
+                #0b2138;
+        }
+
+
+        .lista-cobrancas::-webkit-scrollbar-thumb {
+
+            background:
+                #3b627f;
+
+            border-radius: 10px;
+        }
+
+
+        .lista-cobrancas::-webkit-scrollbar-thumb:hover {
+
+            background:
+                #4b7595;
+        }
+
+
+        /* ===================================== */
+        /* SEM DÉBITO */
+        /* ===================================== */
+
+        .sem-debitos {
+
+            padding:
+                27px
+                20px;
+
+            text-align: center;
+
+            color:
+                var(--texto-secundario);
+
+            font-size: 13px;
+        }
+
+
+        .sem-debitos strong {
+
+            display: block;
+
+            margin-bottom: 5px;
+
+            color:
+                #dce8f2;
+
             font-size: 14px;
         }
 
-        .passagem-data small {
+
+        /* ===================================== */
+        /* COBRANÇA */
+        /* ===================================== */
+
+        .cobranca {
+
+            margin-bottom: 8px;
+
+             padding:
+             9px
+             12px;
+
+            display: grid;
+
+            grid-template-columns:
+                auto
+                minmax(
+                    0,
+                    1fr
+                )
+                auto;
+
+            gap: 12px;
+
+            align-items: center;
+
+            background:
+                var(--card-secundario);
+
+            border:
+                1px solid
+                #24415d;
+
+            border-radius: 10px;
+
+            cursor: pointer;
+
+            transition:
+                0.2s;
+        }
+
+
+        .cobranca:last-child {
+
+            margin-bottom: 0;
+        }
+
+
+        .cobranca:hover {
+
+            border-color:
+                #3a6488;
+        }
+
+
+        .cobranca.selecionada {
+
+            background:
+                #113a38;
+
+            border-color:
+                var(--verde);
+        }
+
+
+        .checkbox-cobranca {
+
+            width: 17px;
+            height: 17px;
+
+            accent-color:
+                var(--verde);
+
+            cursor: pointer;
+        }
+
+
+        .cobranca-info strong {
+
             display: block;
 
-            margin-top: 4px;
+            margin-bottom: 2px;
 
-            color: #90a6bb;
-        }
-
-        .passagem-valor {
-            text-align: right;
-
-            font-weight: bold;
+            font-size: 13px;
         }
 
 
-        /* ============================== */
-        /* STATUS */
-        /* ============================== */
+        .cobranca-info p {
 
-        .status {
-            display: inline-block;
-
-            padding: 7px 10px;
-
-            border-radius: 8px;
+            color:
+                var(--texto-secundario);
 
             font-size: 12px;
 
-            font-weight: bold;
-
-            text-align: center;
-        }
-
-        .status-pendente {
-            background: #604d18;
-
-            color: #ffd76b;
-        }
-
-        .status-pago {
-            background: #154b32;
-
-            color: #62e59b;
+            line-height: 1.4;
         }
 
 
-        /* ============================== */
-        /* PAGAMENTO */
-        /* ============================== */
+        .cobranca-valor {
 
-        .valor-pagamento {
-            background: #173957;
-
-            border-radius: 13px;
-
-            padding: 22px;
-
-            margin-bottom: 28px;
+            text-align: right;
         }
 
-        .valor-pagamento span {
-            color: #c3d2df;
-        }
 
-        .valor-pagamento strong {
+        .cobranca-valor strong {
+
             display: block;
 
-            color: #20d77a;
-
-            font-size: 33px;
-
-            margin-top: 7px;
-        }
-
-        .titulo-forma {
-            font-size: 20px;
-
-            margin-bottom: 16px;
-        }
-
-
-        /* ============================== */
-        /* MÉTODOS */
-        /* ============================== */
-
-        .metodo {
-            background: #0b2138;
-
-            border: 2px solid #28455f;
-
-            border-radius: 12px;
-
-            padding: 20px;
-
-            margin-bottom: 14px;
-
-            cursor: pointer;
-
-            display: flex;
-
-            justify-content: space-between;
-
-            align-items: center;
-
-            transition: 0.2s;
-        }
-
-        .metodo:hover {
-            border-color: #3d9dd5;
-
-            transform: translateY(-1px);
-        }
-
-        .metodo.selecionado {
-            border-color: #37b36b;
-
-            background: #123a35;
-        }
-
-        .metodo.bloqueado {
-            opacity: 0.45;
-
-            cursor: not-allowed;
-
-            pointer-events: none;
-        }
-
-        .metodo-info {
-            display: flex;
-
-            align-items: center;
-
-            gap: 16px;
-        }
-
-
-        /* ============================== */
-        /* ÍCONES */
-        /* ============================== */
-
-        .icone {
-            width: 38px;
-            min-width: 38px;
-            height: 38px;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            background: transparent;
-
-            color: #42a5ff;
-
-            font-size: 29px;
-
-            line-height: 1;
-        }
-
-        .metodo strong {
-            display: block;
-
-            font-size: 17px;
-        }
-
-        .metodo small {
-            display: block;
-
-            color: #9eb2c5;
-
-            margin-top: 5px;
-        }
-
-        .tag {
-            background: #176d48;
-
-            color: #d9ffeb;
-
-            border-radius: 7px;
-
-            padding: 6px 9px;
-
-            font-size: 11px;
-
-            font-weight: bold;
-        }
-
-
-        /* ============================== */
-        /* BOTÕES */
-        /* ============================== */
-
-        .btn {
-            width: 100%;
-
-            border: 0;
-
-            border-radius: 10px;
-
-            padding: 15px;
+            margin-bottom: 5px;
 
             font-size: 16px;
-
-            font-weight: bold;
-
-            cursor: pointer;
-
-            transition: 0.2s;
         }
 
-        .btn-continuar {
-            background: #23a65d;
+
+        .status {
+
+            display: inline-block;
+
+            padding:
+                4px
+                7px;
+
+            background:
+                rgba(
+                    244,
+                    201,
+                    93,
+                    0.13
+                );
+
+            border-radius: 6px;
+
+            color:
+                var(--amarelo);
+
+            font-size: 10px;
+
+            font-weight: bold;
+        }
+
+
+        /* ===================================== */
+        /* SUBTOTAL */
+        /* ===================================== */
+
+        .subtotal {
+
+            min-height: 46px;
+
+            padding:
+                11px
+                15px;
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items: center;
+
+            gap: 12px;
+
+            background:
+                rgba(
+                    7,
+                    29,
+                    50,
+                    0.34
+                );
+
+            border-top:
+                1px solid
+                var(--borda);
+
+            color:
+                var(--texto-secundario);
+
+            font-size: 12px;
+        }
+
+
+        .subtotal strong {
 
             color: white;
 
-            margin-top: 10px;
-        }
-
-        .btn-continuar:hover {
-            background: #1d914f;
-        }
-
-        .btn-continuar:disabled {
-            opacity: 0.55;
-
-            cursor: not-allowed;
-        }
-
-        .btn-segunda-via {
-            display: none;
-
-            margin-top: 12px;
-
-            background: transparent;
-
-            color: #79bfff;
-
-            border: 1px solid #3679a7;
-        }
-
-        .btn-segunda-via:hover {
-            background: #123553;
-        }
-
-        .btn-voltar {
-            display: block;
-
-            text-decoration: none;
-
-            text-align: center;
-
-            color: #b2c4d5;
-
-            margin-top: 17px;
-
-            padding: 10px;
-        }
-
-        .btn-voltar:hover {
-            color: #ffffff;
+            font-size: 15px;
         }
 
 
-        /* ============================== */
-        /* EMISSÃO EXISTENTE */
-        /* ============================== */
+        /* ===================================== */
+        /* RESUMO */
+        /* ===================================== */
 
-        .emissao-existente {
-            display: none;
+        .resumo {
 
-            background: #0b2138;
+            position: sticky;
 
-            border: 1px solid #3679a7;
+            top: 20px;
 
-            border-radius: 10px;
+            padding: 21px;
+
+            background:
+                var(--card);
+
+            border:
+                1px solid
+                var(--borda);
+
+            border-radius: 14px;
+
+            box-shadow:
+                0
+                10px
+                28px
+                rgba(
+                    0,
+                    0,
+                    0,
+                    0.18
+                );
+        }
+
+
+        .resumo h2 {
+
+            margin-bottom: 16px;
+
+            font-size: 19px;
+        }
+
+
+        .resumo-linha {
+
+            padding:
+                9px
+                0;
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items: center;
+
+            gap: 10px;
+
+            border-bottom:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.07
+                );
+
+            color:
+                var(--texto-secundario);
+
+            font-size: 12px;
+        }
+
+
+        .resumo-linha strong {
+
+            color: white;
+
+            font-size: 13px;
+        }
+
+
+        .total {
+
+            margin-top: 15px;
 
             padding: 15px;
 
-            margin-bottom: 15px;
+            background:
+                #173957;
 
-            color: #b9d8f0;
-
-            line-height: 1.5;
-        }
-
-        .emissao-existente strong {
-            color: #ffffff;
+            border-radius: 10px;
         }
 
 
-        /* ============================== */
-        /* SEM COBRANÇA */
-        /* ============================== */
+        .total span {
 
-        .vazio {
-            color: #8fa5ba;
+            display: block;
+
+            margin-bottom: 5px;
+
+            color:
+                #b5c8d7;
+
+            font-size: 12px;
+        }
+
+
+        .total strong {
+
+            color:
+                var(--verde);
+
+            font-size: 27px;
+        }
+
+
+        /* ===================================== */
+        /* MÉTODOS */
+        /* ===================================== */
+
+        .pagamento-titulo {
+
+            margin-top: 20px;
+
+            margin-bottom: 10px;
+
+            font-size: 13px;
+
+            font-weight: bold;
+        }
+
+
+        .metodo {
+
+            margin-bottom: 9px;
+
+            padding:
+                12px
+                13px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            background:
+                var(--card-secundario);
+
+            border:
+                2px solid
+                #28455f;
+
+            border-radius: 10px;
+
+            cursor: pointer;
+
+            transition:
+                0.2s;
+        }
+
+
+        .metodo:hover {
+
+            border-color:
+                var(--azul);
+        }
+
+
+        .metodo.selecionado {
+
+            background:
+                #123a35;
+
+            border-color:
+                var(--verde);
+        }
+
+
+        .metodo-icone {
+
+            width: 32px;
+            height: 32px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            background:
+                #163c50;
+
+            border-radius: 8px;
+
+            color:
+                #7cd5f3;
+
+            font-size: 14px;
+
+            font-weight: bold;
+        }
+
+
+        .metodo strong {
+
+            display: block;
+
+            font-size: 13px;
+        }
+
+
+        .metodo small {
+
+            display: block;
+
+            margin-top: 2px;
+
+            color:
+                var(--texto-secundario);
+
+            font-size: 10px;
+        }
+
+
+        /* ===================================== */
+        /* BOTÕES */
+        /* ===================================== */
+
+        .btn-continuar {
+
+            width: 100%;
+
+            margin-top: 15px;
+
+            padding: 13px;
+
+            background:
+                var(--verde);
+
+            border: 0;
+
+            border-radius: 9px;
+
+            color: white;
+
+            font-size: 13px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition:
+                0.2s;
+        }
+
+
+        .btn-continuar:hover {
+
+            background:
+                var(--verde-hover);
+        }
+
+
+        .btn-continuar:disabled {
+
+            opacity: 0.42;
+
+            cursor:
+                not-allowed;
+        }
+
+
+        .btn-voltar {
+
+            display: block;
+
+            margin-top: 14px;
 
             text-align: center;
 
-            padding: 30px 10px;
+            color:
+                var(--texto-secundario);
+
+            text-decoration: none;
+
+            font-size: 12px;
         }
 
 
-        /* ============================== */
+        .btn-voltar:hover {
+
+            color: white;
+        }
+
+
+        /* ===================================== */
         /* RESPONSIVO */
-        /* ============================== */
+        /* ===================================== */
 
         @media (
-            max-width: 900px
+            max-width: 950px
         ) {
 
-            .grid-principal {
-                grid-template-columns: 1fr;
+            .layout {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+
+            .resumo {
+
+                position: static;
             }
 
         }
 
+
         @media (
-            max-width: 600px
+            max-width: 650px
         ) {
 
             .header-conteudo {
-                padding: 18px;
+
+                padding:
+                    18px;
             }
 
-            .container {
-                padding:
-                    25px
-                    15px;
-            }
 
             .cliente-topo {
+
                 display: none;
             }
 
-            .dados-veiculo {
-                grid-template-columns: 1fr;
+
+            .container {
+
+                padding:
+                    25px
+                    15px
+                    45px;
             }
 
-            .passagem {
-                grid-template-columns: 1fr;
+
+            .veiculo-card {
+
+                grid-template-columns:
+                    1fr;
             }
 
-            .passagem-valor {
+
+            .total-concessionaria {
+
+                display: none;
+            }
+
+
+            .cobranca {
+
+                grid-template-columns:
+                    auto
+                    1fr;
+            }
+
+
+            .cobranca-valor {
+
+                grid-column:
+                    2;
+
                 text-align: left;
             }
 
-            .tag {
-                display: none;
+
+            .titulo-area h1 {
+
+                font-size: 26px;
             }
 
         }
@@ -611,22 +1291,28 @@
 <body>
 
 
-<!-- ====================================== -->
+<!-- ===================================== -->
 <!-- CABEÇALHO -->
-<!-- ====================================== -->
+<!-- ===================================== -->
 
 <header class="header">
 
     <div class="header-conteudo">
 
+
         <div>
 
             <div class="logo">
+
                 FREE<span>FLOW</span>
+
             </div>
 
+
             <div class="portal-label">
-                Portal de Cobranças
+
+                Portal do Cliente
+
             </div>
 
         </div>
@@ -635,302 +1321,293 @@
         <div class="cliente-topo">
 
             <strong id="nomeTopo">
+
                 Cliente
+
             </strong>
 
+
             <p id="cpfTopo">
+
                 CPF: ---
+
             </p>
 
         </div>
+
 
     </div>
 
 </header>
 
 
-<!-- ====================================== -->
-<!-- CONTEÚDO -->
-<!-- ====================================== -->
+<!-- ===================================== -->
+<!-- PRINCIPAL -->
+<!-- ===================================== -->
 
 <main class="container">
 
-    <div class="grid-principal">
 
+    <div class="titulo-area">
 
-        <!-- ================================= -->
-        <!-- LADO ESQUERDO -->
-        <!-- ================================= -->
+        <h1>
 
-        <div>
+            Minhas cobranças
 
+        </h1>
 
-            <!-- DETALHES -->
 
-            <section class="card">
+        <p>
 
-                <h2>
-                    Detalhes da cobrança
-                </h2>
+            Consulte os débitos por concessionária
+            e selecione somente as passagens que deseja pagar.
 
-
-                <div class="resumo-total">
-
-                    <span>
-                        Total a pagar:
-                    </span>
-
-                    <strong id="totalResumo">
-                        R$ 0,00
-                    </strong>
-
-                </div>
-
-
-                <div class="dados-veiculo">
-
-
-                    <div class="dado">
-
-                        <span>
-                            Placa
-                        </span>
-
-                        <strong id="placaVeiculo">
-                            ---
-                        </strong>
-
-                    </div>
-
-
-                    <div class="dado">
-
-                        <span>
-                            Passagens pendentes
-                        </span>
-
-                        <strong id="quantidadePendentes">
-                            0
-                        </strong>
-
-                    </div>
-
-
-                    <div class="dado">
-
-                        <span>
-                            Proprietário
-                        </span>
-
-                        <strong id="nomeCliente">
-                            ---
-                        </strong>
-
-                    </div>
-
-
-                    <div class="dado">
-
-                        <span>
-                            Status
-                        </span>
-
-                        <strong id="statusGeral">
-                            Sem cobranças
-                        </strong>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- PASSAGENS -->
-
-            <section class="card">
-
-                <h2>
-                    Passagens registradas
-                </h2>
-
-
-                <div id="listaPassagens">
-
-                    <div class="vazio">
-                        Nenhuma cobrança foi carregada no momento.
-                    </div>
-
-                </div>
-
-            </section>
-
-        </div>
-
-
-        <!-- ================================= -->
-        <!-- LADO DIREITO -->
-        <!-- ================================= -->
-
-        <div>
-
-            <section class="card">
-
-
-                <div class="valor-pagamento">
-
-                    <span>
-                        Valor total:
-                    </span>
-
-                    <strong id="totalPagamento">
-                        R$ 0,00
-                    </strong>
-
-                </div>
-
-
-                <h2 class="titulo-forma">
-                    Selecione a forma de pagamento
-                </h2>
-
-
-                <!-- EMISSÃO JÁ EXISTENTE -->
-
-                <div
-                    id="avisoEmissao"
-                    class="emissao-existente"
-                >
-
-                    Já existe uma forma de pagamento
-                    emitida para esta cobrança.
-
-                    <br>
-
-                    <strong>
-                        Utilize a opção de segunda via abaixo.
-                    </strong>
-
-                </div>
-
-
-                <!-- PIX -->
-
-                <div
-                    class="metodo"
-                    data-metodo="pix"
-                    onclick="selecionarMetodo(this)"
-                >
-
-                    <div class="metodo-info">
-
-                        <div class="icone">
-                            ◈
-                        </div>
-
-                        <div>
-
-                            <strong>
-                                PIX
-                            </strong>
-
-                            <small>
-                                Pagamento instantâneo
-                            </small>
-
-                        </div>
-
-                    </div>
-
-
-                    <span class="tag">
-                        Recomendado
-                    </span>
-
-                </div>
-
-
-                <!-- BOLETO -->
-
-                <div
-                    class="metodo"
-                    data-metodo="boleto"
-                    onclick="selecionarMetodo(this)"
-                >
-
-                    <div class="metodo-info">
-
-                        <div class="icone">
-                            ▤
-                        </div>
-
-                        <div>
-
-                            <strong>
-                                Boleto bancário
-                            </strong>
-
-                            <small>
-                                Pagamento via boleto
-                            </small>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- CONTINUAR -->
-
-                <button
-                    id="btnContinuar"
-                    class="btn btn-continuar"
-                    onclick="continuarPagamento()"
-                >
-
-                    Continuar
-
-                </button>
-
-
-                <!-- SEGUNDA VIA -->
-
-                <button
-                    id="btnSegundaVia"
-                    class="btn btn-segunda-via"
-                    onclick="abrirSegundaVia()"
-                >
-
-                    Visualizar 2ª via
-
-                </button>
-
-
-                <a
-                    href="/portal"
-                    class="btn-voltar"
-                >
-
-                    ← Voltar ao portal
-
-                </a>
-
-            </section>
-
-        </div>
+        </p>
 
     </div>
+
+
+    <!-- ================================= -->
+    <!-- VEÍCULO -->
+    <!-- ================================= -->
+
+    <div class="veiculo-card">
+
+
+        <div class="dado">
+
+            <span>
+
+                Proprietário
+
+            </span>
+
+            <strong id="nomeCliente">
+
+                ---
+
+            </strong>
+
+        </div>
+
+
+        <div class="dado">
+
+            <span>
+
+                Placa
+
+            </span>
+
+            <strong id="placaVeiculo">
+
+                ---
+
+            </strong>
+
+        </div>
+
+
+        <div class="dado">
+
+            <span>
+
+                Débitos pendentes
+
+            </span>
+
+            <strong id="quantidadePendentes">
+
+                0
+
+            </strong>
+
+        </div>
+
+
+    </div>
+
+
+    <div class="layout">
+
+
+        <!-- ================================= -->
+        <!-- CONCESSIONÁRIAS -->
+        <!-- ================================= -->
+
+        <div id="areaCobrancas">
+
+            <div class="sem-debitos">
+
+                Carregando cobranças...
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================= -->
+        <!-- RESUMO -->
+        <!-- ================================= -->
+
+        <aside class="resumo">
+
+
+            <h2>
+
+                Resumo do pagamento
+
+            </h2>
+
+
+            <div class="resumo-linha">
+
+                <span>
+
+                    Selecionadas
+
+                </span>
+
+                <strong id="quantidadeSelecionadas">
+
+                    0
+
+                </strong>
+
+            </div>
+
+
+            <div id="resumoConcessionarias"></div>
+
+
+            <div class="total">
+
+                <span>
+
+                    Total selecionado
+
+                </span>
+
+                <strong id="totalSelecionado">
+
+                    R$ 0,00
+
+                </strong>
+
+            </div>
+
+
+            <div class="pagamento-titulo">
+
+                Forma de pagamento
+
+            </div>
+
+
+            <!-- PIX -->
+
+            <div
+                class="metodo"
+                data-metodo="pix"
+                onclick="selecionarMetodo(this)"
+            >
+
+                <div class="metodo-icone">
+
+                    ◈
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+
+                        PIX
+
+                    </strong>
+
+                    <small>
+
+                        Pagamento instantâneo
+
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- BOLETO -->
+
+            <div
+                class="metodo"
+                data-metodo="boleto"
+                onclick="selecionarMetodo(this)"
+            >
+
+                <div class="metodo-icone">
+
+                    ▤
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+
+                        Boleto bancário
+
+                    </strong>
+
+                    <small>
+
+                        Pagamento por boleto
+
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <button
+                id="btnContinuar"
+                class="btn-continuar"
+                onclick="continuarPagamento()"
+                disabled
+            >
+
+                Continuar para pagamento
+
+            </button>
+
+
+            <a
+                href="/portal"
+                class="btn-voltar"
+            >
+
+                ← Voltar ao portal
+
+            </a>
+
+
+        </aside>
+
+
+    </div>
+
 
 </main>
 
 
 <script>
 
-
-    // ==========================================
-    // PARÂMETROS DA URL
-    // ==========================================
+    /* ========================================= */
+    /* PARÂMETROS */
+    /* ========================================= */
 
     const parametros =
         new URLSearchParams(
@@ -939,128 +1616,337 @@
 
 
     const cpf =
-        parametros.get("cpf");
+        parametros.get(
+            "cpf"
+        );
 
 
     const placa =
-        parametros.get("placa");
-
-
-    let metodoSelecionado = null;
-
-    let cobrancasAtuais = [];
-
-    let emissaoAtual = null;
-
-
-    // ==========================================
-    // CHAVE DA EMISSÃO
-    // ==========================================
-
-    function chaveEmissao() {
-
-        return (
-            `freeflow_emissao_${cpf}_${placa}`
+        parametros.get(
+            "placa"
         );
 
-    }
+
+    let cobrancasPendentes = [];
+
+    let metodoSelecionado =
+        null;
 
 
-    // ==========================================
-    // MOEDA
-    // ==========================================
+    /* ========================================= */
+    /* MOEDA */
+    /* ========================================= */
 
-    function moeda(valor) {
+    function moeda(
+        valor
+    ) {
 
         return Number(
             valor || 0
         ).toLocaleString(
             "pt-BR",
             {
-                style: "currency",
-                currency: "BRL"
+
+                style:
+                    "currency",
+
+                currency:
+                    "BRL"
+
             }
         );
 
     }
 
 
-    // ==========================================
-    // CPF
-    // ==========================================
+    /* ========================================= */
+    /* CONCESSIONÁRIA */
+    /* ========================================= */
 
-    function mascararCPF(valor) {
+    function nomeConcessionaria(
+        cobranca
+    ) {
 
-        if (!valor) {
-            return "---";
+        if (
+            cobranca.concessionaria
+        ) {
+
+            return cobranca.concessionaria;
+
         }
 
 
-        const numeros =
-            valor.replace(
-                /\D/g,
+        if (
+            Number(
+                cobranca.faixa
+            ) === 1
+        ) {
+
+            return "Concessionária A";
+
+        }
+
+
+        if (
+            Number(
+                cobranca.faixa
+            ) === 2
+        ) {
+
+            return "Concessionária B";
+
+        }
+
+
+        return "Concessionária";
+
+    }
+
+
+    /* ========================================= */
+    /* CHAVE */
+    /* ========================================= */
+
+    function chaveGrupo(
+        texto
+    ) {
+
+        return texto
+
+            .normalize(
+                "NFD"
+            )
+
+            .replace(
+                /[\u0300-\u036f]/g,
                 ""
+            )
+
+            .replace(
+                /[^a-zA-Z0-9]/g,
+                "-"
+            );
+
+    }
+
+
+    /* ========================================= */
+    /* DATA */
+    /* ========================================= */
+
+    function formatarData(
+        valor
+    ) {
+
+        if (
+            !valor
+            ||
+            valor === "-"
+        ) {
+
+            return "-";
+
+        }
+
+
+        try {
+
+            const data =
+                new Date(
+                    valor
+                );
+
+
+            if (
+                Number.isNaN(
+                    data.getTime()
+                )
+            ) {
+
+                return valor;
+
+            }
+
+
+            return data.toLocaleString(
+                "pt-BR"
+            );
+
+        }
+
+        catch {
+
+            return valor;
+
+        }
+
+    }
+
+                function formatarDataCurta(
+            valor
+        ) {
+
+            if (
+                !valor
+                ||
+                valor === "-"
+            ) {
+
+                return "-";
+
+            }
+
+
+            try {
+
+                const data =
+                    new Date(
+                        valor
+                    );
+
+
+                if (
+                    Number.isNaN(
+                        data.getTime()
+                    )
+                ) {
+
+                    return valor;
+
+                }
+
+
+                const dia =
+                    data.toLocaleDateString(
+                        "pt-BR"
+                    );
+
+
+                const hora =
+                    data.toLocaleTimeString(
+                        "pt-BR",
+                        {
+                            hour:
+                                "2-digit",
+
+                            minute:
+                                "2-digit"
+                        }
+                    );
+
+
+                return `${dia} às ${hora}`;
+
+            }
+
+            catch {
+
+                return valor;
+
+            }
+
+        }
+
+    /* ========================================= */
+    /* AGRUPAMENTO */
+    /* ========================================= */
+
+    function agruparCobrancas() {
+
+        /*
+         * A e B sempre existem visualmente,
+         * mesmo sem débito.
+         */
+
+        const grupos = {
+
+            "Concessionária A":
+                [],
+
+            "Concessionária B":
+                []
+
+        };
+
+
+        cobrancasPendentes.forEach(
+            cobranca => {
+
+                const nome =
+                    nomeConcessionaria(
+                        cobranca
+                    );
+
+
+                if (
+                    !grupos[
+                        nome
+                    ]
+                ) {
+
+                    grupos[
+                        nome
+                    ] = [];
+
+                }
+
+
+                grupos[
+                    nome
+                ].push(
+                    cobranca
+                );
+
+            }
+        );
+
+
+        return grupos;
+
+    }
+
+
+    /* ========================================= */
+    /* ABRIR / FECHAR */
+    /* ========================================= */
+
+    function alternarConcessionaria(
+        chave
+    ) {
+
+        const painel =
+            document.getElementById(
+                `concessionaria-${chave}`
             );
 
 
         if (
-            numeros.length !== 11
+            painel
         ) {
 
-            return valor;
+            painel.classList.toggle(
+                "aberta"
+            );
 
         }
-
-
-        return (
-            numeros.substring(0, 3)
-            + ".***.***-"
-            + numeros.substring(9)
-        );
 
     }
 
 
-    // ==========================================
-    // DATA
-    // ==========================================
-
-    function formatarData(valor) {
-
-        if (!valor) {
-            return "---";
-        }
-
-
-        const data =
-            new Date(valor);
-
-
-        if (
-            isNaN(
-                data.getTime()
-            )
-        ) {
-
-            return valor;
-
-        }
-
-
-        return data.toLocaleString(
-            "pt-BR"
-        );
-
-    }
-
-
-    // ==========================================
-    // CONSULTA AS COBRANÇAS
-    // ==========================================
+    /* ========================================= */
+    /* CARREGAR */
+    /* ========================================= */
 
     async function carregarCobrancas() {
 
-        if (!cpf || !placa) {
+        if (
+            !cpf
+            ||
+            !placa
+        ) {
+
+            window.location.href =
+                "/portal";
 
             return;
 
@@ -1074,7 +1960,8 @@
                     "/portal/consultar",
                     {
 
-                        method: "POST",
+                        method:
+                            "POST",
 
                         headers: {
 
@@ -1084,354 +1971,711 @@
                         },
 
                         body:
-                            JSON.stringify({
+                            JSON.stringify(
+                                {
 
-                                cpf: cpf,
+                                    cpf:
+                                        cpf,
 
-                                placa: placa
+                                    placa:
+                                        placa
 
-                            })
+                                }
+                            )
 
                     }
                 );
-
-
-            if (!resposta.ok) {
-
-                return;
-
-            }
 
 
             const dados =
                 await resposta.json();
 
 
-            preencherTela(
-                dados
-            );
+            if (
+                !resposta.ok
+            ) {
+
+                alert(
+                    dados.detail
+                    ||
+                    "Não foi possível carregar as cobranças."
+                );
+
+                return;
+
+            }
+
+
+            /* CLIENTE */
+
+            document.getElementById(
+                "nomeCliente"
+            ).textContent =
+                dados.proprietario.nome;
+
+
+            document.getElementById(
+                "nomeTopo"
+            ).textContent =
+                dados.proprietario.nome;
+
+
+            document.getElementById(
+                "cpfTopo"
+            ).textContent =
+                `CPF: ${dados.proprietario.cpf}`;
+
+
+            document.getElementById(
+                "placaVeiculo"
+            ).textContent =
+                dados.veiculo.placa;
+
+
+            /* SOMENTE PENDENTES */
+
+            cobrancasPendentes =
+                (
+                    dados.cobrancas
+                    || []
+                )
+                .filter(
+                    cobranca =>
+                        cobranca.status
+                        === "pendente"
+                );
+
+
+            document.getElementById(
+                "quantidadePendentes"
+            ).textContent =
+                cobrancasPendentes.length;
+
+
+            renderizarCobrancas();
+
+            atualizarResumo();
 
         }
 
-        catch (erro) {
+        catch (
+            erro
+        ) {
 
             console.error(
                 erro
             );
 
+
+            alert(
+                "Não foi possível conectar ao servidor."
+            );
+
         }
 
     }
 
 
-    // ==========================================
-    // PREENCHE A TELA
-    // ==========================================
+    /* ========================================= */
+    /* RENDERIZA CONCESSIONÁRIAS */
+    /* ========================================= */
 
-    function preencherTela(dados) {
+   function renderizarCobrancas() {
 
-        const cliente =
-            dados.cliente
-            || dados.proprietario
-            || {};
-
-
-        const veiculo =
-            dados.veiculo
-            || {};
-
-
-        cobrancasAtuais =
-            dados.cobrancas
-            || [];
-
-
-        const nome =
-            cliente.nome
-            || dados.nome
-            || "Cliente";
-
-
-        const cpfTela =
-            cliente.cpf
-            || cliente.cpf_mascarado
-            || dados.cpf_mascarado
-            || mascararCPF(cpf);
-
-
-        const placaTela =
-            veiculo.placa
-            || dados.placa
-            || placa;
-
-
-        const pendentes =
-            cobrancasAtuais.filter(
-
-                cobranca =>
-                    cobranca.status
-                    === "pendente"
-
-            );
-
-
-        const total =
-            pendentes.reduce(
-
-                (
-                    soma,
-                    cobranca
-                ) =>
-
-                    soma
-                    + Number(
-                        cobranca.valor
-                        || 0
-                    ),
-
-                0
-
-            );
-
-
-        // ======================================
-        // CABEÇALHO
-        // ======================================
-
+    const area =
         document.getElementById(
-            "nomeTopo"
-        ).textContent =
-            nome;
+            "areaCobrancas"
+        );
+
+    const grupos =
+        agruparCobrancas();
 
 
-        document.getElementById(
-            "cpfTopo"
-        ).textContent =
-            "CPF: "
-            + cpfTela;
+    area.innerHTML =
+        Object.entries(grupos)
+        .map(
+            ([concessionaria, cobrancas]) => {
 
-
-        // ======================================
-        // DETALHES
-        // ======================================
-
-        document.getElementById(
-            "nomeCliente"
-        ).textContent =
-            nome;
-
-
-        document.getElementById(
-            "placaVeiculo"
-        ).textContent =
-            placaTela;
-
-
-        document.getElementById(
-            "quantidadePendentes"
-        ).textContent =
-            pendentes.length;
-
-
-        document.getElementById(
-            "totalResumo"
-        ).textContent =
-            moeda(
-                total
-            );
-
-
-        document.getElementById(
-            "totalPagamento"
-        ).textContent =
-            moeda(
-                total
-            );
-
-
-        document.getElementById(
-            "statusGeral"
-        ).textContent =
-
-            pendentes.length > 0
-
-                ? "Pagamento pendente"
-
-                : "Sem pendências";
-
-
-        // Se não houver dívida,
-        // não faz sentido emitir nova cobrança
-
-        if (
-            pendentes.length === 0
-        ) {
-
-            document.getElementById(
-                "btnContinuar"
-            ).disabled = true;
-
-        }
-
-
-        desenharPassagens();
-
-
-        verificarSegundaVia();
-
-    }
-
-
-    // ==========================================
-    // DESENHA PASSAGENS
-    // ==========================================
-
-    function desenharPassagens() {
-
-        const lista =
-            document.getElementById(
-                "listaPassagens"
-            );
-
-
-        if (
-            cobrancasAtuais.length === 0
-        ) {
-
-            lista.innerHTML =
-                `
-                <div class="vazio">
-                    Nenhuma cobrança registrada.
-                </div>
-                `;
-
-
-            return;
-
-        }
-
-
-        lista.innerHTML = "";
-
-
-        cobrancasAtuais.forEach(
-
-            cobranca => {
-
-
-                const item =
-                    document.createElement(
-                        "div"
+                const chave =
+                    chaveGrupo(
+                        concessionaria
                     );
 
 
-                item.className =
-                    "passagem";
+                const totalGrupo =
+                    cobrancas.reduce(
+                        (soma, cobranca) =>
+                            soma
+                            + Number(
+                                cobranca.valor || 0
+                            ),
+                        0
+                    );
 
 
-                const status =
-                    cobranca.status
-                    || "pendente";
+                const quantidade =
+                    cobrancas.length;
 
 
-                const textoStatus =
-
-                    status === "pago"
-
-                        ? "Pago"
-
-                        : "Pendente";
-
-
-                const classeStatus =
-
-                    status === "pago"
-
-                        ? "status-pago"
-
-                        : "status-pendente";
+                const textoQuantidade =
+                    quantidade === 0
+                    ? "Nenhum débito pendente"
+                    : quantidade === 1
+                        ? "1 passagem pendente"
+                        : `${quantidade} passagens pendentes`;
 
 
-                const timestamp =
-
-                    cobranca.timestamp_evento
-
-                    || cobranca.timestamp_criacao;
+                let conteudoLista = "";
 
 
-                item.innerHTML =
-                    `
-                    <div class="passagem-data">
+                if (quantidade === 0) {
 
-                        ${formatarData(timestamp)}
+                    conteudoLista = `
 
-                        <small>
-                            Faixa ${cobranca.faixa || "---"}
-                        </small>
+                        <div class="sem-debitos">
 
-                    </div>
+                            <strong>
+                                Nenhum débito pendente
+                            </strong>
 
+                            Não existem cobranças desta
+                            concessionária para este veículo.
 
-                    <div>
+                        </div>
 
-                        <span
-                            class="status ${classeStatus}"
-                        >
-
-                            ${textoStatus}
-
-                        </span>
-
-                    </div>
-
-
-                    <div class="passagem-valor">
-
-                        ${moeda(cobranca.valor)}
-
-                    </div>
                     `;
 
+                }
 
-                lista.appendChild(
-                    item
-                );
+                else {
+
+                    conteudoLista =
+                        cobrancas
+                        .map(
+                            cobranca => `
+
+                                <label
+                                    class="cobranca"
+                                    id="linha-${cobranca.id}"
+                                >
+
+                                    <input
+                                        type="checkbox"
+                                        class="checkbox-cobranca grupo-${chave}"
+                                        data-id="${cobranca.id}"
+                                        data-valor="${cobranca.valor}"
+                                        data-concessionaria="${concessionaria}"
+                                        onchange="atualizarResumo()"
+                                    >
+
+
+                    <div class="cobranca-info">
+
+                        <strong>
+                            Passagem
+                        </strong>
+
+                        <p>
+                            ${formatarDataCurta(
+                                cobranca.timestamp_evento
+                            )}
+                        </p>
+            
+                    </div>
+
+
+                                    <div class="cobranca-valor">
+
+                                        <strong>
+                                            ${moeda(
+                                                cobranca.valor
+                                            )}
+                                        </strong>
+
+                                        <span class="status">
+                                            Pendente
+                                        </span>
+
+                                    </div>
+
+                                </label>
+
+                            `
+                        )
+                        .join("");
+
+                }
+
+
+                return `
+
+                    <section
+                        class="concessionaria"
+                        id="concessionaria-${chave}"
+                    >
+
+
+                        <div
+                            class="concessionaria-topo"
+                            onclick="alternarConcessionaria('${chave}')"
+                        >
+
+
+                            <div class="concessionaria-identidade">
+
+
+                                <div class="icone-concessionaria">
+                                    FF
+                                </div>
+
+
+                                <div class="concessionaria-nome">
+
+                                    <h2>
+                                        ${concessionaria}
+                                    </h2>
+
+                                    <p>
+                                        ${textoQuantidade}
+                                    </p>
+
+                                </div>
+
+
+                            </div>
+
+
+                            <div class="concessionaria-direita">
+
+
+                                <div class="total-concessionaria">
+
+                                    <span>
+                                        Total:
+                                    </span>
+
+                                    <strong>
+                                        ${moeda(
+                                            totalGrupo
+                                        )}
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="seta">
+                                    ▼
+                                </div>
+
+
+                            </div>
+
+
+                        </div>
+
+
+                        <div class="concessionaria-corpo">
+
+
+                            ${
+                                quantidade > 0
+                                ? `
+
+                                    <div class="barra-selecao">
+
+                                        <label class="selecionar-todas">
+
+                                            <input
+                                                type="checkbox"
+                                                class="checkbox-todas"
+                                                data-grupo="${chave}"
+                                                onchange="selecionarTodas('${chave}', this.checked)"
+                                            >
+
+                                            Selecionar todas
+
+                                        </label>
+
+                                    </div>
+
+                                `
+                                : ""
+                            }
+
+
+                            <div class="lista-cobrancas">
+
+                                ${conteudoLista}
+
+                            </div>
+
+
+                            ${
+                                quantidade > 0
+                                ? `
+
+                                    <div class="subtotal">
+
+                                        <span>
+                                            Subtotal selecionado
+                                        </span>
+
+                                        <strong id="subtotal-${chave}">
+                                            R$ 0,00
+                                        </strong>
+
+                                    </div>
+
+                                `
+                                : ""
+                            }
+
+
+                        </div>
+
+
+                    </section>
+
+                `;
 
             }
+        )
+        .join("");
 
+}
+
+    /* ========================================= */
+    /* SELECIONAR TODAS */
+    /* ========================================= */
+
+    function selecionarTodas(
+        grupo,
+        marcado
+    ) {
+
+        document.querySelectorAll(
+            `.grupo-${grupo}`
+        )
+        .forEach(
+            checkbox => {
+
+                checkbox.checked =
+                    marcado;
+
+            }
         );
+
+
+        atualizarResumo();
 
     }
 
 
-    // ==========================================
-    // SELECIONA PIX OU BOLETO
-    // ==========================================
+    /* ========================================= */
+    /* RESUMO */
+    /* ========================================= */
+
+    function atualizarResumo() {
+
+        const selecionadas =
+            Array.from(
+                document.querySelectorAll(
+                    ".checkbox-cobranca:checked"
+                )
+            );
+
+
+        let total =
+            0;
+
+
+        const resumo =
+            {};
+
+
+        document.querySelectorAll(
+            ".cobranca"
+        )
+        .forEach(
+            linha => {
+
+                linha.classList.remove(
+                    "selecionada"
+                );
+
+            }
+        );
+
+
+        selecionadas.forEach(
+            checkbox => {
+
+
+                const valor =
+                    Number(
+                        checkbox.dataset.valor
+                        || 0
+                    );
+
+
+                const concessionaria =
+                    checkbox.dataset.concessionaria;
+
+
+                total +=
+                    valor;
+
+
+                if (
+                    !resumo[
+                        concessionaria
+                    ]
+                ) {
+
+                    resumo[
+                        concessionaria
+                    ] = {
+
+                        quantidade:
+                            0,
+
+                        valor:
+                            0
+
+                    };
+
+                }
+
+
+                resumo[
+                    concessionaria
+                ].quantidade++;
+
+
+                resumo[
+                    concessionaria
+                ].valor +=
+                    valor;
+
+
+                const linha =
+                    document.getElementById(
+                        `linha-${checkbox.dataset.id}`
+                    );
+
+
+                if (
+                    linha
+                ) {
+
+                    linha.classList.add(
+                        "selecionada"
+                    );
+
+                }
+
+            }
+        );
+
+
+        /* QUANTIDADE */
+
+        document.getElementById(
+            "quantidadeSelecionadas"
+        ).textContent =
+            selecionadas.length;
+
+
+        /* TOTAL */
+
+        document.getElementById(
+            "totalSelecionado"
+        ).textContent =
+            moeda(
+                total
+            );
+
+
+        /* RESUMO CONCESSIONÁRIAS */
+
+        const areaResumo =
+            document.getElementById(
+                "resumoConcessionarias"
+            );
+
+
+        areaResumo.innerHTML =
+            Object.entries(
+                resumo
+            )
+            .map(
+                (
+                    [
+                        concessionaria,
+                        dados
+                    ]
+                ) => `
+
+                    <div
+                        class="
+                            resumo-linha
+                        "
+                    >
+
+                        <span>
+
+                            ${concessionaria}
+
+                        </span>
+
+
+                        <strong>
+
+                            ${moeda(
+                                dados.valor
+                            )}
+
+                        </strong>
+
+                    </div>
+
+                `
+            )
+            .join("");
+
+
+        /* SUBTOTAIS */
+
+        const grupos =
+            agruparCobrancas();
+
+
+        Object.keys(
+            grupos
+        )
+        .forEach(
+            concessionaria => {
+
+
+                const chave =
+                    chaveGrupo(
+                        concessionaria
+                    );
+
+
+                const todos =
+                    Array.from(
+                        document.querySelectorAll(
+                            `.grupo-${chave}`
+                        )
+                    );
+
+
+                const marcados =
+                    todos.filter(
+                        checkbox =>
+                            checkbox.checked
+                    );
+
+
+                const subtotal =
+                    marcados.reduce(
+                        (
+                            soma,
+                            checkbox
+                        ) => {
+
+                            return (
+                                soma
+                                +
+                                Number(
+                                    checkbox.dataset.valor
+                                    || 0
+                                )
+                            );
+
+                        },
+
+                        0
+                    );
+
+
+                const campoSubtotal =
+                    document.getElementById(
+                        `subtotal-${chave}`
+                    );
+
+
+                if (
+                    campoSubtotal
+                ) {
+
+                    campoSubtotal.textContent =
+                        moeda(
+                            subtotal
+                        );
+
+                }
+
+
+                const checkboxTodas =
+                    document.querySelector(
+                        `.checkbox-todas[data-grupo="${chave}"]`
+                    );
+
+
+                if (
+                    checkboxTodas
+                ) {
+
+                    checkboxTodas.checked =
+                        (
+                            todos.length > 0
+                            &&
+                            marcados.length
+                            === todos.length
+                        );
+
+
+                    checkboxTodas.indeterminate =
+                        (
+                            marcados.length > 0
+                            &&
+                            marcados.length
+                            < todos.length
+                        );
+
+                }
+
+            }
+        );
+
+
+        atualizarBotao();
+
+    }
+
+
+    /* ========================================= */
+    /* FORMA DE PAGAMENTO */
+    /* ========================================= */
 
     function selecionarMetodo(
         elemento
     ) {
 
-        if (emissaoAtual) {
+        document.querySelectorAll(
+            ".metodo"
+        )
+        .forEach(
+            item => {
 
-            return;
+                item.classList.remove(
+                    "selecionado"
+                );
 
-        }
-
-
-        document
-            .querySelectorAll(
-                ".metodo"
-            )
-            .forEach(
-
-                item =>
-
-                    item.classList.remove(
-                        "selecionado"
-                    )
-
-            );
+            }
+        );
 
 
         elemento.classList.add(
@@ -1443,124 +2687,112 @@
             elemento.dataset.metodo;
 
 
+        atualizarBotao();
+
+    }
+
+
+    /* ========================================= */
+    /* BOTÃO */
+    /* ========================================= */
+
+    function atualizarBotao() {
+
+        const quantidade =
+            document.querySelectorAll(
+                ".checkbox-cobranca:checked"
+            ).length;
+
+
         const botao =
             document.getElementById(
                 "btnContinuar"
             );
 
 
-        if (
-            metodoSelecionado
-            === "pix"
-        ) {
-
-            botao.textContent =
-                "Gerar QR Code PIX";
-
-        }
-
-        else {
-
-            botao.textContent =
-                "Gerar boleto";
-
-        }
+        botao.disabled =
+            (
+                quantidade === 0
+                ||
+                !metodoSelecionado
+            );
 
     }
 
 
-    // ==========================================
-    // GERA PRIMEIRA VIA
-    // ==========================================
+    /* ========================================= */
+    /* CONTINUAR */
+    /* ========================================= */
 
     function continuarPagamento() {
 
-        if (!metodoSelecionado) {
+        const selecionadas =
+            Array.from(
+                document.querySelectorAll(
+                    ".checkbox-cobranca:checked"
+                )
+            );
+
+
+        if (
+            selecionadas.length
+            === 0
+        ) {
+
+            alert(
+                "Selecione pelo menos uma cobrança."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            !metodoSelecionado
+        ) {
 
             alert(
                 "Selecione PIX ou boleto."
             );
 
-
             return;
 
         }
 
 
-        if (emissaoAtual) {
-
-            alert(
-                "Já existe uma forma de pagamento emitida."
+        const ids =
+            selecionadas.map(
+                checkbox =>
+                    checkbox.dataset.id
             );
 
 
-            return;
-
-        }
-
-
-        const pendentes =
-            cobrancasAtuais.filter(
-
-                cobranca =>
-                    cobranca.status
-                    === "pendente"
-
-            );
-
-
-        if (
-            pendentes.length === 0
-        ) {
-
-            alert(
-                "Não existem cobranças pendentes."
-            );
-
-
-            return;
-
-        }
-
-
-        // ======================================
-        // SALVA QUAL MÉTODO FOI GERADO
-        // ======================================
-
-        emissaoAtual = {
-
-            metodo:
-                metodoSelecionado,
-
-            criadoEm:
-                new Date()
-                .toISOString(),
-
-            cpf:
-                cpf,
-
-            placa:
-                placa
-
-        };
-
-
-        localStorage.setItem(
-
-            chaveEmissao(),
-
+        sessionStorage.setItem(
+            "freeflow_cobrancas_selecionadas",
             JSON.stringify(
-                emissaoAtual
+                ids
             )
-
         );
 
 
         const query =
 
-            `cpf=${encodeURIComponent(cpf || "")}`
+            `cpf=${encodeURIComponent(
+                cpf
+            )}`
 
-            + `&placa=${encodeURIComponent(placa || "")}`;
+            +
+
+            `&placa=${encodeURIComponent(
+                placa
+            )}`
+
+            +
+
+            `&cobrancas=${encodeURIComponent(
+                ids.join(",")
+            )}`;
 
 
         if (
@@ -1583,206 +2815,11 @@
     }
 
 
-    // ==========================================
-    // VERIFICA SE JÁ EXISTE EMISSÃO
-    // ==========================================
-
-function verificarSegundaVia() {
-
-    const botaoSegundaVia =
-        document.getElementById(
-            "btnSegundaVia"
-        );
-
-    const avisoEmissao =
-        document.getElementById(
-            "avisoEmissao"
-        );
-
-    const botaoContinuar =
-        document.getElementById(
-            "btnContinuar"
-        );
-
-
-    const pendentes =
-        cobrancasAtuais.filter(
-            cobranca =>
-                cobranca.status === "pendente"
-        );
-
-
-    // Se não existem mais cobranças pendentes,
-    // remove qualquer emissão antiga
-    if (pendentes.length === 0) {
-
-        localStorage.removeItem(
-            chaveEmissao()
-        );
-
-        emissaoAtual = null;
-
-        botaoSegundaVia.style.display =
-            "none";
-
-        avisoEmissao.style.display =
-            "none";
-
-        botaoContinuar.style.display =
-            "block";
-
-        botaoContinuar.disabled =
-            true;
-
-        document
-            .querySelectorAll(
-                ".metodo"
-            )
-            .forEach(
-                elemento => {
-                    elemento.classList.remove(
-                        "bloqueado"
-                    );
-                }
-            );
-
-        return;
-    }
-
-
-    if (!cpf || !placa) {
-        return;
-    }
-
-
-    const salvo =
-        localStorage.getItem(
-            chaveEmissao()
-        );
-
-
-    if (!salvo) {
-
-        botaoSegundaVia.style.display =
-            "none";
-
-        avisoEmissao.style.display =
-            "none";
-
-        return;
-    }
-
-
-    try {
-
-        emissaoAtual =
-            JSON.parse(
-                salvo
-            );
-
-    }
-
-    catch {
-
-        localStorage.removeItem(
-            chaveEmissao()
-        );
-
-        emissaoAtual = null;
-
-        botaoSegundaVia.style.display =
-            "none";
-
-        avisoEmissao.style.display =
-            "none";
-
-        return;
-    }
-
-
-    botaoSegundaVia.style.display =
-        "block";
-
-    avisoEmissao.style.display =
-        "block";
-
-    botaoContinuar.style.display =
-        "none";
-
-
-    document
-        .querySelectorAll(
-            ".metodo"
-        )
-        .forEach(
-            elemento => {
-                elemento.classList.add(
-                    "bloqueado"
-                );
-            }
-        );
-
-}
-    // ==========================================
-    // ABRE SEGUNDA VIA
-    // ==========================================
-
-    function abrirSegundaVia() {
-
-        const salvo =
-            localStorage.getItem(
-                chaveEmissao()
-            );
-
-
-        if (!salvo) {
-
-            return;
-
-        }
-
-
-        const emissao =
-            JSON.parse(
-                salvo
-            );
-
-
-        const query =
-
-            `cpf=${encodeURIComponent(cpf || "")}`
-
-            + `&placa=${encodeURIComponent(placa || "")}`
-
-            + `&segunda=1`;
-
-
-        if (
-            emissao.metodo
-            === "pix"
-        ) {
-
-            window.location.href =
-                `/pix?${query}`;
-
-        }
-
-        else {
-
-            window.location.href =
-                `/boleto?${query}`;
-
-        }
-
-    }
-
-
-    // ==========================================
-    // INICIALIZA
-    // ==========================================
+    /* ========================================= */
+    /* INICIAR */
+    /* ========================================= */
 
     carregarCobrancas();
-
 
 </script>
 
