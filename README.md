@@ -120,14 +120,10 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8002
 
 Com o servidor iniciado, as principais páginas ficam disponíveis em:
 
-
-Dashboard administrativo:
-http://localhost:8002/dashboard
-
 Portal do cliente:
 http://localhost:8002/portal
 
-Login da concessionária:
+Portal da concessionária:
 http://localhost:8002/admin/login
 
 ---
