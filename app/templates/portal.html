@@ -972,7 +972,7 @@
 
 
             mensagem.style.display =
-                "none";
+                "";
 
 
             try {
@@ -1043,6 +1043,22 @@
 
                 mensagem.className =
                     "mensagem sucesso";
+
+                // Verifica se existem cobranças
+                if (
+                    !dados.cobrancas
+                    || dados.cobrancas.length === 0
+                ) {
+
+                    mensagem.className =
+                        "mensagem sucesso";
+
+                     mensagem.textContent =
+                         "Não há débitos para esta placa.";
+
+                    return;
+
+                }
 
 
                 mensagem.textContent =
