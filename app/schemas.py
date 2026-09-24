@@ -2,6 +2,23 @@
 from pydantic import BaseModel
 
 
+# =========================
+# USUÁRIOS DAS CONCESSIONÁRIAS
+# =========================
+
+class UsuarioConcessionariaResponse(BaseModel):
+    id: int
+    usuario: str
+    concessionaria_id: str
+    concessionaria_nome: str
+    faixas_permitidas: str
+    ativo: int
+    criado_em: str
+
+    class Config:
+        from_attributes = True
+
+
 # entrada
 class EventoCreate(BaseModel):
     id_veiculo: str
@@ -99,3 +116,12 @@ class PortalConsulta(BaseModel):
 class PortalPagamento(BaseModel):
     cpf: str
     placa: str
+
+
+class PortalPagamentoIniciar(PortalPagamento):
+    cobrancas: list[int]
+    metodo: str
+
+
+class PortalPagamentoConfirmar(BaseModel):
+    token: str

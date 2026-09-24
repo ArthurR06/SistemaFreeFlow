@@ -3,6 +3,7 @@ from app.models import EventoPassagem
 from app.config import TEMPO_DUPLICIDADE
 
 from datetime import datetime
+from pathlib import Path
 from time import perf_counter
 
 import joblib
@@ -12,7 +13,12 @@ import numpy as np
 # ==========================================
 # CARREGA A IA UMA ÚNICA VEZ
 # ==========================================
-CAMINHO_MODELO = "app/modelo_anomalia.joblib"
+CAMINHO_MODELO = Path(__file__).resolve().with_name(
+    "modelo_anomalia.joblib"
+)
+CAMINHO_MODELO_DUPLICIDADE = Path(__file__).resolve().with_name(
+    "modelo_duplicidade.joblib"
+)
 
 print("")
 print("==============================")
@@ -20,9 +26,69 @@ print("CARREGANDO MODELO DE IA")
 print("==============================")
 
 MODELO_IA = joblib.load(CAMINHO_MODELO)
+MODELO_DUPLICIDADE = joblib.load(CAMINHO_MODELO_DUPLICIDADE)
 
-print("Isolation Forest carregado com sucesso.")
+print("Modelos Isolation Forest carregados com sucesso.")
 print("==============================")
+
+
+def classificar_com_ia(
+    faixa: int,
+    intervalo_segundos: float,
+    hora_decimal: float,
+):
+    """Classifica um evento com IA e aplica a categoria operacional.
+
+    Dois modelos Isolation Forest analisam as passagens com histórico. O
+    primeiro avalia o comportamento geral e o segundo é especializado no
+    intervalo temporal. A janela dá o nome ``duplicidade`` à anomalia temporal
+    e também funciona como proteção contra cobrança indevida caso o modelo
+    experimental produza um falso negativo.
+    """
+    entrada_ia = np.array(
+        [[faixa, intervalo_segundos, hora_decimal]],
+        dtype=float,
+    )
+
+    entrada_temporal = np.array([[intervalo_segundos]], dtype=float)
+
+    inicio_ia = perf_counter()
+    predicao = int(MODELO_IA.predict(entrada_ia)[0])
+    score = float(MODELO_IA.decision_function(entrada_ia)[0])
+    predicao_duplicidade = int(
+        MODELO_DUPLICIDADE.predict(entrada_temporal)[0]
+    )
+    score_duplicidade = float(
+        MODELO_DUPLICIDADE.decision_function(entrada_temporal)[0]
+    )
+    tempo_ia_ms = (perf_counter() - inicio_ia) * 1000
+
+    if (
+        intervalo_segundos < TEMPO_DUPLICIDADE
+        and predicao_duplicidade == -1
+    ):
+        classificacao = "duplicidade"
+        origem_classificacao = "ia_temporal"
+    elif intervalo_segundos < TEMPO_DUPLICIDADE:
+        # Salvaguarda financeira contra um falso negativo do modelo temporal.
+        classificacao = "duplicidade"
+        origem_classificacao = "salvaguarda_temporal"
+    elif predicao == -1:
+        classificacao = "ia_anomalia"
+        origem_classificacao = "ia_comportamental"
+    else:
+        classificacao = None
+        origem_classificacao = "ia_comportamental"
+
+    return {
+        "classificacao": classificacao,
+        "predicao": predicao,
+        "score": score,
+        "predicao_duplicidade": predicao_duplicidade,
+        "score_duplicidade": score_duplicidade,
+        "origem_classificacao": origem_classificacao,
+        "tempo_ia_ms": tempo_ia_ms,
+    }
 
 
 # ==========================================
@@ -154,71 +220,52 @@ def analisar_eventos(db: Session):
             print("Cobrança: NÃO")
 
         # ======================================
-        # REGRA DETERMINÍSTICA DE DUPLICIDADE
-        # ======================================
-        elif diferenca < TEMPO_DUPLICIDADE:
-
-            evento.anomalia = "duplicidade"
-
-            print("Regra temporal: DUPLICIDADE")
-            print("Resultado: DUPLICIDADE")
-            print("Cobrança: NÃO")
-
-        # ======================================
         # ANÁLISE COM ISOLATION FOREST
         # ======================================
         else:
 
-            # Converte o horário para decimal
+            # Converte o horário para decimal.
             hora_decimal = (
                 tempo_atual.hour
                 + tempo_atual.minute / 60
                 + tempo_atual.second / 3600
             )
 
-            # Mesmos atributos usados no treinamento:
-            # faixa, intervalo_segundos, hora_decimal
-            entrada_ia = np.array([
-                [
-                    evento.faixa,
-                    diferenca,
-                    hora_decimal
-                ]
-            ])
-
-            inicio_ia = perf_counter()
-
-            resultado_ia = MODELO_IA.predict(
-                entrada_ia
-            )[0]
-
-            fim_ia = perf_counter()
-
-            tempo_ia_ms = (
-                fim_ia - inicio_ia
-            ) * 1000
-
-            print(
-                f"Tempo da IA: {tempo_ia_ms:.2f} ms"
+            resultado = classificar_com_ia(
+                faixa=evento.faixa,
+                intervalo_segundos=diferenca,
+                hora_decimal=hora_decimal,
             )
 
-            if resultado_ia == -1:
+            evento.anomalia = resultado["classificacao"]
 
-                evento.anomalia = "ia_anomalia"
+            print(
+                "Isolation Forest comportamental:",
+                "ANOMALIA" if resultado["predicao"] == -1 else "NORMAL",
+            )
+            print(f"Score comportamental: {resultado['score']:.6f}")
+            print(
+                "Isolation Forest temporal:",
+                (
+                    "ANOMALIA"
+                    if resultado["predicao_duplicidade"] == -1
+                    else "NORMAL"
+                ),
+            )
+            print(f"Score temporal: {resultado['score_duplicidade']:.6f}")
+            print(f"Tempo da IA: {resultado['tempo_ia_ms']:.2f} ms")
 
+            if evento.anomalia == "duplicidade":
                 print(
-                    "Isolation Forest: ANOMALIA"
+                    "Categoria operacional: DUPLICIDADE "
+                    f"(IA temporal + intervalo inferior a {TEMPO_DUPLICIDADE}s)"
                 )
+                print("Resultado: DUPLICIDADE")
+                print("Cobrança: NÃO")
+            elif evento.anomalia == "ia_anomalia":
                 print("Resultado: ANOMALIA")
                 print("Cobrança: NÃO")
-
             else:
-
-                evento.anomalia = None
-
-                print(
-                    "Isolation Forest: NORMAL"
-                )
                 print("Resultado: NORMAL")
                 print("Cobrança: SIM")
 

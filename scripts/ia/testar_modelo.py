@@ -1,60 +1,107 @@
-import joblib
-import numpy as np
+"""Executa cenários reproduzíveis do módulo de Inteligência Artificial."""
+
+from app.anomaly import MODELO_IA, classificar_com_ia
+from app.config import TEMPO_DUPLICIDADE
 
 
-CAMINHO_MODELO = "app/modelo_anomalia.joblib"
+CASOS = [
+    {
+        "nome": "Comportamento normal",
+        "faixa": 1,
+        "intervalo": 120,
+        "hora": 14,
+        "esperado": None,
+        "cobranca": "SIM",
+    },
+    {
+        "nome": "Repetição em 10 segundos",
+        "faixa": 1,
+        "intervalo": 10,
+        "hora": 14,
+        "esperado": "duplicidade",
+        "cobranca": "NÃO",
+    },
+    {
+        "nome": "Repetição em 29 segundos",
+        "faixa": 2,
+        "intervalo": 29,
+        "hora": 12,
+        "esperado": "duplicidade",
+        "cobranca": "NÃO",
+    },
+    {
+        "nome": "Comportamento atípico",
+        "faixa": 2,
+        "intervalo": 120,
+        "hora": 2,
+        "esperado": "ia_anomalia",
+        "cobranca": "NÃO",
+    },
+]
 
 
-print("")
-print("==============================")
-print("TESTE DE INFERÊNCIA DA IA")
-print("==============================")
+def executar():
+    print("")
+    print("=" * 66)
+    print("TESTES DO MÓDULO DE IA - ISOLATION FOREST")
+    print("=" * 66)
+    print(f"Modelo carregado: {type(MODELO_IA).__name__}")
+    print(f"Janela de duplicidade: intervalo < {TEMPO_DUPLICIDADE}s")
+    print("")
+
+    falhas = []
+    resultados = []
+
+    for indice, caso in enumerate(CASOS, start=1):
+        resultado = classificar_com_ia(
+            faixa=caso["faixa"],
+            intervalo_segundos=caso["intervalo"],
+            hora_decimal=caso["hora"],
+        )
+        obtido = resultado["classificacao"]
+        status = "APROVADO" if obtido == caso["esperado"] else "FALHOU"
+        nome_resultado = obtido or "normal"
+        nome_esperado = caso["esperado"] or "normal"
+
+        resultados.append({**caso, **resultado, "status": status})
+
+        print(f"CT-IA-{indice:02d} | {status}")
+        print(f"Cenário: {caso['nome']}")
+        print(
+            "Entrada: "
+            f"faixa={caso['faixa']}, "
+            f"intervalo={caso['intervalo']}s, "
+            f"hora={caso['hora']}h"
+        )
+        print(
+            "Modelo comportamental: "
+            f"{'ANOMALIA' if resultado['predicao'] == -1 else 'NORMAL'} "
+            f"| score={resultado['score']:.6f}"
+        )
+        print(
+            "Modelo temporal: "
+            f"{'ANOMALIA' if resultado['predicao_duplicidade'] == -1 else 'NORMAL'} "
+            f"| score={resultado['score_duplicidade']:.6f}"
+        )
+        print(
+            f"Classificação: {nome_resultado} "
+            f"| Esperado: {nome_esperado} "
+            f"| Cobrança: {caso['cobranca']}"
+        )
+        print("")
+
+        if status != "APROVADO":
+            falhas.append(caso["nome"])
+
+    print("=" * 66)
+    print(f"RESULTADO: {len(CASOS) - len(falhas)}/{len(CASOS)} testes aprovados")
+    print("=" * 66)
+
+    if falhas:
+        raise SystemExit("Falharam: " + ", ".join(falhas))
+
+    return resultados
 
 
-# Carrega o modelo treinado
-modelo = joblib.load(CAMINHO_MODELO)
-
-print("Modelo carregado com sucesso.")
-
-
-# Exemplo dentro do padrão utilizado no treinamento
-evento_normal = np.array([
-    [1, 120, 14]
-])
-
-
-# Exemplo propositalmente fora do domínio esperado
-# Serve apenas para validar a capacidade de detecção do modelo
-evento_atipico = np.array([
-    [9, 10000, 100]
-])
-
-
-resultado_normal = modelo.predict(evento_normal)[0]
-resultado_atipico = modelo.predict(evento_atipico)[0]
-
-
-print("")
-print("Amostra 1:")
-print("Faixa: 1")
-print("Intervalo: 120")
-print("Hora decimal: 14")
-print(
-    "Resultado:",
-    "NORMAL" if resultado_normal == 1 else "ANOMALIA"
-)
-
-
-print("")
-print("Amostra 2:")
-print("Entrada artificial fora do domínio esperado")
-print(
-    "Resultado:",
-    "NORMAL" if resultado_atipico == 1 else "ANOMALIA"
-)
-
-
-print("")
-print("==============================")
-print("TESTE FINALIZADO")
-print("==============================")
+if __name__ == "__main__":
+    executar()

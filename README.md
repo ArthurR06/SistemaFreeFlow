@@ -25,6 +25,7 @@ SistemaFreeFlow/
 │   ├── crud.py
 │   ├── database.py
 │   ├── config.py
+│   ├── security.py
 │   ├── anomaly.py
 │   └── modelo_anomalia.joblib
 │
@@ -59,7 +60,7 @@ SistemaFreeFlow/
 
 Recomendado:
 
-* Python 3.11
+* Python 3.12
 * Git
 * Arduino IDE
 * ESP32
@@ -78,6 +79,7 @@ Ative o ambiente virtual no Windows:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
+```
 
 Instale as dependências:
 
@@ -85,28 +87,49 @@ Instale as dependências:
 pip install -r requirements.txt
 ```
 
-Crie um arquivo `.env` baseado no `.env.example`.
+Crie um arquivo `.env.local` baseado no `.env.example`.
 
 Exemplo para execução local:
 
 APP_ENV=local
 
-DATABASE_URL=sqlite:///./data/freeflow.db
+DATABASE_URL=postgresql://freeflow_app.PROJECT_REF:SENHA@HOST.pooler.supabase.com:6543/postgres?sslmode=require
 
 VALOR_PASSAGEM=5.0
-TEMPO_DUPLICIDADE=60
+VALOR_PASSAGEM_A=5.0
+VALOR_PASSAGEM_B=7.5
+TEMPO_DUPLICIDADE=30
 TEMPO_SEM_DADOS_ALERTA=120
 REFRESH_SEGUNDOS=5
 
 SESSION_SECRET=troque-por-uma-chave-secreta
 
+ESP32_API_KEY=troque-por-uma-chave-longa-e-aleatoria
+
 CONCESSIONARIA_A_USER=concessionaria_a
 CONCESSIONARIA_A_PASSWORD=admin_a
+CONCESSIONARIA_A_NOME=Concessionária A
+CONCESSIONARIA_A_SIGLA=CA
 
 CONCESSIONARIA_B_USER=concessionaria_b
 CONCESSIONARIA_B_PASSWORD=admin_b
+CONCESSIONARIA_B_NOME=Concessionária B
+CONCESSIONARIA_B_SIGLA=CB
 
-O arquivo `.env` real não é enviado ao GitHub.
+O arquivo `.env.local` real não é enviado ao GitHub. Para Vercel/serverless,
+use sempre o Transaction pooler do Supabase na porta `6543`.
+
+Antes de iniciar a aplicação, aplique as migrations e faça a carga dos dados:
+
+```bash
+supabase link --project-ref SEU_PROJECT_REF
+supabase db push --linked
+python -m scripts.banco.migrar_sqlite_supabase
+python -m scripts.banco.seed_usuarios
+```
+
+A aplicação não cria tabelas automaticamente durante o boot. O esquema oficial
+fica versionado em `supabase/migrations/`.
 
 ---
 
@@ -148,6 +171,11 @@ PIX ou boleto
 
 O cliente visualiza apenas dados relacionados aos seus próprios veículos e cobranças.
 
+Na tela **Meus débitos**, somente concessionárias com valores pendentes são
+exibidas. O pagamento demonstrativo gera um QR Code (PIX) ou código de barras
+(boleto) que direciona para uma página separada de confirmação. Depois da
+confirmação, os débitos são atualizados automaticamente.
+
 ---
 
 ## Portal da concessionária
@@ -176,7 +204,12 @@ Concessionária B
 Usuário: concessionaria_b
 Senha: admin_b
 
-As credenciais podem ser configuradas por variáveis de ambiente:
+Esses acessos são cadastrados pela carga inicial executada com
+`python -m scripts.banco.seed_usuarios`. A senha é armazenada como hash PBKDF2
+com salt e nunca é salva em texto puro.
+
+As credenciais usadas nessa carga inicial podem ser configuradas por variáveis
+de ambiente:
 
 CONCESSIONARIA_A_USER=
 CONCESSIONARIA_A_PASSWORD=
@@ -187,6 +220,9 @@ CONCESSIONARIA_B_PASSWORD=
 SESSION_SECRET=
 
 As credenciais apresentadas são destinadas apenas ao protótipo acadêmico.
+
+Depois que um usuário já foi criado, alterar a variável de ambiente não troca
+automaticamente a senha existente no banco.
 
 Em uma implementação de produção deve ser utilizado um mecanismo de autenticação apropriado.
 
@@ -206,6 +242,11 @@ Entre as informações disponíveis estão:
 * duplicidades identificadas;
 * últimas passagens;
 * exportação dos dados em CSV.
+
+O menu fixo do Portal de Gestão reúne **Monitoria de passagens** e **Monitoria
+de Recebíveis**. A identidade, a sigla e o valor por passagem podem ser
+configurados separadamente para cada concessionária pelas variáveis de
+ambiente.
 
 Cada concessionária possui seu próprio acesso administrativo.
 
@@ -269,14 +310,18 @@ Depois que uma placa é vinculada, ela continua associada ao mesmo proprietário
 
 ---
 
-## Regra de duplicidade
+## Análise de duplicidade
 
-A identificação de duplicidades utiliza uma regra determinística.
+A partir da segunda passagem conhecida de um veículo, o evento é analisado por
+dois modelos Isolation Forest. O modelo comportamental considera faixa,
+intervalo e horário; o modelo temporal é especializado no intervalo entre as
+passagens. Quando o modelo temporal detecta uma anomalia inferior a 30 segundos,
+o evento recebe a categoria operacional de duplicidade.
 
 No protótipo:
 
-Mesmo veículo em intervalo inferior a 60 segundos
-→ Duplicidade
+Mesmo veículo em intervalo inferior a 30 segundos
+→ Duplicidade analisada pelo módulo de IA
 
 A regra operacional é:
 
@@ -300,15 +345,23 @@ Exemplo:
 
 ## Inteligência Artificial
 
-O projeto utiliza **Isolation Forest** como mecanismo auxiliar de análise de comportamento dos eventos de passagem.
+O projeto utiliza dois modelos **Isolation Forest** como componentes ativos da
+análise dos eventos de passagem e da decisão que antecede a cobrança.
 
 O modelo busca identificar eventos que apresentam características fora do padrão observado nos dados utilizados durante o treinamento.
 
-A identificação de duplicidades não depende do modelo de Inteligência Artificial.
+A primeira passagem conhecida de cada veículo é considerada normal porque ainda
+não existe intervalo anterior. Todas as passagens seguintes são submetidas ao
+modelo com as características `faixa`, `intervalo_segundos` e `hora_decimal`.
 
-A duplicidade utiliza a regra determinística de intervalo inferior a 60 segundos.
+Quando o modelo temporal encontra uma repetição anômala inferior a 30 segundos,
+o evento recebe a categoria `duplicidade`. Outras ocorrências rejeitadas pelo
+modelo comportamental recebem a categoria `ia_anomalia`. Nenhuma dessas
+categorias gera cobrança; somente eventos classificados como normais seguem
+para o registro financeiro.
 
-A análise realizada pelo Isolation Forest permanece como componente experimental de Inteligência Artificial da arquitetura.
+O limite temporal também permanece como salvaguarda operacional para que uma
+leitura repetida nunca seja cobrada, mesmo diante de um falso negativo do modelo.
 
 O modelo treinado utilizado pela aplicação está em:
 
@@ -440,9 +493,9 @@ FastAPI
    ↓
 Banco de dados
    ↓
-Análise de duplicidade
+Análise por IA
    ↓
-Análise auxiliar por IA
+Classificação operacional
    ↓
 Cobrança
    ↓
@@ -470,10 +523,17 @@ O `secrets.h` está ignorado pelo Git e não deve ser enviado ao repositório p�
 
 ## Banco de dados
 
-Durante o desenvolvimento local, o sistema pode utilizar SQLite:
+O banco oficial de desenvolvimento e produção é o PostgreSQL do Supabase:
 
 
+DATABASE_URL=postgresql://freeflow_app.PROJECT_REF:SENHA@HOST.pooler.supabase.com:6543/postgres?sslmode=require
+
+O SQLite abaixo permanece apenas como cópia/alternativa local e não deve ser
+usado em produção:
+
+```env
 DATABASE_URL=sqlite:///./data/freeflow.db
+```
 
 O arquivo do banco local:
 
@@ -484,6 +544,18 @@ não é enviado ao GitHub.
 A aplicação utiliza SQLAlchemy, permitindo configurar outro banco através da variável:
 
 DATABASE_URL=
+
+O banco possui as tabelas:
+
+* `proprietarios`;
+* `veiculos`;
+* `eventos_passagem`;
+* `cobrancas`;
+* `usuarios_concessionarias`.
+
+A tabela `usuarios_concessionarias` guarda o login administrativo, o hash da
+senha, a identificação e o nome da concessionária, as faixas permitidas, o
+estado ativo do usuário e a data de criação.
 
 ---
 
@@ -513,43 +585,34 @@ Essa estrutura permite que um mesmo cliente possa possuir passagens relacionadas
 
 ---
 
-## AWS / Produção
+## Supabase e Vercel
 
-A aplicação foi desenvolvida de forma a permitir futura implantação em ambiente de nuvem.
+O PostgreSQL do Supabase é o banco oficial. O FastAPI é publicado como uma
+Vercel Function a partir de `app/main.py`.
 
-Para implantação na AWS, o banco SQLite local pode ser substituído por PostgreSQL.
+Fluxo recomendado:
 
-Exemplo:
+```bash
+vercel link
+supabase link --project-ref SEU_PROJECT_REF
+supabase db push --linked
+vercel env ls preview
+vercel env ls production
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8002
+vercel deploy
+vercel deploy --prod
+```
 
-env
-DATABASE_URL=postgresql://USUARIO:SENHA@HOST:5432/BANCO
+Só execute `vercel deploy --prod` depois de validar o Preview. Configure em
+Preview e Production pelo menos `APP_ENV=production`, `DATABASE_URL`,
+`SESSION_SECRET`, `ESP32_API_KEY`, os tempos operacionais e o valor da passagem.
 
+A `DATABASE_URL` deve usar o Transaction pooler do Supabase (porta `6543`) e
+SSL. O usuário do banco utilizado pela aplicação deve ter apenas os privilégios
+necessários nas tabelas do Free Flow.
 
-As configurações de produção devem ser definidas através de variáveis de ambiente.
-
-Exemplo:
-
-env
-APP_ENV=production
-
-DATABASE_URL=
-
-SESSION_SECRET=
-
-CONCESSIONARIA_A_USER=
-CONCESSIONARIA_A_PASSWORD=
-
-CONCESSIONARIA_B_USER=
-CONCESSIONARIA_B_PASSWORD=
-
-
-As credenciais utilizadas no protótipo são demonstrativas.
-
-Em uma implantação real, recomenda-se substituir a autenticação simplificada por um mecanismo apropriado de gerenciamento de identidade e acesso.
-
-A infraestrutura AWS pode ser utilizada para hospedar a aplicação FastAPI e conectar o sistema a um banco PostgreSQL.
-
-Após a aplicação estar publicada, a URL configurada nos ESP32 deve ser alterada do IP local para o endpoint HTTPS disponibilizado na nuvem.
+Depois da publicação, altere `URL_EVENTO` no `secrets.h` do ESP32 para o endpoint
+HTTPS da Vercel e mantenha `FREEFLOW_API_KEY` igual a `ESP32_API_KEY`.
 
 ---
 
@@ -582,9 +645,9 @@ FastAPI
  ↓
 Registro da passagem
  ↓
-Análise de duplicidade
+Análise pelo Isolation Forest
  ↓
-Análise auxiliar por IA
+Classificação normal, duplicidade ou anomalia
  ↓
 Duplicidade?
  ├── Sim → registra evento sem nova cobrança

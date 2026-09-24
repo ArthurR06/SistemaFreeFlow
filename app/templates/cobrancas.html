@@ -11,7 +11,7 @@
     >
 
     <title>
-        FreeFlow - Minhas Cobranças
+        FreeFlow - Meus Débitos
     </title>
 
 
@@ -154,8 +154,32 @@
 
 
         .cliente-topo {
-
+            display: flex;
+            align-items: center;
+            gap: 14px;
             text-align: right;
+        }
+
+        .cliente-identidade {
+            min-width: 150px;
+        }
+
+        .btn-sair-cliente {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 9px 13px;
+            border: 1px solid #40566b;
+            border-radius: 9px;
+            color: white;
+            background: transparent;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-sair-cliente:hover {
+            border-color: var(--verde);
         }
 
 
@@ -427,31 +451,20 @@
 
         .icone-concessionaria {
 
-            width: 38px;
-            height: 38px;
+            width: 64px;
+            height: 48px;
 
             border-radius: 9px;
 
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
             flex-shrink: 0;
 
-            background:
-                linear-gradient(
-                    135deg,
-                    #1e8e56,
-                    #37b36b
-                );
+            object-fit: contain;
 
-            color: white;
+            padding: 3px;
 
-            font-size: 14px;
+            background: #ffffff;
 
-            font-weight: bold;
+            border: 1px solid #31516c;
         }
 
 
@@ -1320,6 +1333,8 @@
 
         <div class="cliente-topo">
 
+            <div class="cliente-identidade">
+
             <strong id="nomeTopo">
 
                 Cliente
@@ -1332,6 +1347,16 @@
                 CPF: ---
 
             </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="btn-sair-cliente"
+                onclick="sairPortal()"
+            >
+                Sair
+            </button>
 
         </div>
 
@@ -1352,7 +1377,7 @@
 
         <h1>
 
-            Minhas cobranças
+            Meus débitos
 
         </h1>
 
@@ -1395,7 +1420,7 @@
 
             <span>
 
-                Placa
+                Veículo
 
             </span>
 
@@ -1563,7 +1588,7 @@
 
                     <small>
 
-                        Pagamento por boleto
+                        Aprovação em até 1 dia útil
 
                     </small>
 
@@ -1582,16 +1607,6 @@
                 Continuar para pagamento
 
             </button>
-
-
-            <a
-                href="/portal"
-                class="btn-voltar"
-            >
-
-                ← Voltar ao portal
-
-            </a>
 
 
         </aside>
@@ -1682,7 +1697,7 @@
             ) === 1
         ) {
 
-            return "Concessionária A";
+            return "ConectaVia";
 
         }
 
@@ -1693,7 +1708,7 @@
             ) === 2
         ) {
 
-            return "Concessionária B";
+            return "RotaLink";
 
         }
 
@@ -1853,20 +1868,7 @@
 
     function agruparCobrancas() {
 
-        /*
-         * A e B sempre existem visualmente,
-         * mesmo sem débito.
-         */
-
-        const grupos = {
-
-            "Concessionária A":
-                [],
-
-            "Concessionária B":
-                []
-
-        };
+        const grupos = {};
 
 
         cobrancasPendentes.forEach(
@@ -1938,6 +1940,26 @@
     /* ========================================= */
 
     async function carregarCobrancas() {
+
+        const gruposAbertos =
+            new Set(
+                Array.from(
+                    document.querySelectorAll(
+                        ".concessionaria.aberta"
+                    )
+                )
+                .map(item => item.id)
+            );
+
+        const idsSelecionados =
+            new Set(
+                Array.from(
+                    document.querySelectorAll(
+                        ".checkbox-cobranca:checked"
+                    )
+                )
+                .map(item => item.dataset.id)
+            );
 
         if (
             !cpf
@@ -2054,6 +2076,38 @@
 
             renderizarCobrancas();
 
+            gruposAbertos.forEach(
+                id => {
+
+                    const grupo =
+                        document.getElementById(id);
+
+                    if (grupo) {
+
+                        grupo.classList.add("aberta");
+
+                    }
+
+                }
+            );
+
+            idsSelecionados.forEach(
+                id => {
+
+                    const checkbox =
+                        document.querySelector(
+                            `.checkbox-cobranca[data-id="${id}"]`
+                        );
+
+                    if (checkbox) {
+
+                        checkbox.checked = true;
+
+                    }
+
+                }
+            );
+
             atualizarResumo();
 
         }
@@ -2090,6 +2144,19 @@
     const grupos =
         agruparCobrancas();
 
+    if (Object.keys(grupos).length === 0) {
+
+        area.innerHTML = `
+            <div class="sem-debitos">
+                <strong>Nenhum débito pendente</strong>
+                Este veículo está em dia.
+            </div>
+        `;
+
+        return;
+
+    }
+
 
     area.innerHTML =
         Object.entries(grupos)
@@ -2117,10 +2184,13 @@
                     cobrancas.length;
 
 
+                const logo =
+                    cobrancas[0].concessionaria_logo
+                    || "";
+
+
                 const textoQuantidade =
-                    quantidade === 0
-                    ? "Nenhum débito pendente"
-                    : quantidade === 1
+                    quantidade === 1
                         ? "1 passagem pendente"
                         : `${quantidade} passagens pendentes`;
 
@@ -2224,9 +2294,10 @@
                             <div class="concessionaria-identidade">
 
 
-                                <div class="icone-concessionaria">
-                                    FF
-                                </div>
+                                ${logo
+                                    ? `<img class="icone-concessionaria" src="${logo}" alt="Logo ${concessionaria}">`
+                                    : `<div class="icone-concessionaria" aria-hidden="true"></div>`
+                                }
 
 
                                 <div class="concessionaria-nome">
@@ -2813,6 +2884,73 @@
         }
 
     }
+
+
+    function sairPortal() {
+
+        sessionStorage.removeItem(
+            "freeflow_cobrancas_selecionadas"
+        );
+
+        window.location.href = "/portal";
+
+    }
+
+
+    function atualizarAposPagamento() {
+
+        const existeSelecao =
+            document.querySelector(
+                ".checkbox-cobranca:checked"
+            );
+
+        if (
+            document.visibilityState === "visible"
+            &&
+            !existeSelecao
+        ) {
+
+            carregarCobrancas();
+
+        }
+
+    }
+
+
+    if ("BroadcastChannel" in window) {
+
+        const canalPagamento =
+            new BroadcastChannel(
+                "freeflow-pagamentos"
+            );
+
+        canalPagamento.onmessage =
+            atualizarAposPagamento;
+
+    }
+
+
+    window.addEventListener(
+        "storage",
+        evento => {
+
+            if (
+                evento.key
+                === "freeflow_pagamento_confirmado"
+            ) {
+
+                atualizarAposPagamento();
+
+            }
+
+        }
+    );
+
+
+    setInterval(
+        atualizarAposPagamento,
+        5000
+    );
 
 
     /* ========================================= */

@@ -2,35 +2,38 @@
 # FREEFLOW - API PRINCIPAL
 # ==========================================
 
-from fastapi import FastAPI, Depends, Request, HTTPException
-from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
+from fastapi import FastAPI, Depends, Header, Request, HTTPException
+from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse, Response
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import text
 from sqlalchemy.orm import Session
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
-import numpy as np
+import barcode
 import csv
 import io
+import qrcode
+import secrets
 
 from datetime import datetime
+from urllib.parse import urlencode
+from barcode.writer import SVGWriter
 from starlette.middleware.sessions import SessionMiddleware
-from app.database import Base, engine, get_db
+from app.database import get_db
 from app import schemas, crud, anomaly, models
 
 from app.config import (
     VALOR_PASSAGEM,
+    TEMPO_DUPLICIDADE,
     TEMPO_SEM_DADOS_ALERTA,
     REFRESH_SEGUNDOS,
     SESSION_SECRET,
-    CONCESSIONARIAS_ADMIN
-)
-
-
-# ==========================================
-# BANCO DE DADOS
-# ==========================================
-
-Base.metadata.create_all(
-    bind=engine
+    ESP32_API_KEY,
+    COOKIE_SECURE,
+    BASE_DIR,
+    CONCESSIONARIAS_ADMIN,
+    valor_passagem_por_faixa,
 )
 
 
@@ -42,18 +45,188 @@ app = FastAPI(
     title="FreeFlow"
 )
 
+app.mount(
+    "/static",
+    StaticFiles(directory=str(BASE_DIR / "app" / "static")),
+    name="static",
+)
+
 app.add_middleware(
     SessionMiddleware,
-    secret_key=SESSION_SECRET
+    secret_key=SESSION_SECRET,
+    same_site="lax",
+    https_only=COOKIE_SECURE,
 )
+
+
+def exigir_admin(request: Request) -> None:
+    if not request.session.get("admin_logado"):
+        raise HTTPException(
+            status_code=401,
+            detail="Acesso não autorizado.",
+        )
+
+
+def validar_chave_esp32(
+    x_api_key: str | None = Header(
+        default=None,
+        alias="X-API-Key",
+    ),
+) -> None:
+    if not ESP32_API_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="Integração com ESP32 não configurada.",
+        )
+
+    if not x_api_key or not secrets.compare_digest(
+        x_api_key,
+        ESP32_API_KEY,
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Chave do dispositivo inválida.",
+        )
 
 # ==========================================
 # TEMPLATES HTML
 # ==========================================
 
 templates = Jinja2Templates(
-    directory="app/templates"
+    directory=str(BASE_DIR / "app" / "templates")
 )
+
+PAGAMENTO_MAX_AGE = 60 * 60 * 24
+pagamento_serializer = URLSafeTimedSerializer(
+    SESSION_SECRET,
+    salt="freeflow-pagamento-simulado",
+)
+
+
+def configuracao_concessionaria(
+    concessionaria_id: str = "",
+    usuario: str = "",
+    faixas: list[int] | None = None,
+) -> dict:
+    concessionaria_id = str(concessionaria_id or "").casefold()
+    usuario = str(usuario or "").casefold()
+    faixas = {int(faixa) for faixa in (faixas or [])}
+
+    aliases = {
+        "a": "A",
+        "1": "A",
+        "concessionaria_a": "A",
+        "b": "B",
+        "2": "B",
+        "concessionaria_b": "B",
+    }
+    id_canonico = aliases.get(usuario) or aliases.get(concessionaria_id)
+    if id_canonico:
+        return next(
+            (
+                dados
+                for dados in CONCESSIONARIAS_ADMIN.values()
+                if dados["id"] == id_canonico
+            ),
+            {},
+        )
+
+    configuracao = next(
+        (
+            dados
+            for usuario_configurado, dados in CONCESSIONARIAS_ADMIN.items()
+            if (
+                str(dados["id"]).casefold() == concessionaria_id
+                or str(usuario_configurado).casefold() == concessionaria_id
+                or str(usuario_configurado).casefold() == usuario
+            )
+        ),
+        None,
+    )
+    if configuracao:
+        return configuracao
+
+    return next(
+        (
+            dados
+            for dados in CONCESSIONARIAS_ADMIN.values()
+            if faixas.intersection(dados["faixas"])
+        ),
+        {},
+    )
+
+
+def identidade_concessionaria(request: Request) -> dict:
+    concessionaria_id = request.session.get("concessionaria_id", "")
+    configuracao = configuracao_concessionaria(
+        concessionaria_id=concessionaria_id,
+        faixas=request.session.get("faixas_permitidas", []),
+    )
+    return {
+        "concessionaria_id": concessionaria_id,
+        "concessionaria_nome": configuracao.get(
+            "nome",
+            request.session.get("concessionaria_nome", "Concessionária"),
+        ),
+        "concessionaria_sigla": configuracao.get("sigla", "FF"),
+        "concessionaria_logo_url": configuracao.get("logo_url", ""),
+    }
+
+
+def concessionaria_por_faixa(faixa: int) -> dict:
+    return next(
+        (
+            dados
+            for dados in CONCESSIONARIAS_ADMIN.values()
+            if faixa in dados["faixas"]
+        ),
+        {
+            "id": "",
+            "nome": "Concessionária",
+            "sigla": "FF",
+            "logo_url": "",
+        },
+    )
+
+
+def carregar_token_pagamento(token: str) -> dict:
+    try:
+        dados = pagamento_serializer.loads(
+            token,
+            max_age=PAGAMENTO_MAX_AGE,
+        )
+    except SignatureExpired as exc:
+        raise HTTPException(
+            status_code=410,
+            detail="Este pagamento expirou. Gere uma nova cobrança.",
+        ) from exc
+    except BadSignature as exc:
+        raise HTTPException(
+            status_code=400,
+            detail="Pagamento inválido.",
+        ) from exc
+
+    if dados.get("v") != 1 or not dados.get("cobrancas"):
+        raise HTTPException(status_code=400, detail="Pagamento inválido.")
+
+    return dados
+
+
+def validar_data_filtro(valor: str | None) -> str | None:
+    if not valor:
+        return None
+
+    try:
+        return datetime.strptime(valor, "%Y-%m-%d").date().isoformat()
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail="Data inválida. Use o formato AAAA-MM-DD.",
+        ) from exc
+
+
+def url_sucesso_pagamento(token: str) -> str:
+    return "/pagamento/confirmado?" + urlencode({"token": token})
 # ==========================================
 
 # ==========================================
@@ -208,45 +381,37 @@ def obter_ou_criar_veiculo_demo(
 def formatar_tempo(
     segundos: int
 ) -> str:
+    segundos = max(0, int(segundos))
+    dias, restante = divmod(segundos, 86400)
+    horas, restante = divmod(restante, 3600)
+    minutos, segundos = divmod(restante, 60)
+    partes = []
 
-    if segundos < 60:
+    if dias:
+        partes.append(f"{dias} dia" + ("s" if dias != 1 else ""))
+    if horas:
+        partes.append(f"{horas}h")
+    if minutos:
+        partes.append(f"{minutos}min")
+    if segundos or not partes:
+        partes.append(f"{segundos}s")
 
-        return (
-            f"{segundos} segundo(s)"
-        )
+    if len(partes) == 1:
+        return partes[0]
 
-    elif segundos < 3600:
-
-        minutos = (
-            segundos // 60
-        )
-
-        return (
-            f"{minutos} minuto(s)"
-        )
-
-    else:
-
-        horas = (
-            segundos // 3600
-        )
-
-        return (
-            f"{horas} hora(s)"
-        )
+    return ", ".join(partes[:-1]) + " e " + partes[-1]
 
 
 # ==========================================
 # ROTA PRINCIPAL
 # ==========================================
 
-@app.get("/")
-def raiz():
+@app.get("/", include_in_schema=False)
+def raiz(request: Request):
+    if request.url.hostname == "gestao-free-flow.vercel.app":
+        return RedirectResponse(url="/admin/login", status_code=307)
 
-    return {
-        "mensagem":
-            "API FreeFlow funcionando"
-    }
+    return RedirectResponse(url="/portal", status_code=307)
 
 
 # ==========================================
@@ -259,6 +424,7 @@ def raiz():
 )
 def criar_evento(
     evento: schemas.EventoCreate,
+    _dispositivo: None = Depends(validar_chave_esp32),
     db: Session = Depends(get_db)
 ):
 
@@ -286,10 +452,10 @@ def criar_evento(
 
 
     # ======================================
-    # 3. SOMENTE DUPLICIDADE NÃO PODE COBRAR
+    # 3. SOMENTE PASSAGEM NORMAL PODE GERAR COBRANÇA
     # ======================================
 
-    if novo_evento.anomalia != "duplicidade":
+    if novo_evento.anomalia is None:
 
         uid = (
             novo_evento.id_veiculo
@@ -372,6 +538,7 @@ def criar_evento(
 
 @app.post("/analisar")
 def analisar(
+    _admin: None = Depends(exigir_admin),
     db: Session = Depends(get_db)
 ):
 
@@ -396,6 +563,7 @@ def analisar(
     ]
 )
 def listar_eventos(
+    _admin: None = Depends(exigir_admin),
     db: Session = Depends(get_db)
 ):
 
@@ -427,12 +595,7 @@ def dashboard(
     return templates.TemplateResponse(
         request=request,
         name="dashboard.html",
-        context={
-            "concessionaria_nome":
-                request.session.get(
-                    "concessionaria_nome"
-                )
-        }
+        context=identidade_concessionaria(request),
     )
 
 # ==========================================
@@ -476,34 +639,43 @@ def admin_login_page(
     "/admin/login"
 )
 async def admin_login(
-    request: Request
+    request: Request,
+    db: Session = Depends(get_db)
 ):
     form = await request.form()
 
     usuario = form.get("usuario")
     senha = form.get("senha")
 
-    credencial = CONCESSIONARIAS_ADMIN.get(
-        usuario
+    credencial = crud.autenticar_usuario_concessionaria(
+        db,
+        usuario,
+        senha
     )
 
-    if (
-        credencial
-        and senha == credencial["senha"]
-    ):
+    if credencial:
         request.session["admin_logado"] = True
+
+        faixas_permitidas = crud.obter_faixas_usuario_concessionaria(
+            credencial
+        )
+        configuracao = configuracao_concessionaria(
+            concessionaria_id=credencial.concessionaria_id,
+            usuario=usuario,
+            faixas=faixas_permitidas,
+        )
 
         request.session[
             "concessionaria_id"
-        ] = credencial["id"]
+        ] = configuracao.get("id", credencial.concessionaria_id)
 
         request.session[
             "concessionaria_nome"
-        ] = credencial["nome"]
+        ] = configuracao.get("nome", credencial.concessionaria_nome)
 
         request.session[
             "faixas_permitidas"
-        ] = credencial["faixas"]
+        ] = configuracao.get("faixas", faixas_permitidas)
 
         return RedirectResponse(
             url="/dashboard",
@@ -590,6 +762,325 @@ def pagina_boleto(
         name="boleto.html"
     )
 
+
+def localizar_cobrancas_pagamento(
+    db: Session,
+    cpf: str,
+    placa: str,
+    cobranca_ids: list[int],
+):
+    cpf_normalizado = (
+        cpf.replace(".", "").replace("-", "").strip()
+    )
+    placa_normalizada = placa.strip().upper()
+    ids = sorted({int(item) for item in cobranca_ids if int(item) > 0})
+
+    if not ids or len(ids) > 100:
+        raise HTTPException(
+            status_code=400,
+            detail="Selecione entre 1 e 100 débitos.",
+        )
+
+    proprietario = crud.buscar_proprietario_por_cpf(db, cpf_normalizado)
+    veiculo = crud.buscar_veiculo_por_placa(db, placa_normalizada)
+
+    if (
+        not proprietario
+        or not veiculo
+        or veiculo.proprietario_id != proprietario.id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="CPF e veículo não correspondem ao mesmo cliente.",
+        )
+
+    cobrancas = (
+        db.query(models.Cobranca)
+        .join(
+            models.EventoPassagem,
+            models.Cobranca.evento_id == models.EventoPassagem.id,
+        )
+        .filter(
+            models.Cobranca.id.in_(ids),
+            models.Cobranca.veiculo_id == veiculo.id,
+            models.Cobranca.status == "pendente",
+            models.EventoPassagem.anomalia.is_(None),
+        )
+        .order_by(models.Cobranca.id.asc())
+        .all()
+    )
+
+    if len(cobrancas) != len(ids):
+        raise HTTPException(
+            status_code=409,
+            detail="Um ou mais débitos já foram pagos ou não pertencem ao veículo.",
+        )
+
+    return veiculo, cobrancas
+
+
+@app.post("/portal/pagamento/iniciar")
+def iniciar_pagamento(
+    pagamento: schemas.PortalPagamentoIniciar,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    metodo = pagamento.metodo.strip().lower()
+    if metodo not in {"pix", "boleto"}:
+        raise HTTPException(status_code=400, detail="Forma de pagamento inválida.")
+
+    veiculo, cobrancas = localizar_cobrancas_pagamento(
+        db,
+        pagamento.cpf,
+        pagamento.placa,
+        pagamento.cobrancas,
+    )
+    token = pagamento_serializer.dumps(
+        {
+            "v": 1,
+            "placa": veiculo.placa,
+            "veiculo_id": veiculo.id,
+            "cobrancas": [cobranca.id for cobranca in cobrancas],
+            "metodo": metodo,
+        }
+    )
+    query = urlencode({"token": token})
+    confirmacao_url = f"{request.url_for('confirmar_pagamento_page')}?{query}"
+
+    return {
+        "token": token,
+        "confirmacao_url": confirmacao_url,
+        "qrcode_url": f"{request.url_for('qrcode_pagamento')}?{query}",
+        "codigo_barras_url": f"{request.url_for('codigo_barras_pagamento')}?{query}",
+    }
+
+
+@app.get("/pagamento/confirmar", response_class=HTMLResponse)
+def confirmar_pagamento_page(
+    request: Request,
+    token: str,
+    db: Session = Depends(get_db),
+):
+    dados = carregar_token_pagamento(token)
+    cobrancas = (
+        db.query(models.Cobranca)
+        .join(
+            models.EventoPassagem,
+            models.Cobranca.evento_id == models.EventoPassagem.id,
+        )
+        .filter(
+            models.Cobranca.id.in_(dados["cobrancas"]),
+            models.Cobranca.veiculo_id == dados["veiculo_id"],
+            models.EventoPassagem.anomalia.is_(None),
+        )
+        .order_by(models.Cobranca.id.asc())
+        .all()
+    )
+    if len(cobrancas) != len(set(dados["cobrancas"])):
+        raise HTTPException(status_code=404, detail="Débitos não encontrados.")
+
+    veiculo = cobrancas[0].veiculo
+
+    return templates.TemplateResponse(
+        request=request,
+        name="confirmar_pagamento.html",
+        context={
+            "token": token,
+            "placa": dados["placa"],
+            "metodo": dados["metodo"],
+            "cobrancas": cobrancas,
+            "total": sum(float(cobranca.valor or 0) for cobranca in cobrancas),
+            "ja_pago": all(cobranca.status == "pago" for cobranca in cobrancas),
+            "success_url": url_sucesso_pagamento(token),
+            "redirect_url": (
+                "/cobrancas?"
+                + urlencode(
+                    {
+                        "cpf": veiculo.proprietario.cpf,
+                        "placa": dados["placa"],
+                    }
+                )
+            ),
+        },
+    )
+
+
+@app.post("/portal/pagamento/confirmar")
+def confirmar_pagamento(
+    pagamento: schemas.PortalPagamentoConfirmar,
+    db: Session = Depends(get_db),
+):
+    dados = carregar_token_pagamento(pagamento.token)
+    ids = sorted(set(int(item) for item in dados["cobrancas"]))
+    cobrancas = (
+        db.query(models.Cobranca)
+        .join(
+            models.EventoPassagem,
+            models.Cobranca.evento_id == models.EventoPassagem.id,
+        )
+        .filter(
+            models.Cobranca.id.in_(ids),
+            models.Cobranca.veiculo_id == dados["veiculo_id"],
+            models.EventoPassagem.anomalia.is_(None),
+        )
+        .with_for_update()
+        .all()
+    )
+
+    if len(cobrancas) != len(ids):
+        raise HTTPException(status_code=404, detail="Débitos não encontrados.")
+
+    veiculo = cobrancas[0].veiculo
+
+    atualizadas = 0
+    for cobranca in cobrancas:
+        if cobranca.status == "pendente":
+            cobranca.status = "pago"
+            atualizadas += 1
+
+    db.commit()
+    return {
+        "mensagem": "Pagamento confirmado com sucesso.",
+        "atualizadas": atualizadas,
+        "success_url": url_sucesso_pagamento(pagamento.token),
+    }
+
+
+@app.get("/portal/pagamento/status")
+def status_pagamento(
+    token: str,
+    response: Response,
+    db: Session = Depends(get_db),
+):
+    dados = carregar_token_pagamento(token)
+    ids = sorted(set(int(item) for item in dados["cobrancas"]))
+    cobrancas = (
+        db.query(models.Cobranca)
+        .join(
+            models.EventoPassagem,
+            models.Cobranca.evento_id == models.EventoPassagem.id,
+        )
+        .filter(
+            models.Cobranca.id.in_(ids),
+            models.Cobranca.veiculo_id == dados["veiculo_id"],
+            models.EventoPassagem.anomalia.is_(None),
+        )
+        .all()
+    )
+
+    if len(cobrancas) != len(ids):
+        raise HTTPException(status_code=404, detail="Débitos não encontrados.")
+
+    confirmado = all(cobranca.status == "pago" for cobranca in cobrancas)
+    response.headers["Cache-Control"] = "no-store"
+    return {
+        "confirmado": confirmado,
+        "success_url": url_sucesso_pagamento(token),
+    }
+
+
+@app.get(
+    "/pagamento/confirmado",
+    response_class=HTMLResponse,
+    name="pagamento_confirmado_page",
+)
+def pagamento_confirmado_page(
+    request: Request,
+    token: str | None = None,
+    db: Session = Depends(get_db),
+):
+    retorno_debitos_url = None
+    quantidade_outros_debitos = 0
+
+    if token:
+        dados = carregar_token_pagamento(token)
+        veiculo = (
+            db.query(models.Veiculo)
+            .filter(models.Veiculo.id == dados["veiculo_id"])
+            .first()
+        )
+
+        if veiculo and veiculo.proprietario:
+            quantidade_outros_debitos = (
+                db.query(models.Cobranca)
+                .join(
+                    models.EventoPassagem,
+                    models.Cobranca.evento_id == models.EventoPassagem.id,
+                )
+                .filter(
+                    models.Cobranca.veiculo_id == veiculo.id,
+                    models.Cobranca.status == "pendente",
+                    models.EventoPassagem.anomalia.is_(None),
+                )
+                .count()
+            )
+
+            if quantidade_outros_debitos:
+                retorno_debitos_url = "/cobrancas?" + urlencode(
+                    {
+                        "cpf": veiculo.proprietario.cpf,
+                        "placa": veiculo.placa,
+                    }
+                )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pagamento_confirmado.html",
+        context={
+            "retorno_debitos_url": retorno_debitos_url,
+            "quantidade_outros_debitos": quantidade_outros_debitos,
+        },
+    )
+
+
+@app.get("/pagamento/qrcode", name="qrcode_pagamento")
+def qrcode_pagamento(
+    request: Request,
+    token: str,
+):
+    carregar_token_pagamento(token)
+    confirmacao_url = (
+        f"{request.url_for('confirmar_pagamento_page')}?"
+        + urlencode({"token": token})
+    )
+    imagem = qrcode.make(confirmacao_url)
+    arquivo = io.BytesIO()
+    imagem.save(arquivo, format="PNG")
+    arquivo.seek(0)
+    return StreamingResponse(
+        arquivo,
+        media_type="image/png",
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+@app.get("/pagamento/codigo-barras", name="codigo_barras_pagamento")
+def codigo_barras_pagamento(
+    request: Request,
+    token: str,
+):
+    carregar_token_pagamento(token)
+    confirmacao_url = (
+        f"{request.url_for('confirmar_pagamento_page')}?"
+        + urlencode({"token": token})
+    )
+    arquivo = io.BytesIO()
+    codigo = barcode.get("code128", confirmacao_url, writer=SVGWriter())
+    codigo.write(
+        arquivo,
+        options={
+            "write_text": False,
+            "module_width": 0.22,
+            "module_height": 18,
+            "quiet_zone": 3,
+        },
+    )
+    return Response(
+        content=arquivo.getvalue(),
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "no-store"},
+    )
+
 # ==========================================
 # CONSULTA PORTAL
 # ==========================================
@@ -634,7 +1125,10 @@ def consultar_portal(
 
         raise HTTPException(
             status_code=404,
-            detail="CPF não encontrado."
+            detail=(
+                "CPF ou veículo informados estão incorretos. "
+                "Confira os dados e tente novamente."
+            )
         )
 
 
@@ -654,7 +1148,10 @@ def consultar_portal(
 
         raise HTTPException(
             status_code=404,
-            detail="Veículo não encontrado."
+            detail=(
+                "CPF ou veículo informados estão incorretos. "
+                "Confira os dados e tente novamente."
+            )
         )
 
 
@@ -667,8 +1164,8 @@ def consultar_portal(
         raise HTTPException(
             status_code=403,
             detail=(
-                "A placa informada "
-                "não pertence a este CPF."
+                "CPF ou veículo informados estão incorretos. "
+                "Confira os dados e tente novamente."
             )
         )
 
@@ -677,19 +1174,19 @@ def consultar_portal(
     # COBRANÇAS DO VEÍCULO
     # ======================================
 
-    cobrancas = [
-
-        cobranca
-
-        for cobranca
-        in crud.listar_cobrancas(db)
-
-        if (
-            cobranca.veiculo_id
-            == veiculo.id
+    cobrancas = (
+        db.query(models.Cobranca)
+        .join(
+            models.EventoPassagem,
+            models.Cobranca.evento_id == models.EventoPassagem.id,
         )
-
-    ]
+        .filter(
+            models.Cobranca.veiculo_id == veiculo.id,
+            models.EventoPassagem.anomalia.is_(None),
+        )
+        .order_by(models.Cobranca.id.desc())
+        .all()
+    )
 
 
     total_pendentes = sum(
@@ -785,6 +1282,10 @@ def consultar_portal(
             total_pendentes,
 
 
+        "possui_debitos":
+            total_pendentes > 0,
+
+
         "total_pagas":
             total_pagas,
 
@@ -805,21 +1306,13 @@ def consultar_portal(
             else "-"
         ),
 
-        "concessionaria": (
-            "Concessionária A"
-            if (
-                cobranca.evento
-                and cobranca.evento.faixa == 1
-            )
-            else (
-                "Concessionária B"
-                if (
-                    cobranca.evento
-                    and cobranca.evento.faixa == 2
-                )
-                else "Concessionária"
-            )
-        ),
+        "concessionaria": concessionaria_por_faixa(
+            cobranca.evento.faixa if cobranca.evento else 0
+        )["nome"],
+
+        "concessionaria_logo": concessionaria_por_faixa(
+            cobranca.evento.faixa if cobranca.evento else 0
+        )["logo_url"],
 
         "valor": cobranca.valor,
 
@@ -936,6 +1429,12 @@ def pagar_cobranca(
             )
         )
 
+    if cobranca.evento and cobranca.evento.anomalia is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Uma passagem anômala não pode ser paga.",
+        )
+
 
     # Impede pagar cobrança
     # de outro veículo
@@ -1007,6 +1506,7 @@ def pagar_cobranca(
 )
 def admin_cobrancas(
     request: Request,
+    data: str | None = None,
     db: Session = Depends(get_db)
 ):
 
@@ -1028,12 +1528,8 @@ def admin_cobrancas(
     # DADOS DA CONCESSIONÁRIA LOGADA
     # ======================================
 
-    concessionaria_nome = (
-        request.session.get(
-            "concessionaria_nome",
-            "Concessionária"
-        )
-    )
+    identidade = identidade_concessionaria(request)
+    concessionaria_nome = identidade["concessionaria_nome"]
 
 
     faixas_permitidas = (
@@ -1043,13 +1539,15 @@ def admin_cobrancas(
         )
     )
 
+    data_filtrada = validar_data_filtro(data)
+
 
     # ======================================
     # COBRANÇAS SOMENTE DAS FAIXAS
     # DA CONCESSIONÁRIA LOGADA
     # ======================================
 
-    cobrancas = (
+    consulta_cobrancas = (
 
         db.query(
             models.Cobranca
@@ -1065,15 +1563,23 @@ def admin_cobrancas(
         .filter(
             models.EventoPassagem.faixa.in_(
                 faixas_permitidas
+            ),
+            models.EventoPassagem.anomalia.is_(None),
+        )
+
+    )
+
+    if data_filtrada:
+        consulta_cobrancas = consulta_cobrancas.filter(
+            models.EventoPassagem.timestamp_evento.like(
+                f"{data_filtrada}%"
             )
         )
 
-        .order_by(
-            models.Cobranca.id.desc()
-        )
-
+    cobrancas = (
+        consulta_cobrancas
+        .order_by(models.Cobranca.id.desc())
         .all()
-
     )
 
 
@@ -1201,9 +1707,10 @@ def admin_cobrancas(
         # TOTAL GERADO
         # ==================================
 
-        resumo[
-            "total_gerado"
-        ] += valor
+        if cobranca.status in {"pendente", "pago"}:
+            resumo[
+                "total_gerado"
+            ] += valor
 
 
         # ==================================
@@ -1332,6 +1839,15 @@ def admin_cobrancas(
             "concessionaria_nome":
                 concessionaria_nome,
 
+            "concessionaria_id":
+                identidade["concessionaria_id"],
+
+            "concessionaria_sigla":
+                identidade["concessionaria_sigla"],
+
+            "concessionaria_logo_url":
+                identidade["concessionaria_logo_url"],
+
             "resumo":
                 resumo,
 
@@ -1345,7 +1861,10 @@ def admin_cobrancas(
                 total_pendente,
 
             "total_recebido":
-                total_recebido
+                total_recebido,
+
+            "data_filtro":
+                data_filtrada or ""
 
         }
 
@@ -1360,6 +1879,7 @@ def admin_cobrancas(
 )
 def dashboard_data(
     request: Request,
+    data: str | None = None,
     db: Session = Depends(get_db)
 ):
 
@@ -1380,8 +1900,10 @@ def dashboard_data(
         )
     )
 
+    data_filtrada = validar_data_filtro(data)
+
     # Todos os eventos apenas das faixas permitidas
-    eventos_todos = (
+    consulta_eventos = (
         db.query(
             models.EventoPassagem
         )
@@ -1390,6 +1912,17 @@ def dashboard_data(
                 faixas_permitidas
             )
         )
+    )
+
+    if data_filtrada:
+        consulta_eventos = consulta_eventos.filter(
+            models.EventoPassagem.timestamp_evento.like(
+                f"{data_filtrada}%"
+            )
+        )
+
+    eventos_todos = (
+        consulta_eventos
         .order_by(
             models.EventoPassagem.id.desc()
         )
@@ -1400,7 +1933,7 @@ def dashboard_data(
     eventos = eventos_todos[:20]
 
     # Quantidade de veículos diferentes
-    total_eventos = len(
+    total_veiculos = len(
         {
             evento.id_veiculo
             for evento in eventos_todos
@@ -1420,6 +1953,8 @@ def dashboard_data(
         for evento in eventos_todos
         if evento.anomalia is None
     )
+
+    total_passagens = len(eventos_todos)
 
     # Últimas duplicidades desta concessionária
     duplicidades_recentes = [
@@ -1503,7 +2038,7 @@ def dashboard_data(
             )
 
 
-            segundos_sem_evento = int(
+            segundos_sem_evento = max(0, int(
 
                 (
                     agora
@@ -1511,7 +2046,7 @@ def dashboard_data(
                 )
                 .total_seconds()
 
-            )
+            ))
 
 
             tempo_formatado = (
@@ -1632,7 +2167,10 @@ def dashboard_data(
     return {
 
         "total_veiculos":
-            total_eventos,
+            total_veiculos,
+
+        "total_passagens":
+            total_passagens,
 
 
         "total_gerado":
@@ -1640,7 +2178,14 @@ def dashboard_data(
 
 
         "valor_por_passagem":
-            VALOR_PASSAGEM,
+            (
+                valor_passagem_por_faixa(faixas_permitidas[0])
+                if faixas_permitidas
+                else VALOR_PASSAGEM
+            ),
+
+        "valor_a_receber_corrigido":
+            total_gerado,
 
 
         "refresh_segundos":
@@ -1762,6 +2307,9 @@ def dashboard_data(
         "segundos_sem_evento":
             segundos_sem_evento,
 
+        "tempo_sem_evento_formatado":
+            formatar_tempo(segundos_sem_evento),
+
 
         "nivel_atualizacao":
             nivel_atualizacao,
@@ -1783,6 +2331,7 @@ def dashboard_data(
 def exportar_csv(
     request: Request,
     anomalia: str = "todos",
+    data: str | None = None,
     db: Session = Depends(get_db)
 ):
 
@@ -1810,8 +2359,9 @@ def exportar_csv(
         )
     )
 
+    data_filtrada = validar_data_filtro(data)
 
-    eventos = (
+    consulta_eventos = (
         db.query(
             models.EventoPassagem
         )
@@ -1820,6 +2370,17 @@ def exportar_csv(
                 faixas_permitidas
             )
         )
+    )
+
+    if data_filtrada:
+        consulta_eventos = consulta_eventos.filter(
+            models.EventoPassagem.timestamp_evento.like(
+                f"{data_filtrada}%"
+            )
+        )
+
+    eventos = (
+        consulta_eventos
         .order_by(
             models.EventoPassagem.id.desc()
         )
@@ -1846,8 +2407,7 @@ def exportar_csv(
         eventos = [
             evento
             for evento in eventos
-            if evento.anomalia
-            != "duplicidade"
+            if evento.anomalia is None
         ]
 
 
@@ -1864,7 +2424,7 @@ def exportar_csv(
 
     writer.writerow(
         [
-            "Placa do Veículo",
+            "Veículo",
             "Concessionária",
             "Data/Hora",
             "Valor",
@@ -1876,39 +2436,22 @@ def exportar_csv(
     for evento in eventos:
 
         status = (
-        "Duplicidade"
-        if evento.anomalia
-        == "duplicidade"
-        else "OK"
-    )
-
-    if evento.faixa == 1:
-
-        concessionaria = (
-            "Concessionária A"
+            "OK"
+            if evento.anomalia is None
+            else evento.anomalia.replace("_", " ").title()
         )
 
-    elif evento.faixa == 2:
+        concessionaria = concessionaria_por_faixa(evento.faixa)["nome"]
 
-        concessionaria = (
-            "Concessionária B"
+        writer.writerow(
+            [
+                evento.id_veiculo,
+                concessionaria,
+                evento.timestamp_evento,
+                evento.valor,
+                status,
+            ]
         )
-
-    else:
-
-        concessionaria = (
-            "Concessionária"
-        )
-
-    writer.writerow(
-        [
-            evento.id_veiculo,
-            concessionaria,
-            evento.timestamp_evento,
-            evento.valor,
-            status
-        ]
-    )
 
     output.seek(0)
 
@@ -1924,6 +2467,7 @@ def exportar_csv(
     nome_arquivo = (
         "relatorio_freeflow_"
         f"concessionaria_{concessionaria_id}_"
+        f"{data_filtrada or 'todas-as-datas'}_"
         f"{anomalia}.csv"
     )
 
@@ -1952,82 +2496,30 @@ def exportar_csv(
 @app.get(
     "/ia/teste"
 )
-def testar_ia_api():
-
-    # Usa o modelo que já está
-    # carregado em memória pelo anomaly.py
-    modelo = (
-        anomaly.MODELO_IA
-    )
-
-
-    evento_normal = np.array(
-        [
-            [
-                1,
-                120,
-                14
-            ]
-        ]
-    )
-
-
-    evento_atipico = np.array(
-        [
-            [
-                9,
-                10000,
-                100
-            ]
-        ]
-    )
-
-
-    resultado_normal = (
-        modelo.predict(
-            evento_normal
-        )[0]
-    )
-
-
-    resultado_atipico = (
-        modelo.predict(
-            evento_atipico
-        )[0]
-    )
-
+def testar_ia_api(
+    _admin: None = Depends(exigir_admin),
+):
+    casos = {
+        "normal": anomaly.classificar_com_ia(1, 120, 14),
+        "duplicidade": anomaly.classificar_com_ia(1, 29, 14),
+        "anomalia": anomaly.classificar_com_ia(2, 120, 2),
+    }
 
     return {
-
-        "modelo":
-            "Isolation Forest",
-
-
-        "status":
-            "carregado",
-
-
-        "teste_normal": (
-
-            "NORMAL"
-
-            if resultado_normal
-            == 1
-
-            else "ANOMALIA"
-
-        ),
+        "modelo": "Isolation Forest",
+        "status": "carregado",
+        "janela_duplicidade_segundos": TEMPO_DUPLICIDADE,
+        "regra_janela": f"intervalo < {TEMPO_DUPLICIDADE}",
+        "casos": casos,
+    }
 
 
-        "teste_atipico": (
-
-            "NORMAL"
-
-            if resultado_atipico
-            == 1
-
-            else "ANOMALIA"
-
-        )
-
+@app.get("/health")
+def healthcheck(
+    db: Session = Depends(get_db),
+):
+    db.execute(text("select 1"))
+    return {
+        "status": "ok",
+        "database": "connected",
     }

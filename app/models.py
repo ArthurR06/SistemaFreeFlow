@@ -5,6 +5,60 @@ from app.database import Base
 
 
 # ==========================================================
+# USUÁRIOS DAS CONCESSIONÁRIAS
+# ==========================================================
+
+class UsuarioConcessionaria(Base):
+    __tablename__ = "usuarios_concessionarias"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    usuario = Column(
+        String,
+        nullable=False,
+        unique=True,
+        index=True
+    )
+
+    senha_hash = Column(
+        String,
+        nullable=False
+    )
+
+    concessionaria_id = Column(
+        String,
+        nullable=False,
+        index=True
+    )
+
+    concessionaria_nome = Column(
+        String,
+        nullable=False
+    )
+
+    # Lista armazenada como texto, por exemplo: "1,2"
+    faixas_permitidas = Column(
+        String,
+        nullable=False
+    )
+
+    ativo = Column(
+        Integer,
+        nullable=False,
+        default=1
+    )
+
+    criado_em = Column(
+        String,
+        nullable=False
+    )
+
+
+# ==========================================================
 # PROPRIETÁRIOS
 # ==========================================================
 

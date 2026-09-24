@@ -1,13 +1,16 @@
-fastapi
-uvicorn
-sqlalchemy
-jinja2
-python-multipart
-requests
-python-dotenv
-psycopg2-binary
+fastapi==0.141.1
+uvicorn==0.52.4
+sqlalchemy==2.0.52
+jinja2==3.1.6
+python-multipart==0.0.32
+requests==2.34.2
+python-dotenv==1.2.3
+psycopg2-binary==2.9.12
 
 numpy==2.4.6
 scikit-learn==1.9.0
 joblib==1.5.3
 itsdangerous==2.2.0
+qrcode==8.2
+Pillow==12.3.0
+python-barcode==0.16.1

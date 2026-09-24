@@ -11,6 +11,9 @@ QUANTIDADE = 500
 
 def gerar_dados():
 
+    # Mantém o conjunto reproduzível para os testes e para a documentação.
+    random.seed(42)
+
     os.makedirs("data", exist_ok=True)
 
     dados = []

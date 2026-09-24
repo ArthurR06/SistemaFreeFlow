@@ -11,6 +11,21 @@ from sklearn.preprocessing import StandardScaler
 
 ARQUIVO_TREINO = "data/treino_normal.csv"
 CAMINHO_MODELO = "app/modelo_anomalia.joblib"
+CAMINHO_MODELO_DUPLICIDADE = "app/modelo_duplicidade.joblib"
+
+
+def criar_pipeline():
+    return Pipeline([
+        ("normalizador", StandardScaler()),
+        (
+            "isolation_forest",
+            IsolationForest(
+                n_estimators=200,
+                contamination=0.05,
+                random_state=42,
+            ),
+        ),
+    ])
 
 
 def carregar_dados():
@@ -61,52 +76,48 @@ def treinar():
         print("ERRO: poucos dados para treinamento.")
         return
 
-    modelo = Pipeline([
-        (
-            "normalizador",
-            StandardScaler()
-        ),
-        (
-            "isolation_forest",
-            IsolationForest(
-                n_estimators=200,
-                contamination=0.05,
-                random_state=42
-            )
-        )
-    ])
+    modelo = criar_pipeline()
+    modelo_duplicidade = criar_pipeline()
 
     print("")
-    print("Treinando modelo...")
+    print("Treinando modelo comportamental...")
 
     modelo.fit(dados)
+    modelo_duplicidade.fit(dados[:, 1].reshape(-1, 1))
 
     joblib.dump(
         modelo,
         CAMINHO_MODELO
     )
+    joblib.dump(
+        modelo_duplicidade,
+        CAMINHO_MODELO_DUPLICIDADE,
+    )
 
     print("")
     print("==============================")
-    print("MODELO TREINADO COM SUCESSO!")
+    print("MODELOS TREINADOS COM SUCESSO!")
     print("==============================")
 
     print(f"Modelo salvo em: {CAMINHO_MODELO}")
+    print(f"Modelo temporal salvo em: {CAMINHO_MODELO_DUPLICIDADE}")
 
     # Testes simples
     print("")
     print("Teste do modelo:")
 
     normal = np.array([
-        [1, 60, 12]
+        [1, 120, 14]
     ])
 
     suspeito = np.array([
-        [1, 1, 12]
+        [2, 120, 2]
     ])
+    duplicidade = np.array([[29]])
 
     resultado_normal = modelo.predict(normal)[0]
     resultado_suspeito = modelo.predict(suspeito)[0]
+    resultado_duplicidade = modelo_duplicidade.predict(duplicidade)[0]
 
     print(
         "Evento normal:",
@@ -114,8 +125,12 @@ def treinar():
     )
 
     print(
-        "Evento muito rápido:",
+        "Evento fora do padrão:",
         "NORMAL" if resultado_suspeito == 1 else "ANOMALIA"
+    )
+    print(
+        "Intervalo de duplicidade:",
+        "NORMAL" if resultado_duplicidade == 1 else "ANOMALIA",
     )
 
 

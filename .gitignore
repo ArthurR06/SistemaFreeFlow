@@ -18,6 +18,9 @@ env/
 .env
 *.env
 !.env.example
+.env.local
+.env.*.local
+.vercel/
 
 # =========================
 # BANCO LOCAL
@@ -46,3 +49,12 @@ Thumbs.db
 # CREDENCIAIS ESP32
 # =========================
 scripts/esp32/secrets.h
+
+# =========================
+# SUPABASE CLI
+# =========================
+supabase/.temp/
+
+.vercel
+.env*
+!.env.example

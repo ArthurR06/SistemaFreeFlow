@@ -413,6 +413,132 @@
 
 
         /* ============================== */
+        /* MODAL DE AVISO */
+        /* ============================== */
+
+        body.modal-aberto {
+            overflow: hidden;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+
+            background: rgba(2, 10, 20, 0.78);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay[hidden] {
+            display: none;
+        }
+
+        .modal-conteudo {
+            position: relative;
+
+            width: 100%;
+            max-width: 430px;
+
+            padding: 34px 30px 30px;
+
+            border: 1px solid #31516e;
+            border-radius: 18px;
+
+            background: #102942;
+
+            text-align: center;
+
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-fechar {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+
+            width: 34px;
+            height: 34px;
+
+            border: 0;
+            border-radius: 50%;
+
+            background: transparent;
+            color: #91a9bf;
+
+            font-size: 26px;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .modal-fechar:hover {
+            background: #193752;
+            color: #ffffff;
+        }
+
+        .modal-icone {
+            width: 58px;
+            height: 58px;
+
+            margin: 0 auto 18px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 50%;
+
+            background: #163c2a;
+            color: #7de5a7;
+
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .modal-conteudo.erro .modal-icone {
+            background: #432026;
+            color: #ffb9c0;
+        }
+
+        .modal-conteudo h2 {
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .modal-conteudo p {
+            color: #a8bbcd;
+            font-size: 15px;
+            line-height: 1.55;
+        }
+
+        .modal-acao {
+            width: 100%;
+
+            margin-top: 24px;
+            padding: 14px 18px;
+
+            border: 0;
+            border-radius: 10px;
+
+            background: #23a65d;
+            color: #ffffff;
+
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .modal-acao:hover {
+            background: #1d914f;
+        }
+
+
+        /* ============================== */
         /* RODAPÉ DO CARD */
         /* ============================== */
 
@@ -655,7 +781,7 @@
             <p class="card-descricao">
 
                 Digite o CPF do proprietário
-                e a placa vinculada ao veículo.
+                e a identificação do veículo vinculado.
 
             </p>
 
@@ -689,14 +815,14 @@
                 <div class="campo">
 
                     <label for="placa">
-                        Placa
+                        Veículo
                     </label>
 
                     <input
                         id="placa"
                         type="text"
                         maxlength="10"
-                        placeholder="Digite a placa"
+                        placeholder="Digite o veículo"
                         autocomplete="off"
                         required
                     >
@@ -743,6 +869,53 @@
 </main>
 
 
+<div
+    id="modalAviso"
+    class="modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitulo"
+    aria-describedby="modalMensagem"
+    hidden
+>
+
+    <div
+        id="modalConteudo"
+        class="modal-conteudo"
+    >
+
+        <button
+            id="btnFecharModal"
+            class="modal-fechar"
+            type="button"
+            aria-label="Fechar aviso"
+        >×</button>
+
+        <div
+            id="modalIcone"
+            class="modal-icone"
+            aria-hidden="true"
+        >✓</div>
+
+        <h2 id="modalTitulo">
+            Aviso
+        </h2>
+
+        <p id="modalMensagem"></p>
+
+        <button
+            id="btnModalOk"
+            class="modal-acao"
+            type="button"
+        >
+            Entendi
+        </button>
+
+    </div>
+
+</div>
+
+
 <footer class="footer">
 
     FreeFlow • Portal de Cobranças
@@ -785,6 +958,131 @@
         document.getElementById(
             "mensagem"
         );
+
+
+    const modalAviso =
+        document.getElementById(
+            "modalAviso"
+        );
+
+
+    const modalConteudo =
+        document.getElementById(
+            "modalConteudo"
+        );
+
+
+    const modalIcone =
+        document.getElementById(
+            "modalIcone"
+        );
+
+
+    const modalTitulo =
+        document.getElementById(
+            "modalTitulo"
+        );
+
+
+    const modalMensagem =
+        document.getElementById(
+            "modalMensagem"
+        );
+
+
+    const btnFecharModal =
+        document.getElementById(
+            "btnFecharModal"
+        );
+
+
+    const btnModalOk =
+        document.getElementById(
+            "btnModalOk"
+        );
+
+
+    function abrirModal(
+        tipo,
+        titulo,
+        texto
+    ) {
+
+        modalConteudo.className =
+            "modal-conteudo " + tipo;
+
+        modalIcone.textContent =
+            tipo === "erro" ? "!" : "✓";
+
+        modalTitulo.textContent =
+            titulo;
+
+        modalMensagem.textContent =
+            texto;
+
+        modalAviso.hidden =
+            false;
+
+        document.body.classList.add(
+            "modal-aberto"
+        );
+
+        btnModalOk.focus();
+
+    }
+
+
+    function fecharModal() {
+
+        modalAviso.hidden =
+            true;
+
+        document.body.classList.remove(
+            "modal-aberto"
+        );
+
+        campoCpf.focus();
+
+    }
+
+
+    btnFecharModal.addEventListener(
+        "click",
+        fecharModal
+    );
+
+
+    btnModalOk.addEventListener(
+        "click",
+        fecharModal
+    );
+
+
+    modalAviso.addEventListener(
+        "click",
+        function (evento) {
+
+            if (evento.target === modalAviso) {
+                fecharModal();
+            }
+
+        }
+    );
+
+
+    document.addEventListener(
+        "keydown",
+        function (evento) {
+
+            if (
+                evento.key === "Escape"
+                && !modalAviso.hidden
+            ) {
+                fecharModal();
+            }
+
+        }
+    );
 
 
     // ==========================================
@@ -895,12 +1193,11 @@
         texto
     ) {
 
-        mensagem.className =
-            "mensagem erro";
-
-
-        mensagem.textContent =
-            texto;
+        abrirModal(
+            "erro",
+            "Não foi possível acessar",
+            texto
+        );
 
     }
 
@@ -951,7 +1248,7 @@
             if (!placa) {
 
                 mostrarErro(
-                    "Informe a placa do veículo."
+                    "Informe o veículo."
                 );
 
                 return;
@@ -1031,6 +1328,23 @@
 
                     );
 
+
+                    return;
+
+                }
+
+
+                // ==============================
+                // CLIENTE SEM DÉBITOS
+                // ==============================
+
+                if (!dados.possui_debitos) {
+
+                    abrirModal(
+                        "informacao",
+                        "Nenhum débito encontrado",
+                        "Você não possui débitos pendentes no momento."
+                    );
 
                     return;
 

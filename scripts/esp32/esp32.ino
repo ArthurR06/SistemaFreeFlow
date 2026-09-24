@@ -18,8 +18,7 @@ const char* password = WIFI_PASSWORD;
 // ==========================================
 
 // IP atual do notebook
-const char* URL_EVENTO =
-  "http://10.28.245.62:8002/evento";
+const char* URL_EVENTO = FREEFLOW_API_URL;
 
 // ==========================================
 // MAC DOS DOIS ESP32
@@ -312,6 +311,11 @@ void enviarEvento(String uid) {
   http.addHeader(
     "Content-Type",
     "application/json"
+  );
+
+  http.addHeader(
+    "X-API-Key",
+    FREEFLOW_API_KEY
   );
 
 

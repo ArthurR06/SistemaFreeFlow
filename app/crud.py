@@ -3,7 +3,109 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from app import models, schemas
-from app.config import VALOR_PASSAGEM
+from app.config import valor_passagem_por_faixa
+from app.security import gerar_hash_senha, verificar_senha
+
+
+# ==========================================================
+# USUÁRIOS DAS CONCESSIONÁRIAS
+# ==========================================================
+
+def buscar_usuario_concessionaria(
+    db: Session,
+    usuario: str
+):
+    if not usuario:
+        return None
+
+    return (
+        db.query(models.UsuarioConcessionaria)
+        .filter(
+            models.UsuarioConcessionaria.usuario
+            == usuario.strip()
+        )
+        .first()
+    )
+
+
+def autenticar_usuario_concessionaria(
+    db: Session,
+    usuario: str,
+    senha: str
+):
+    usuario_db = buscar_usuario_concessionaria(
+        db,
+        usuario
+    )
+
+    if (
+        not usuario_db
+        or usuario_db.ativo != 1
+        or not senha
+        or not verificar_senha(
+            senha,
+            usuario_db.senha_hash
+        )
+    ):
+        return None
+
+    return usuario_db
+
+
+def obter_faixas_usuario_concessionaria(
+    usuario: models.UsuarioConcessionaria
+):
+    faixas = []
+
+    for faixa in usuario.faixas_permitidas.split(","):
+        try:
+            faixas.append(int(faixa.strip()))
+        except ValueError:
+            continue
+
+    return faixas
+
+
+def inicializar_usuarios_concessionarias(
+    db: Session,
+    credenciais: dict
+):
+    """Cadastra os usuários demonstrativos que ainda não existem."""
+    usuarios_criados = 0
+
+    for nome_usuario, dados in credenciais.items():
+        existente = buscar_usuario_concessionaria(
+            db,
+            nome_usuario
+        )
+
+        if existente:
+            continue
+
+        usuario_db = models.UsuarioConcessionaria(
+            usuario=nome_usuario.strip(),
+            senha_hash=gerar_hash_senha(
+                dados["senha"]
+            ),
+            concessionaria_id=dados["id"],
+            concessionaria_nome=dados["nome"],
+            faixas_permitidas=",".join(
+                str(faixa)
+                for faixa in dados["faixas"]
+            ),
+            ativo=1,
+            criado_em=datetime.now().isoformat(
+                timespec="seconds"
+            )
+        )
+
+        db.add(usuario_db)
+        usuarios_criados += 1
+
+    if usuarios_criados:
+        db.commit()
+
+    return usuarios_criados
 
 
 # ==========================================================
@@ -18,7 +120,7 @@ def criar_evento(db: Session, evento: schemas.EventoCreate):
         timestamp_evento=evento.timestamp_evento,
         sensor_id=evento.sensor_id,
         origem=evento.origem,
-        valor=VALOR_PASSAGEM
+        valor=valor_passagem_por_faixa(evento.faixa)
     )
 
     db.add(db_evento)
@@ -70,7 +172,7 @@ def total_gerado(db: Session):
     return sum(
         e.valor
         for e in eventos
-        if e.anomalia != "duplicidade"
+        if e.anomalia is None
     )
 
 
