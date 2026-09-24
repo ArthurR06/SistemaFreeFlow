@@ -10,7 +10,6 @@ O sistema recebe eventos enviados por ESP32 com leitores RFID, registra as passa
 
 - **Portal do cliente:** [portal-free-flow.vercel.app/portal](https://portal-free-flow.vercel.app/portal)
 - **Portal de gestão das concessionárias:** [gestao-free-flow.vercel.app/admin/login](https://gestao-free-flow.vercel.app/admin/login)
-- **Página inicial do sistema:** [sistema-free-flow.vercel.app](https://sistema-free-flow.vercel.app/)
 
 ---
 
