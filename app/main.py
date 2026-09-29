@@ -654,6 +654,16 @@ async def admin_login(
     )
 
     if credencial:
+        crud.registrar_acesso(
+            db,
+            tipo_usuario="administrador",
+            identificador=credencial.usuario,
+            usuario_concessionaria_id=credencial.id,
+            concessionaria_id=credencial.concessionaria_id,
+            sucesso=True,
+            motivo="autenticado",
+        )
+
         request.session["admin_logado"] = True
 
         faixas_permitidas = crud.obter_faixas_usuario_concessionaria(
@@ -681,6 +691,28 @@ async def admin_login(
             url="/dashboard",
             status_code=303
         )
+
+    usuario_encontrado = crud.buscar_usuario_concessionaria(
+        db,
+        usuario,
+    )
+    crud.registrar_acesso(
+        db,
+        tipo_usuario="administrador",
+        identificador=(usuario or "não informado"),
+        usuario_concessionaria_id=(
+            usuario_encontrado.id
+            if usuario_encontrado
+            else None
+        ),
+        concessionaria_id=(
+            usuario_encontrado.concessionaria_id
+            if usuario_encontrado
+            else None
+        ),
+        sucesso=False,
+        motivo="credenciais_invalidas",
+    )
 
     return templates.TemplateResponse(
         request=request,
@@ -1108,6 +1140,30 @@ def consultar_portal(
         .upper()
     )
 
+    def registrar_acesso_cliente(
+        *,
+        sucesso: bool,
+        motivo: str,
+        proprietario_id: int | None = None,
+        veiculo_id: int | None = None,
+    ) -> None:
+        if not consulta.registrar_acesso:
+            return
+
+        final_cpf = cpf[-4:] if cpf else "não informado"
+        crud.registrar_acesso(
+            db,
+            tipo_usuario="cliente",
+            identificador=(
+                f"CPF final {final_cpf} / "
+                f"Veículo {placa or 'não informado'}"
+            ),
+            proprietario_id=proprietario_id,
+            veiculo_id=veiculo_id,
+            sucesso=sucesso,
+            motivo=motivo,
+        )
+
 
     # ======================================
     # PROPRIETÁRIO
@@ -1122,6 +1178,11 @@ def consultar_portal(
 
 
     if not proprietario:
+
+        registrar_acesso_cliente(
+            sucesso=False,
+            motivo="cpf_nao_encontrado",
+        )
 
         raise HTTPException(
             status_code=404,
@@ -1146,6 +1207,12 @@ def consultar_portal(
 
     if not veiculo:
 
+        registrar_acesso_cliente(
+            sucesso=False,
+            motivo="veiculo_nao_encontrado",
+            proprietario_id=proprietario.id,
+        )
+
         raise HTTPException(
             status_code=404,
             detail=(
@@ -1160,6 +1227,13 @@ def consultar_portal(
         veiculo.proprietario_id
         != proprietario.id
     ):
+
+        registrar_acesso_cliente(
+            sucesso=False,
+            motivo="veiculo_nao_pertence_ao_cpf",
+            proprietario_id=proprietario.id,
+            veiculo_id=veiculo.id,
+        )
 
         raise HTTPException(
             status_code=403,
@@ -1246,6 +1320,13 @@ def consultar_portal(
 
         else "***"
 
+    )
+
+    registrar_acesso_cliente(
+        sucesso=True,
+        motivo="autenticado",
+        proprietario_id=proprietario.id,
+        veiculo_id=veiculo.id,
     )
 
 

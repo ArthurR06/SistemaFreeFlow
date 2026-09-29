@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from datetime import datetime, timezone
+
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -55,6 +57,74 @@ class UsuarioConcessionaria(Base):
     criado_em = Column(
         String,
         nullable=False
+    )
+
+
+# ==========================================================
+# HISTÓRICO DE ACESSOS
+# ==========================================================
+
+class LogAcesso(Base):
+    __tablename__ = "logs_acesso"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    tipo_usuario = Column(
+        String,
+        nullable=False,
+        index=True
+    )
+
+    identificador = Column(
+        String,
+        nullable=False
+    )
+
+    proprietario_id = Column(
+        Integer,
+        ForeignKey("proprietarios.id"),
+        nullable=True,
+        index=True
+    )
+
+    veiculo_id = Column(
+        Integer,
+        ForeignKey("veiculos.id"),
+        nullable=True,
+        index=True
+    )
+
+    usuario_concessionaria_id = Column(
+        Integer,
+        ForeignKey("usuarios_concessionarias.id"),
+        nullable=True,
+        index=True
+    )
+
+    concessionaria_id = Column(
+        String,
+        nullable=True,
+        index=True
+    )
+
+    sucesso = Column(
+        Boolean,
+        nullable=False
+    )
+
+    motivo = Column(
+        String,
+        nullable=True
+    )
+
+    criado_em = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc)
     )
 
 

@@ -273,7 +273,11 @@ class FluxosFreeFlowTest(unittest.TestCase):
     def test_consulta_portal_avisa_sem_debitos_e_dados_incorretos(self):
         sem_debitos = requests.post(
             f"{self.base_url}/portal/consultar",
-            json={"cpf": "98765432100", "placa": "SEM0D00"},
+            json={
+                "cpf": "98765432100",
+                "placa": "SEM0D00",
+                "registrar_acesso": True,
+            },
             timeout=5,
         )
         self.assertEqual(sem_debitos.status_code, 200)
@@ -282,7 +286,11 @@ class FluxosFreeFlowTest(unittest.TestCase):
 
         dados_incorretos = requests.post(
             f"{self.base_url}/portal/consultar",
-            json={"cpf": "00000000000", "placa": "ERR0D00"},
+            json={
+                "cpf": "00000000000",
+                "placa": "ERR0D00",
+                "registrar_acesso": True,
+            },
             timeout=5,
         )
         self.assertEqual(dados_incorretos.status_code, 404)
@@ -297,6 +305,23 @@ class FluxosFreeFlowTest(unittest.TestCase):
         pagina = requests.get(f"{self.base_url}/portal", timeout=5)
         self.assertIn('id="modalAviso"', pagina.text)
         self.assertIn("Nenhum débito encontrado", pagina.text)
+
+        with SessionLocal() as db:
+            logs_cliente = (
+                db.query(models.LogAcesso)
+                .filter(models.LogAcesso.tipo_usuario == "cliente")
+                .all()
+            )
+            self.assertTrue(any(log.sucesso for log in logs_cliente))
+            self.assertTrue(any(not log.sucesso for log in logs_cliente))
+            self.assertTrue(
+                any(
+                    log.proprietario_id is not None
+                    and log.veiculo_id is not None
+                    for log in logs_cliente
+                    if log.sucesso
+                )
+            )
 
     def test_portal_pagamento_qrcode_e_codigo_barras(self):
         consulta = requests.post(
@@ -441,6 +466,24 @@ class FluxosFreeFlowTest(unittest.TestCase):
             timeout=5,
         )
         self.assertEqual(login.status_code, 303)
+
+        login_invalido = requests.post(
+            f"{self.base_url}/admin/login",
+            data={"usuario": "gestor", "senha": "senha-incorreta"},
+            allow_redirects=False,
+            timeout=5,
+        )
+        self.assertEqual(login_invalido.status_code, 401)
+
+        with SessionLocal() as db:
+            logs_admin = (
+                db.query(models.LogAcesso)
+                .filter(models.LogAcesso.tipo_usuario == "administrador")
+                .all()
+            )
+            self.assertTrue(any(log.sucesso for log in logs_admin))
+            self.assertTrue(any(not log.sucesso for log in logs_admin))
+
         passagens = sessao.get(f"{self.base_url}/dashboard", timeout=5)
         recebiveis = sessao.get(f"{self.base_url}/admin/cobrancas", timeout=5)
         self.assertIn("Monitoramento de passagens", passagens.text)

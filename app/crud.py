@@ -1,10 +1,44 @@
 # operações banco
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app import models, schemas
 from app.config import valor_passagem_por_faixa
 from app.security import gerar_hash_senha, verificar_senha
+
+
+def registrar_acesso(
+    db: Session,
+    *,
+    tipo_usuario: str,
+    identificador: str,
+    sucesso: bool,
+    motivo: str | None = None,
+    proprietario_id: int | None = None,
+    veiculo_id: int | None = None,
+    usuario_concessionaria_id: int | None = None,
+    concessionaria_id: str | None = None,
+):
+    """Registra uma tentativa de acesso sem bloquear o fluxo de autenticação."""
+    try:
+        log = models.LogAcesso(
+            tipo_usuario=tipo_usuario,
+            identificador=(identificador or "não informado").strip(),
+            proprietario_id=proprietario_id,
+            veiculo_id=veiculo_id,
+            usuario_concessionaria_id=usuario_concessionaria_id,
+            concessionaria_id=concessionaria_id,
+            sucesso=sucesso,
+            motivo=motivo,
+            criado_em=datetime.now(timezone.utc),
+        )
+        db.add(log)
+        db.commit()
+        return log
+    except Exception as erro:
+        db.rollback()
+        print(f"Não foi possível registrar o acesso: {erro}")
+        return None
 
 
 # ==========================================================

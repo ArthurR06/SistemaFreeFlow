@@ -111,6 +111,7 @@ class CobrancaResponse(BaseModel):
 class PortalConsulta(BaseModel):
     cpf: str
     placa: str
+    registrar_acesso: bool = False
 
 
 class PortalPagamento(BaseModel):
