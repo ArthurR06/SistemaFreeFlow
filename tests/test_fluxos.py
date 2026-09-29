@@ -24,9 +24,11 @@ os.environ["TEMPO_DUPLICIDADE"] = "30"
 from app import models  # noqa: E402
 from app.database import Base, SessionLocal, engine  # noqa: E402
 from app.main import (  # noqa: E402
+    FUSO_HORARIO_BRASIL,
     app,
     formatar_tempo,
     obter_ou_criar_veiculo_demo,
+    segundos_desde_evento,
 )
 from app.security import gerar_hash_senha  # noqa: E402
 
@@ -159,6 +161,32 @@ class FluxosFreeFlowTest(unittest.TestCase):
 
     def test_duracao_completa(self):
         self.assertEqual(formatar_tempo(159010), "1 dia, 20h, 10min e 10s")
+
+    def test_tempo_desde_evento_respeita_horario_de_brasilia(self):
+        agora = datetime(
+            2026,
+            9,
+            29,
+            16,
+            44,
+            58,
+            tzinfo=FUSO_HORARIO_BRASIL,
+        )
+
+        self.assertEqual(
+            segundos_desde_evento(
+                "2026-09-29T16:44:48",
+                agora=agora,
+            ),
+            10,
+        )
+        self.assertEqual(
+            segundos_desde_evento(
+                "2026-09-29T19:44:48+00:00",
+                agora=agora,
+            ),
+            10,
+        )
 
     def test_geracao_proprietarios_demo_segue_ordem_de_chegada(self):
         esperados = [

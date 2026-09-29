@@ -16,7 +16,7 @@ import io
 import qrcode
 import secrets
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urlencode
 from barcode.writer import SVGWriter
 from starlette.middleware.sessions import SessionMiddleware
@@ -447,6 +447,44 @@ def obter_ou_criar_veiculo_demo(
 # ==========================================
 # FUNÇÃO AUXILIAR DE TEMPO
 # ==========================================
+
+FUSO_HORARIO_BRASIL = timezone(timedelta(hours=-3))
+
+
+def segundos_desde_evento(
+    timestamp_evento: str,
+    agora: datetime | None = None,
+) -> int:
+    horario_evento = datetime.fromisoformat(timestamp_evento)
+
+    # O ESP32 envia o horário local de Brasília sem sufixo de fuso. Na
+    # Vercel, datetime.now() usa UTC; comparar os dois valores como datas
+    # ingênuas acrescentava três horas ao indicador do dashboard.
+    if horario_evento.tzinfo is None:
+        horario_evento = horario_evento.replace(
+            tzinfo=FUSO_HORARIO_BRASIL,
+        )
+    else:
+        horario_evento = horario_evento.astimezone(
+            FUSO_HORARIO_BRASIL,
+        )
+
+    instante_atual = agora or datetime.now(FUSO_HORARIO_BRASIL)
+
+    if instante_atual.tzinfo is None:
+        instante_atual = instante_atual.replace(
+            tzinfo=FUSO_HORARIO_BRASIL,
+        )
+    else:
+        instante_atual = instante_atual.astimezone(
+            FUSO_HORARIO_BRASIL,
+        )
+
+    return max(
+        0,
+        int((instante_atual - horario_evento).total_seconds()),
+    )
+
 
 def formatar_tempo(
     segundos: int
@@ -2190,29 +2228,9 @@ def dashboard_data(
 
         try:
 
-            horario_ultimo_evento = (
-                datetime.fromisoformat(
-                    eventos[
-                        0
-                    ].timestamp_evento
-                )
+            segundos_sem_evento = segundos_desde_evento(
+                eventos[0].timestamp_evento
             )
-
-
-            agora = (
-                datetime.now()
-            )
-
-
-            segundos_sem_evento = max(0, int(
-
-                (
-                    agora
-                    - horario_ultimo_evento
-                )
-                .total_seconds()
-
-            ))
 
 
             tempo_formatado = (
