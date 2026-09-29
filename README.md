@@ -469,6 +469,21 @@ No Arduino IDE:
 6. Fazer upload do firmware no ESP32.
 7. Abrir o Monitor Serial em `115200`.
 
+Para utilizar o backend publicado, os ESP32 precisam apenas estar conectados a
+uma rede Wi-Fi com acesso à internet. Eles não precisam estar na mesma rede do
+computador. Configure `scripts/esp32/secrets.h` com:
+
+```cpp
+#define WIFI_SSID "NOME_DO_WIFI"
+#define WIFI_PASSWORD "SENHA_DO_WIFI"
+#define FREEFLOW_API_KEY "A_MESMA_CHAVE_DO_ESP32_API_KEY"
+#define FREEFLOW_API_URL "https://sistema-free-flow.vercel.app/evento"
+```
+
+O firmware seleciona automaticamente a conexão segura para URLs HTTPS. No MVP,
+o cliente HTTPS aceita o certificado apresentado pela Vercel sem armazenar uma
+autoridade certificadora no ESP32.
+
 Para testes locais, o computador e os ESP32 devem estar conectados à mesma rede Wi-Fi.
 
 No Windows, descubra o IPv4 do computador:
@@ -622,8 +637,9 @@ A `DATABASE_URL` deve usar o Transaction pooler do Supabase (porta `6543`) e
 SSL. O usuário do banco utilizado pela aplicação deve ter apenas os privilégios
 necessários nas tabelas do Free Flow.
 
-Depois da publicação, altere `URL_EVENTO` no `secrets.h` do ESP32 para o endpoint
-HTTPS da Vercel e mantenha `FREEFLOW_API_KEY` igual a `ESP32_API_KEY`.
+Depois da publicação, mantenha `FREEFLOW_API_URL` como
+`https://sistema-free-flow.vercel.app/evento` no `secrets.h` do ESP32 e
+`FREEFLOW_API_KEY` igual a `ESP32_API_KEY`.
 
 ---
 

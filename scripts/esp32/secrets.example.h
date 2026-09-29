@@ -3,4 +3,4 @@
 #define WIFI_SSID "SEU_WIFI"
 #define WIFI_PASSWORD "SUA_SENHA"
 #define FREEFLOW_API_KEY "A_MESMA_CHAVE_DO_ESP32_API_KEY"
-#define FREEFLOW_API_URL "http://IP_DO_COMPUTADOR:8002/evento"
+#define FREEFLOW_API_URL "https://sistema-free-flow.vercel.app/evento"

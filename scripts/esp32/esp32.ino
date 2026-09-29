@@ -4,6 +4,7 @@
 #include <MFRC522.h>
 #include <time.h>
 #include <WiFiClient.h>
+#include <WiFiClientSecure.h>
 #include "secrets.h"
 
 // ==========================================
@@ -17,7 +18,7 @@ const char* password = WIFI_PASSWORD;
 // SERVIDOR FASTAPI
 // ==========================================
 
-// IP atual do notebook
+// Endpoint HTTPS publicado na Vercel
 const char* URL_EVENTO = FREEFLOW_API_URL;
 
 // ==========================================
@@ -244,9 +245,14 @@ void enviarEvento(String uid) {
   }
 
 
-  WiFiClient client;
+  WiFiClient clientHttp;
+  WiFiClientSecure clientHttps;
 
   HTTPClient http;
+
+  // Considera o tempo de inicialização de uma função na nuvem.
+  http.setConnectTimeout(15000);
+  http.setTimeout(15000);
 
 
   String timestamp =
@@ -298,14 +304,43 @@ void enviarEvento(String uid) {
   Serial.println("");
 
   Serial.println(
-    "Enviando para FastAPI..."
+    "Enviando para API FreeFlow..."
   );
 
 
-  http.begin(
-    client,
-    URL_EVENTO
-  );
+  bool conexaoIniciada = false;
+
+  if (String(URL_EVENTO).startsWith("https://")) {
+
+    // Para o MVP acadêmico, aceita o certificado HTTPS
+    // apresentado pela Vercel sem armazenar uma CA no ESP32.
+    clientHttps.setInsecure();
+
+    conexaoIniciada = http.begin(
+      clientHttps,
+      URL_EVENTO
+    );
+
+  }
+
+  else {
+
+    conexaoIniciada = http.begin(
+      clientHttp,
+      URL_EVENTO
+    );
+
+  }
+
+
+  if (!conexaoIniciada) {
+
+    Serial.println(
+      "ERRO: nao foi possivel iniciar a conexao HTTP."
+    );
+
+    return;
+  }
 
 
   http.addHeader(
