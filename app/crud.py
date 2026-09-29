@@ -1,4 +1,5 @@
 # operações banco
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 
@@ -55,8 +56,8 @@ def buscar_usuario_concessionaria(
     return (
         db.query(models.UsuarioConcessionaria)
         .filter(
-            models.UsuarioConcessionaria.usuario
-            == usuario.strip()
+            func.lower(models.UsuarioConcessionaria.usuario)
+            == usuario.strip().casefold()
         )
         .first()
     )
@@ -104,8 +105,8 @@ def inicializar_usuarios_concessionarias(
     db: Session,
     credenciais: dict
 ):
-    """Cadastra os usuários demonstrativos que ainda não existem."""
-    usuarios_criados = 0
+    """Cria ou atualiza os acessos demonstrativos das concessionárias."""
+    usuarios_processados = 0
 
     for nome_usuario, dados in credenciais.items():
         existente = buscar_usuario_concessionaria(
@@ -113,33 +114,48 @@ def inicializar_usuarios_concessionarias(
             nome_usuario
         )
 
-        if existente:
-            continue
+        if not existente:
+            existente = (
+                db.query(models.UsuarioConcessionaria)
+                .filter(
+                    models.UsuarioConcessionaria.concessionaria_id
+                    == dados["id"]
+                )
+                .order_by(models.UsuarioConcessionaria.id.asc())
+                .first()
+            )
 
-        usuario_db = models.UsuarioConcessionaria(
-            usuario=nome_usuario.strip(),
-            senha_hash=gerar_hash_senha(
-                dados["senha"]
-            ),
-            concessionaria_id=dados["id"],
-            concessionaria_nome=dados["nome"],
-            faixas_permitidas=",".join(
+        if existente:
+            existente.usuario = nome_usuario.strip().casefold()
+            existente.senha_hash = gerar_hash_senha(dados["senha"])
+            existente.concessionaria_nome = dados["nome"]
+            existente.faixas_permitidas = ",".join(
                 str(faixa)
                 for faixa in dados["faixas"]
-            ),
-            ativo=1,
-            criado_em=datetime.now().isoformat(
-                timespec="seconds"
             )
-        )
+            existente.ativo = 1
+        else:
+            db.add(
+                models.UsuarioConcessionaria(
+                    usuario=nome_usuario.strip().casefold(),
+                    senha_hash=gerar_hash_senha(dados["senha"]),
+                    concessionaria_id=dados["id"],
+                    concessionaria_nome=dados["nome"],
+                    faixas_permitidas=",".join(
+                        str(faixa)
+                        for faixa in dados["faixas"]
+                    ),
+                    ativo=1,
+                    criado_em=datetime.now().isoformat(timespec="seconds"),
+                )
+            )
 
-        db.add(usuario_db)
-        usuarios_criados += 1
+        usuarios_processados += 1
 
-    if usuarios_criados:
+    if usuarios_processados:
         db.commit()
 
-    return usuarios_criados
+    return usuarios_processados
 
 
 # ==========================================================

@@ -24,12 +24,21 @@ ADMIN_USER = os.getenv("ADMIN_USER", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin")
 ESP32_API_KEY = os.getenv("ESP32_API_KEY", "")
 
+CONCESSIONARIA_A_USER = os.getenv(
+    "CONCESSIONARIA_A_USER",
+    "conectavia",
+).strip().casefold()
+CONCESSIONARIA_B_USER = os.getenv(
+    "CONCESSIONARIA_B_USER",
+    "rotalink",
+).strip().casefold()
+
 CONCESSIONARIAS_ADMIN = {
 
-    "concessionaria_a": {
+    CONCESSIONARIA_A_USER: {
         "senha": os.getenv(
             "CONCESSIONARIA_A_PASSWORD",
-            "admin_a"
+            ""
         ),
         "id": "A",
         "nome": "ConectaVia",
@@ -39,10 +48,10 @@ CONCESSIONARIAS_ADMIN = {
         "faixas": [1]
     },
 
-    "concessionaria_b": {
+    CONCESSIONARIA_B_USER: {
         "senha": os.getenv(
             "CONCESSIONARIA_B_PASSWORD",
-            "admin_b"
+            ""
         ),
         "id": "B",
         "nome": "RotaLink",
@@ -85,6 +94,10 @@ def validar_configuracao() -> None:
         erros.append("SESSION_SECRET ainda usa o valor padrão")
     if not ESP32_API_KEY:
         erros.append("ESP32_API_KEY não foi configurada")
+    if not CONCESSIONARIAS_ADMIN[CONCESSIONARIA_A_USER]["senha"]:
+        erros.append("CONCESSIONARIA_A_PASSWORD não foi configurada")
+    if not CONCESSIONARIAS_ADMIN[CONCESSIONARIA_B_USER]["senha"]:
+        erros.append("CONCESSIONARIA_B_PASSWORD não foi configurada")
 
     if erros:
         raise RuntimeError("Configuração de produção inválida: " + "; ".join(erros))

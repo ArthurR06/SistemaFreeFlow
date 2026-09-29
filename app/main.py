@@ -116,9 +116,11 @@ def configuracao_concessionaria(
         "a": "A",
         "1": "A",
         "concessionaria_a": "A",
+        "conectavia": "A",
         "b": "B",
         "2": "B",
         "concessionaria_b": "B",
+        "rotalink": "B",
     }
     id_canonico = aliases.get(usuario) or aliases.get(concessionaria_id)
     if id_canonico:

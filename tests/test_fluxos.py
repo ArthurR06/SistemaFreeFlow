@@ -101,10 +101,10 @@ class FluxosFreeFlowTest(unittest.TestCase):
             cls.cobranca_anomala_id = cobranca_anomala.id
             db.add(
                 models.UsuarioConcessionaria(
-                    usuario="gestor",
-                    senha_hash=gerar_hash_senha("senha-segura"),
+                    usuario="conectavia",
+                    senha_hash=gerar_hash_senha("senha-teste-conectavia"),
                     concessionaria_id="A",
-                    concessionaria_nome="Concessionária A",
+                    concessionaria_nome="ConectaVia",
                     faixas_permitidas="1",
                     ativo=1,
                     criado_em=datetime.now().isoformat(timespec="seconds"),
@@ -112,10 +112,10 @@ class FluxosFreeFlowTest(unittest.TestCase):
             )
             db.add(
                 models.UsuarioConcessionaria(
-                    usuario="gestor_b",
-                    senha_hash=gerar_hash_senha("senha-segura-b"),
+                    usuario="rotalink",
+                    senha_hash=gerar_hash_senha("senha-teste-rotalink"),
                     concessionaria_id="B",
-                    concessionaria_nome="Concessionária B",
+                    concessionaria_nome="RotaLink",
                     faixas_permitidas="2",
                     ativo=1,
                     criado_em=datetime.now().isoformat(timespec="seconds"),
@@ -461,7 +461,7 @@ class FluxosFreeFlowTest(unittest.TestCase):
         sessao = requests.Session()
         login = sessao.post(
             f"{self.base_url}/admin/login",
-            data={"usuario": "gestor", "senha": "senha-segura"},
+            data={"usuario": "ConectaVia", "senha": "senha-teste-conectavia"},
             allow_redirects=False,
             timeout=5,
         )
@@ -469,7 +469,7 @@ class FluxosFreeFlowTest(unittest.TestCase):
 
         login_invalido = requests.post(
             f"{self.base_url}/admin/login",
-            data={"usuario": "gestor", "senha": "senha-incorreta"},
+            data={"usuario": "ConectaVia", "senha": "senha-incorreta"},
             allow_redirects=False,
             timeout=5,
         )
@@ -541,7 +541,7 @@ class FluxosFreeFlowTest(unittest.TestCase):
         sessao_b = requests.Session()
         login_b = sessao_b.post(
             f"{self.base_url}/admin/login",
-            data={"usuario": "gestor_b", "senha": "senha-segura-b"},
+            data={"usuario": "RotaLink", "senha": "senha-teste-rotalink"},
             allow_redirects=False,
             timeout=5,
         )

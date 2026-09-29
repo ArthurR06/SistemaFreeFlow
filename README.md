@@ -113,15 +113,15 @@ SESSION_SECRET=troque-por-uma-chave-secreta
 
 ESP32_API_KEY=troque-por-uma-chave-longa-e-aleatoria
 
-CONCESSIONARIA_A_USER=concessionaria_a
-CONCESSIONARIA_A_PASSWORD=admin_a
-CONCESSIONARIA_A_NOME=Concessionária A
-CONCESSIONARIA_A_SIGLA=CA
+CONCESSIONARIA_A_USER=conectavia
+CONCESSIONARIA_A_PASSWORD=defina-a-senha-no-ambiente
+CONCESSIONARIA_A_NOME=ConectaVia
+CONCESSIONARIA_A_SIGLA=CV
 
-CONCESSIONARIA_B_USER=concessionaria_b
-CONCESSIONARIA_B_PASSWORD=admin_b
-CONCESSIONARIA_B_NOME=Concessionária B
-CONCESSIONARIA_B_SIGLA=CB
+CONCESSIONARIA_B_USER=rotalink
+CONCESSIONARIA_B_PASSWORD=defina-a-senha-no-ambiente
+CONCESSIONARIA_B_NOME=RotaLink
+CONCESSIONARIA_B_SIGLA=RL
 
 O arquivo `.env.local` real não é enviado ao GitHub. Para Vercel/serverless,
 use sempre o Transaction pooler do Supabase na porta `6543`.
@@ -203,13 +203,13 @@ Cada usuário administrativo está associado a uma concessionária e às faixas 
 
 No ambiente demonstrativo existem dois acessos:
 
-Concessionária A
-Usuário: concessionaria_a
-Senha: admin_a
+ConectaVia
+Usuário: ConectaVia
+Senha: configurada pela variável `CONCESSIONARIA_A_PASSWORD`
 
-Concessionária B
-Usuário: concessionaria_b
-Senha: admin_b
+RotaLink
+Usuário: RotaLink
+Senha: configurada pela variável `CONCESSIONARIA_B_PASSWORD`
 
 Esses acessos são cadastrados pela carga inicial executada com
 `python -m scripts.banco.seed_usuarios`. A senha é armazenada como hash PBKDF2
