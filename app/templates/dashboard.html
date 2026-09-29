@@ -33,7 +33,10 @@
     .panel { overflow:hidden; }
     .panel-head { min-height:68px; padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:15px; }
     .panel h2 { margin:0; font-size:18px; }
-    .actions { display:flex; align-items:center; gap:9px; }
+    .actions { display:flex; align-items:end; justify-content:flex-end; gap:9px; flex-wrap:wrap; }
+    .date-range { display:flex; align-items:end; gap:8px; }
+    .date-range label { display:grid; gap:5px; color:var(--muted); font-size:11px; font-weight:700; }
+    .date-range input { min-width:142px; }
     select,input[type="date"],button { border:1px solid var(--border); border-radius:9px; color:var(--text); background:#091827; padding:9px 11px; color-scheme:dark; }
     button { cursor:pointer; font-weight:700; }
     button:hover { border-color:var(--green); }
@@ -54,7 +57,7 @@
     .duplicates li { padding:10px 0; border-bottom:1px solid rgba(33,60,85,.45); color:var(--muted); font-size:13px; }
     .empty { padding:30px; color:var(--muted); text-align:center; }
     @media (max-width:1050px) { .cards{grid-template-columns:repeat(3,1fr)} .content-grid{grid-template-columns:1fr} }
-    @media (max-width:760px) { .header-inner{align-items:flex-start;flex-direction:column;padding:14px 18px} nav{width:100%;overflow-x:auto} nav a{white-space:nowrap} main{padding:25px 18px 45px} .cards{grid-template-columns:1fr 1fr} .status-bar,.panel-head{align-items:flex-start;flex-direction:column} }
+    @media (max-width:760px) { .header-inner{align-items:flex-start;flex-direction:column;padding:14px 18px} nav{width:100%;overflow-x:auto} nav a{white-space:nowrap} main{padding:25px 18px 45px} .cards{grid-template-columns:1fr 1fr} .status-bar,.panel-head{align-items:flex-start;flex-direction:column} .actions,.date-range{width:100%}.date-range label{flex:1}.date-range input{width:100%;min-width:0} }
     @media (max-width:480px) { .cards{grid-template-columns:1fr} }
   </style>
 </head>
@@ -90,8 +93,12 @@
         <div class="panel-head">
           <h2>Analítico de passagens</h2>
           <div class="actions">
-            <input id="filtroData" type="date" aria-label="Filtrar pela data da passagem">
+            <div class="date-range" aria-label="Período das passagens">
+              <label>Data inicial<input id="filtroDataInicial" type="date" aria-label="Data inicial das passagens"></label>
+              <label>Data final<input id="filtroDataFinal" type="date" aria-label="Data final das passagens"></label>
+            </div>
             <select id="filtroAnomalia" aria-label="Filtrar eventos"><option value="todos">Todos</option><option value="ok">Somente OK</option><option value="duplicidade">Duplicidades</option></select>
+            <button id="limparPeriodo" type="button">Limpar período</button>
             <button type="button" onclick="exportarCSV()">Exportar CSV</button>
           </div>
         </div>
@@ -133,17 +140,35 @@
       if (filtroAtual === "ok") return eventos.filter(item => item.anomalia === null);
       return eventos;
     }
+    function periodoSelecionado() {
+      const dataInicial = document.getElementById("filtroDataInicial").value;
+      const dataFinal = document.getElementById("filtroDataFinal").value;
+      if (dataInicial && dataFinal && dataInicial > dataFinal) {
+        document.getElementById("mensagemAtualizacao").textContent = "A data inicial não pode ser posterior à data final.";
+        return null;
+      }
+      return {dataInicial,dataFinal};
+    }
+    function adicionarPeriodo(parametros) {
+      const periodo = periodoSelecionado();
+      if (!periodo) return false;
+      if (periodo.dataInicial) parametros.set("data_inicial",periodo.dataInicial);
+      if (periodo.dataFinal) parametros.set("data_final",periodo.dataFinal);
+      return true;
+    }
     function parametrosRelatorio() {
       const parametros = new URLSearchParams({anomalia:filtroAtual});
-      const data = document.getElementById("filtroData").value;
-      if (data) parametros.set("data",data);
-      return parametros;
+      return adicionarPeriodo(parametros) ? parametros : null;
     }
-    function exportarCSV() { window.open(`/exportar-csv?${parametrosRelatorio()}`,"_blank"); }
+    function exportarCSV() {
+      const parametros = parametrosRelatorio();
+      if (parametros) window.open(`/exportar-csv?${parametros}`,"_blank");
+    }
     async function carregarDashboard() {
       try {
-        const data = document.getElementById("filtroData").value;
-        const url = data ? `/dashboard-data?data=${encodeURIComponent(data)}` : "/dashboard-data";
+        const parametros = new URLSearchParams();
+        if (!adicionarPeriodo(parametros)) return;
+        const url = parametros.size ? `/dashboard-data?${parametros}` : "/dashboard-data";
         const resposta = await fetch(url,{cache:"no-store"});
         if (resposta.status === 401) { window.location.href="/admin/login"; return; }
         if (!resposta.ok) throw new Error("Falha ao carregar dashboard");
@@ -175,7 +200,20 @@
     }
     async function cicloAtualizacao() { await carregarDashboard(); clearTimeout(timerAtualizacao); timerAtualizacao=setTimeout(cicloAtualizacao,intervaloAtualizacao); }
     document.getElementById("filtroAnomalia").addEventListener("change", evento => { filtroAtual=evento.target.value; carregarDashboard(); });
-    document.getElementById("filtroData").addEventListener("change", carregarDashboard);
+    const filtroDataInicial = document.getElementById("filtroDataInicial");
+    const filtroDataFinal = document.getElementById("filtroDataFinal");
+    function atualizarPeriodo() {
+      filtroDataInicial.max=filtroDataFinal.value || "";
+      filtroDataFinal.min=filtroDataInicial.value || "";
+      carregarDashboard();
+    }
+    filtroDataInicial.addEventListener("change", atualizarPeriodo);
+    filtroDataFinal.addEventListener("change", atualizarPeriodo);
+    document.getElementById("limparPeriodo").addEventListener("click",()=>{
+      filtroDataInicial.value="";
+      filtroDataFinal.value="";
+      atualizarPeriodo();
+    });
     cicloAtualizacao();
   </script>
 </body>

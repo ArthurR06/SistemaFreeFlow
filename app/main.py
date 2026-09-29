@@ -16,7 +16,7 @@ import io
 import qrcode
 import secrets
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from barcode.writer import SVGWriter
 from starlette.middleware.sessions import SessionMiddleware
@@ -225,6 +225,51 @@ def validar_data_filtro(valor: str | None) -> str | None:
             status_code=400,
             detail="Data inválida. Use o formato AAAA-MM-DD.",
         ) from exc
+
+
+def validar_periodo_filtro(
+    data_inicial: str | None,
+    data_final: str | None,
+    data: str | None = None,
+) -> tuple[str | None, str | None]:
+    # Mantém compatibilidade com links antigos que filtravam um único dia.
+    if data and not data_inicial and not data_final:
+        data_inicial = data
+        data_final = data
+
+    inicio = validar_data_filtro(data_inicial)
+    fim = validar_data_filtro(data_final)
+
+    if inicio and fim and inicio > fim:
+        raise HTTPException(
+            status_code=400,
+            detail="A data inicial não pode ser posterior à data final.",
+        )
+
+    return inicio, fim
+
+
+def filtrar_consulta_por_periodo(
+    consulta,
+    coluna_timestamp,
+    data_inicial: str | None,
+    data_final: str | None,
+):
+    if data_inicial:
+        consulta = consulta.filter(
+            coluna_timestamp >= f"{data_inicial}T00:00:00"
+        )
+
+    if data_final:
+        dia_seguinte = (
+            datetime.strptime(data_final, "%Y-%m-%d").date()
+            + timedelta(days=1)
+        ).isoformat()
+        consulta = consulta.filter(
+            coluna_timestamp < f"{dia_seguinte}T00:00:00"
+        )
+
+    return consulta
 
 
 def url_sucesso_pagamento(token: str) -> str:
@@ -1589,6 +1634,8 @@ def pagar_cobranca(
 )
 def admin_cobrancas(
     request: Request,
+    data_inicial: str | None = None,
+    data_final: str | None = None,
     data: str | None = None,
     db: Session = Depends(get_db)
 ):
@@ -1622,7 +1669,11 @@ def admin_cobrancas(
         )
     )
 
-    data_filtrada = validar_data_filtro(data)
+    data_inicial_filtrada, data_final_filtrada = validar_periodo_filtro(
+        data_inicial,
+        data_final,
+        data,
+    )
 
 
     # ======================================
@@ -1652,12 +1703,12 @@ def admin_cobrancas(
 
     )
 
-    if data_filtrada:
-        consulta_cobrancas = consulta_cobrancas.filter(
-            models.EventoPassagem.timestamp_evento.like(
-                f"{data_filtrada}%"
-            )
-        )
+    consulta_cobrancas = filtrar_consulta_por_periodo(
+        consulta_cobrancas,
+        models.EventoPassagem.timestamp_evento,
+        data_inicial_filtrada,
+        data_final_filtrada,
+    )
 
     cobrancas = (
         consulta_cobrancas
@@ -1946,8 +1997,11 @@ def admin_cobrancas(
             "total_recebido":
                 total_recebido,
 
-            "data_filtro":
-                data_filtrada or ""
+            "data_inicial_filtro":
+                data_inicial_filtrada or "",
+
+            "data_final_filtro":
+                data_final_filtrada or ""
 
         }
 
@@ -1962,6 +2016,8 @@ def admin_cobrancas(
 )
 def dashboard_data(
     request: Request,
+    data_inicial: str | None = None,
+    data_final: str | None = None,
     data: str | None = None,
     db: Session = Depends(get_db)
 ):
@@ -1983,7 +2039,11 @@ def dashboard_data(
         )
     )
 
-    data_filtrada = validar_data_filtro(data)
+    data_inicial_filtrada, data_final_filtrada = validar_periodo_filtro(
+        data_inicial,
+        data_final,
+        data,
+    )
 
     # Todos os eventos apenas das faixas permitidas
     consulta_eventos = (
@@ -1997,12 +2057,12 @@ def dashboard_data(
         )
     )
 
-    if data_filtrada:
-        consulta_eventos = consulta_eventos.filter(
-            models.EventoPassagem.timestamp_evento.like(
-                f"{data_filtrada}%"
-            )
-        )
+    consulta_eventos = filtrar_consulta_por_periodo(
+        consulta_eventos,
+        models.EventoPassagem.timestamp_evento,
+        data_inicial_filtrada,
+        data_final_filtrada,
+    )
 
     eventos_todos = (
         consulta_eventos
@@ -2414,6 +2474,8 @@ def dashboard_data(
 def exportar_csv(
     request: Request,
     anomalia: str = "todos",
+    data_inicial: str | None = None,
+    data_final: str | None = None,
     data: str | None = None,
     db: Session = Depends(get_db)
 ):
@@ -2442,7 +2504,11 @@ def exportar_csv(
         )
     )
 
-    data_filtrada = validar_data_filtro(data)
+    data_inicial_filtrada, data_final_filtrada = validar_periodo_filtro(
+        data_inicial,
+        data_final,
+        data,
+    )
 
     consulta_eventos = (
         db.query(
@@ -2455,12 +2521,12 @@ def exportar_csv(
         )
     )
 
-    if data_filtrada:
-        consulta_eventos = consulta_eventos.filter(
-            models.EventoPassagem.timestamp_evento.like(
-                f"{data_filtrada}%"
-            )
-        )
+    consulta_eventos = filtrar_consulta_por_periodo(
+        consulta_eventos,
+        models.EventoPassagem.timestamp_evento,
+        data_inicial_filtrada,
+        data_final_filtrada,
+    )
 
     eventos = (
         consulta_eventos
@@ -2547,10 +2613,17 @@ def exportar_csv(
     )
 
 
+    periodo_arquivo = "todas-as-datas"
+    if data_inicial_filtrada or data_final_filtrada:
+        periodo_arquivo = (
+            f"{data_inicial_filtrada or 'inicio'}_a_"
+            f"{data_final_filtrada or 'fim'}"
+        )
+
     nome_arquivo = (
         "relatorio_freeflow_"
         f"concessionaria_{concessionaria_id}_"
-        f"{data_filtrada or 'todas-as-datas'}_"
+        f"{periodo_arquivo}_"
         f"{anomalia}.csv"
     )
 

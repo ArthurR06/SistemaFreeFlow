@@ -490,8 +490,10 @@ class FluxosFreeFlowTest(unittest.TestCase):
         self.assertIn("Monitoria de Recebíveis", passagens.text)
         self.assertIn("Monitoria de Recebíveis", recebiveis.text)
         self.assertIn("Portal de Gestão FreeFlow", recebiveis.text)
-        self.assertIn('id="filtroData"', passagens.text)
-        self.assertIn('name="data" type="date"', recebiveis.text)
+        self.assertIn('id="filtroDataInicial"', passagens.text)
+        self.assertIn('id="filtroDataFinal"', passagens.text)
+        self.assertIn('name="data_inicial" type="date"', recebiveis.text)
+        self.assertIn('name="data_final" type="date"', recebiveis.text)
         self.assertIn("ConectaVia", passagens.text)
         self.assertIn("/static/logos/conectavia-simbolo.png", passagens.text)
         logo = sessao.get(
@@ -501,42 +503,96 @@ class FluxosFreeFlowTest(unittest.TestCase):
         self.assertEqual(logo.status_code, 200)
         self.assertEqual(logo.headers["content-type"], "image/png")
 
-        data_eventos = datetime.now().date().isoformat()
+        with SessionLocal() as db:
+            for id_veiculo, timestamp_evento in (
+                ("FORAANT", "2026-08-24T23:59:59"),
+                ("INICIO", "2026-08-25T00:00:00"),
+                ("FINAL", "2026-09-29T23:59:59"),
+                ("FORAPOS", "2026-09-30T00:00:00"),
+            ):
+                db.add(
+                    models.EventoPassagem(
+                        id_veiculo=id_veiculo,
+                        faixa=1,
+                        timestamp_evento=timestamp_evento,
+                        valor=5.0,
+                        processado=1,
+                    )
+                )
+            db.commit()
+
+        data_inicial = "2026-08-25"
+        data_final = "2026-09-29"
         dashboard_filtrado = sessao.get(
             f"{self.base_url}/dashboard-data",
-            params={"data": data_eventos},
+            params={
+                "data_inicial": data_inicial,
+                "data_final": data_final,
+            },
             timeout=5,
         )
-        self.assertGreater(dashboard_filtrado.json()["total_passagens"], 0)
+        self.assertEqual(dashboard_filtrado.status_code, 200)
+        ids_filtrados = {
+            evento["id_veiculo"]
+            for evento in dashboard_filtrado.json()["eventos"]
+        }
+        self.assertIn("INICIO", ids_filtrados)
+        self.assertIn("FINAL", ids_filtrados)
+        self.assertNotIn("FORAANT", ids_filtrados)
+        self.assertNotIn("FORAPOS", ids_filtrados)
 
         dashboard_sem_resultado = sessao.get(
             f"{self.base_url}/dashboard-data",
-            params={"data": "2100-01-01"},
+            params={
+                "data_inicial": "2100-01-01",
+                "data_final": "2100-01-31",
+            },
             timeout=5,
         )
         self.assertEqual(dashboard_sem_resultado.json()["total_passagens"], 0)
 
         recebiveis_filtrados = sessao.get(
             f"{self.base_url}/admin/cobrancas",
-            params={"data": data_eventos},
+            params={
+                "data_inicial": data_inicial,
+                "data_final": data_final,
+            },
             timeout=5,
         )
-        self.assertIn(f'value="{data_eventos}"', recebiveis_filtrados.text)
+        self.assertIn(f'value="{data_inicial}"', recebiveis_filtrados.text)
+        self.assertIn(f'value="{data_final}"', recebiveis_filtrados.text)
 
         csv_filtrado = sessao.get(
             f"{self.base_url}/exportar-csv",
-            params={"data": data_eventos, "anomalia": "todos"},
+            params={
+                "data_inicial": data_inicial,
+                "data_final": data_final,
+                "anomalia": "todos",
+            },
             timeout=5,
         )
         self.assertEqual(csv_filtrado.status_code, 200)
-        self.assertIn(data_eventos, csv_filtrado.text)
+        self.assertIn("2026-08-25T00:00:00", csv_filtrado.text)
+        self.assertIn("2026-09-29T23:59:59", csv_filtrado.text)
+        self.assertNotIn("2026-08-24T23:59:59", csv_filtrado.text)
+        self.assertNotIn("2026-09-30T00:00:00", csv_filtrado.text)
 
         data_invalida = sessao.get(
             f"{self.base_url}/dashboard-data",
-            params={"data": "23/09/2026"},
+            params={"data_inicial": "23/09/2026"},
             timeout=5,
         )
         self.assertEqual(data_invalida.status_code, 400)
+
+        periodo_invertido = sessao.get(
+            f"{self.base_url}/dashboard-data",
+            params={
+                "data_inicial": "2026-09-29",
+                "data_final": "2026-08-25",
+            },
+            timeout=5,
+        )
+        self.assertEqual(periodo_invertido.status_code, 400)
 
         sessao_b = requests.Session()
         login_b = sessao_b.post(

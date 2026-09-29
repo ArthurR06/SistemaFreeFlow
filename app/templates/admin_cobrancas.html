@@ -92,9 +92,10 @@
         <h2>Recebíveis por veículo</h2>
         <div class="filters">
           <form class="date-filter" method="get" action="/admin/cobrancas">
-            <label>Data da passagem<input name="data" type="date" value="{{ data_filtro }}" aria-label="Filtrar pela data da passagem"></label>
+            <label>Data inicial<input id="dataInicialRecebiveis" name="data_inicial" type="date" value="{{ data_inicial_filtro }}" aria-label="Data inicial das passagens"></label>
+            <label>Data final<input id="dataFinalRecebiveis" name="data_final" type="date" value="{{ data_final_filtro }}" aria-label="Data final das passagens"></label>
             <button type="submit">Filtrar</button>
-            {% if data_filtro %}<a class="clear-filter" href="/admin/cobrancas">Limpar</a>{% endif %}
+            {% if data_inicial_filtro or data_final_filtro %}<a class="clear-filter" href="/admin/cobrancas">Limpar</a>{% endif %}
           </form>
           <input id="campoBusca" class="search" type="search" placeholder="Buscar veículo ou proprietário…" autocomplete="off">
         </div>
@@ -144,6 +145,15 @@
     </section>
   </main>
   <script>
+    const dataInicialRecebiveis=document.getElementById("dataInicialRecebiveis");
+    const dataFinalRecebiveis=document.getElementById("dataFinalRecebiveis");
+    function atualizarLimitesRecebiveis(){
+      dataInicialRecebiveis.max=dataFinalRecebiveis.value||"";
+      dataFinalRecebiveis.min=dataInicialRecebiveis.value||"";
+    }
+    dataInicialRecebiveis.addEventListener("change",atualizarLimitesRecebiveis);
+    dataFinalRecebiveis.addEventListener("change",atualizarLimitesRecebiveis);
+    atualizarLimitesRecebiveis();
     const campoBusca=document.getElementById("campoBusca");
     campoBusca.addEventListener("input",function(){
       const termo=this.value.trim().toLocaleLowerCase("pt-BR");
