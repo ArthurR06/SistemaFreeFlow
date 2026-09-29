@@ -300,17 +300,21 @@ O protótipo possui uma lista de clientes demonstrativos.
 
 Quando uma nova placa ou UID é recebida em uma passagem válida, o sistema pode associá-la automaticamente ao próximo cliente demonstrativo disponível.
 
-Exemplo:
+Sequência inicial:
 
-1ª placa → Cliente Demo 01 → CPF 10000000001
+1. Arthur Rodrigues → CPF 10000000001
+2. Camila Eiko → CPF 10000000002
+3. Joice Jardim → CPF 10000000003
+4. Leticia Moura → CPF 10000000004
+5. Bruno Almeida → CPF 10000000005
+6. Fernanda Souza → CPF 10000000006
+7. Gabriel Santos → CPF 10000000007
+8. Mariana Oliveira → CPF 10000000008
+9. Rafael Lima → CPF 10000000009
+10. Renata Costa → CPF 10000000010
 
-2ª placa → Cliente Demo 02 → CPF 10000000002
-
-3ª placa → Cliente Demo 03 → CPF 10000000003
-
-...
-
-10ª placa → Cliente Demo 10 → CPF 10000000010
+A partir do 11º veículo, a sequência continua com nomes genéricos, como
+`Cliente Demo 11`, e CPFs incrementais a partir de `10000000011`.
 
 
 Depois que uma placa é vinculada, ela continua associada ao mesmo proprietário.
