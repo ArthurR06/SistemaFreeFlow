@@ -281,25 +281,39 @@ def url_sucesso_pagamento(token: str) -> str:
 # ==========================================
 
 CLIENTES_DEMO = [
-    {"nome": "Cliente Demo 01", "cpf": "10000000001"},
-    {"nome": "Cliente Demo 02", "cpf": "10000000002"},
-    {"nome": "Cliente Demo 03", "cpf": "10000000003"},
-    {"nome": "Cliente Demo 04", "cpf": "10000000004"},
-    {"nome": "Cliente Demo 05", "cpf": "10000000005"},
-    {"nome": "Cliente Demo 06", "cpf": "10000000006"},
-    {"nome": "Cliente Demo 07", "cpf": "10000000007"},
-    {"nome": "Cliente Demo 08", "cpf": "10000000008"},
-    {"nome": "Cliente Demo 09", "cpf": "10000000009"},
-    {"nome": "Cliente Demo 10", "cpf": "10000000010"},
+    {"nome": "Arthur Rodrigues", "cpf": "10000000001"},
+    {"nome": "Camila Eiko", "cpf": "10000000002"},
+    {"nome": "Joice Jardim", "cpf": "10000000003"},
+    {"nome": "Leticia Moura", "cpf": "10000000004"},
+    {"nome": "Bruno Almeida", "cpf": "10000000005"},
+    {"nome": "Fernanda Souza", "cpf": "10000000006"},
+    {"nome": "Gabriel Santos", "cpf": "10000000007"},
+    {"nome": "Mariana Oliveira", "cpf": "10000000008"},
+    {"nome": "Rafael Lima", "cpf": "10000000009"},
+    {"nome": "Renata Costa", "cpf": "10000000010"},
 ]
 
 CPF_DEMO_ANTIGO = "12345678900"
+CPF_DEMO_BASE = 10000000000
+
+
+def dados_cliente_demo(ordem: int) -> dict[str, str]:
+    if ordem <= len(CLIENTES_DEMO):
+        return CLIENTES_DEMO[ordem - 1]
+
+    return {
+        "nome": f"Cliente Demo {ordem:02d}",
+        "cpf": f"{CPF_DEMO_BASE + ordem:011d}",
+    }
 
 
 def obter_proprietario_demo_disponivel(
     db: Session
 ):
-    for dados in CLIENTES_DEMO:
+    ordem = 1
+
+    while CPF_DEMO_BASE + ordem <= 99999999999:
+        dados = dados_cliente_demo(ordem)
 
         proprietario = (
             db.query(models.Proprietario)
@@ -322,6 +336,13 @@ def obter_proprietario_demo_disponivel(
 
             return proprietario
 
+        # Mantém os nomes da sequência atualizados mesmo quando
+        # o CPF demonstrativo já existia no banco.
+        if proprietario.nome != dados["nome"]:
+            proprietario.nome = dados["nome"]
+            db.commit()
+            db.refresh(proprietario)
+
         # Cliente existe, mas ainda não tem veículo
         veiculo_existente = (
             db.query(models.Veiculo)
@@ -334,6 +355,8 @@ def obter_proprietario_demo_disponivel(
 
         if not veiculo_existente:
             return proprietario
+
+        ordem += 1
 
     return None
 

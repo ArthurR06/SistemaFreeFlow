@@ -23,7 +23,11 @@ os.environ["TEMPO_DUPLICIDADE"] = "30"
 
 from app import models  # noqa: E402
 from app.database import Base, SessionLocal, engine  # noqa: E402
-from app.main import app, formatar_tempo  # noqa: E402
+from app.main import (  # noqa: E402
+    app,
+    formatar_tempo,
+    obter_ou_criar_veiculo_demo,
+)
 from app.security import gerar_hash_senha  # noqa: E402
 
 
@@ -155,6 +159,46 @@ class FluxosFreeFlowTest(unittest.TestCase):
 
     def test_duracao_completa(self):
         self.assertEqual(formatar_tempo(159010), "1 dia, 20h, 10min e 10s")
+
+    def test_geracao_proprietarios_demo_segue_ordem_de_chegada(self):
+        esperados = [
+            ("Arthur Rodrigues", "10000000001"),
+            ("Camila Eiko", "10000000002"),
+            ("Joice Jardim", "10000000003"),
+            ("Leticia Moura", "10000000004"),
+            ("Bruno Almeida", "10000000005"),
+            ("Fernanda Souza", "10000000006"),
+            ("Gabriel Santos", "10000000007"),
+            ("Mariana Oliveira", "10000000008"),
+            ("Rafael Lima", "10000000009"),
+            ("Renata Costa", "10000000010"),
+        ]
+
+        with SessionLocal() as db:
+            associados = []
+            for ordem in range(1, 11):
+                veiculo = obter_ou_criar_veiculo_demo(
+                    db,
+                    f"DEMOSEQ{ordem:02d}",
+                )
+                proprietario = db.get(
+                    models.Proprietario,
+                    veiculo.proprietario_id,
+                )
+                associados.append((proprietario.nome, proprietario.cpf))
+
+            decimo_primeiro = obter_ou_criar_veiculo_demo(
+                db,
+                "DEMOSEQ11",
+            )
+            proprietario_extra = db.get(
+                models.Proprietario,
+                decimo_primeiro.proprietario_id,
+            )
+
+        self.assertEqual(associados, esperados)
+        self.assertEqual(proprietario_extra.nome, "Cliente Demo 11")
+        self.assertEqual(proprietario_extra.cpf, "10000000011")
 
     def test_ia_classifica_duplicidade_e_bloqueia_cobranca(self):
         with SessionLocal() as db:
