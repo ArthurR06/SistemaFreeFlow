@@ -64,7 +64,7 @@
         const resposta=await fetch(`/portal/pagamento/status?token=${encodeURIComponent(token)}`,{cache:"no-store"});
         if(resposta.ok){const status=await resposta.json();if(status.confirmado){window.location.replace(status.success_url||"/pagamento/confirmado");return;}}
       }catch(erro){console.error("Falha ao consultar o pagamento",erro);}
-      timerPagamento=setTimeout(()=>acompanharPagamento(token),2000);
+      timerPagamento=setTimeout(()=>acompanharPagamento(token),1000);
     }
     async function carregar(){
       if(!cpf||!placa||!ids.length){voltar();return;}

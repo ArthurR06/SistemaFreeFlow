@@ -615,6 +615,7 @@ class FluxosFreeFlowTest(unittest.TestCase):
             timeout=5,
         )
         self.assertEqual(dashboard_filtrado.status_code, 200)
+        self.assertEqual(dashboard_filtrado.json()["refresh_segundos"], 1)
         ids_filtrados = {
             evento["id_veiculo"]
             for evento in dashboard_filtrado.json()["eventos"]

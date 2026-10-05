@@ -130,7 +130,7 @@
   <script>
     const concessionariaNome = {{ concessionaria_nome | tojson }};
     let filtroAtual = "todos";
-    let intervaloAtualizacao = 5000;
+    let intervaloAtualizacao = 1000;
     let timerAtualizacao = null;
     const moeda = valor => Number(valor || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
     const escapar = valor => String(valor ?? "-").replace(/[&<>"']/g, caractere => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"})[caractere]);
@@ -173,8 +173,8 @@
         if (resposta.status === 401) { window.location.href="/admin/login"; return; }
         if (!resposta.ok) throw new Error("Falha ao carregar dashboard");
         const dados = await resposta.json();
-        intervaloAtualizacao = (Number(dados.refresh_segundos) || 5) * 1000;
-        document.getElementById("refreshTexto").textContent = `Atualizando a cada ${dados.refresh_segundos || 5}s`;
+        intervaloAtualizacao = (Number(dados.refresh_segundos) || 1) * 1000;
+        document.getElementById("refreshTexto").textContent = `Atualizando a cada ${dados.refresh_segundos || 1}s`;
         document.getElementById("mensagemAtualizacao").textContent = dados.mensagem_atualizacao;
         document.getElementById("total_veiculos").textContent = dados.total_veiculos;
         document.getElementById("valor_por_passagem").textContent = moeda(dados.valor_por_passagem);

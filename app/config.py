@@ -18,7 +18,7 @@ VALOR_PASSAGEM_A = float(os.getenv("VALOR_PASSAGEM_A", str(VALOR_PASSAGEM)))
 VALOR_PASSAGEM_B = float(os.getenv("VALOR_PASSAGEM_B", "7.5"))
 TEMPO_DUPLICIDADE = int(os.getenv("TEMPO_DUPLICIDADE", "30"))
 TEMPO_SEM_DADOS_ALERTA = int(os.getenv("TEMPO_SEM_DADOS_ALERTA", "120"))
-REFRESH_SEGUNDOS = int(os.getenv("REFRESH_SEGUNDOS", "5"))
+REFRESH_SEGUNDOS = int(os.getenv("REFRESH_SEGUNDOS", "1"))
 # Área administrativa
 ADMIN_USER = os.getenv("ADMIN_USER", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin")
