@@ -530,6 +530,17 @@ class FluxosFreeFlowTest(unittest.TestCase):
         self.assertEqual(resposta_gestao.headers["location"], "/admin/login")
 
     def test_portal_gestao_unificado(self):
+        pagina_login = requests.get(
+            f"{self.base_url}/admin/login",
+            timeout=5,
+        )
+        self.assertEqual(pagina_login.status_code, 200)
+        self.assertIn('type="password"', pagina_login.text)
+        self.assertIn('id="alternarSenha"', pagina_login.text)
+        self.assertIn('aria-controls="senha"', pagina_login.text)
+        self.assertIn('aria-label="Mostrar senha"', pagina_login.text)
+        self.assertIn('campoSenha.type =', pagina_login.text)
+
         sessao = requests.Session()
         login = sessao.post(
             f"{self.base_url}/admin/login",

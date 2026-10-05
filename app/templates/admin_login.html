@@ -408,6 +408,72 @@
         }
 
 
+        .campo-senha {
+            position: relative;
+        }
+
+
+        .campo-senha input {
+            padding-right: 58px;
+        }
+
+
+        .alternar-senha {
+            position: absolute;
+
+            top: 50%;
+            right: 8px;
+
+            display: inline-flex;
+
+            width: 42px;
+            height: 42px;
+
+            align-items: center;
+            justify-content: center;
+
+            border: 0;
+            border-radius: 8px;
+
+            background: transparent;
+            color: #91a8bc;
+
+            cursor: pointer;
+
+            transform: translateY(-50%);
+            transition: 0.2s;
+        }
+
+
+        .alternar-senha:hover {
+            background: rgba(55, 143, 209, 0.12);
+            color: #dbe7f1;
+        }
+
+
+        .alternar-senha:focus-visible {
+            outline: 2px solid #378fd1;
+            outline-offset: 1px;
+        }
+
+
+        .alternar-senha svg {
+            width: 22px;
+            height: 22px;
+
+            fill: none;
+            stroke: currentColor;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-width: 2;
+        }
+
+
+        .alternar-senha .icone-oculto {
+            display: none;
+        }
+
+
         /* ============================== */
         /* BOTÃO */
         /* ============================== */
@@ -777,14 +843,53 @@
                         </label>
 
 
-                        <input
-                            id="senha"
-                            name="senha"
-                            type="password"
-                            placeholder="Digite sua senha"
-                            autocomplete="current-password"
-                            required
-                        >
+                        <div class="campo-senha">
+
+                            <input
+                                id="senha"
+                                name="senha"
+                                type="password"
+                                placeholder="Digite sua senha"
+                                autocomplete="current-password"
+                                required
+                            >
+
+
+                            <button
+                                id="alternarSenha"
+                                class="alternar-senha"
+                                type="button"
+                                aria-controls="senha"
+                                aria-label="Mostrar senha"
+                                aria-pressed="false"
+                                title="Mostrar senha"
+                            >
+
+                                <svg
+                                    id="iconeOlhoFechado"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M3 3l18 18"></path>
+                                    <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"></path>
+                                    <path d="M9.9 4.2A10.7 10.7 0 0 1 12 4c7 0 10 8 10 8a16 16 0 0 1-2.1 3.2"></path>
+                                    <path d="M6.6 6.6C3.5 8.5 2 12 2 12s3 8 10 8a10.7 10.7 0 0 0 5.4-1.4"></path>
+                                </svg>
+
+
+                                <svg
+                                    id="iconeOlhoAberto"
+                                    class="icone-oculto"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+
+                            </button>
+
+                        </div>
 
                     </div>
 
@@ -830,6 +935,82 @@
         FreeFlow • Portal da Concessionária
 
     </footer>
+
+
+    <script>
+
+        const campoSenha =
+            document.getElementById(
+                "senha"
+            );
+
+        const botaoAlternarSenha =
+            document.getElementById(
+                "alternarSenha"
+            );
+
+        const iconeOlhoFechado =
+            document.getElementById(
+                "iconeOlhoFechado"
+            );
+
+        const iconeOlhoAberto =
+            document.getElementById(
+                "iconeOlhoAberto"
+            );
+
+
+        botaoAlternarSenha.addEventListener(
+            "click",
+            function () {
+
+                const mostrarSenha =
+                    campoSenha.type ===
+                    "password";
+
+                campoSenha.type =
+                    mostrarSenha
+                        ? "text"
+                        : "password";
+
+                iconeOlhoFechado.classList.toggle(
+                    "icone-oculto",
+                    mostrarSenha
+                );
+
+                iconeOlhoAberto.classList.toggle(
+                    "icone-oculto",
+                    !mostrarSenha
+                );
+
+                const descricao =
+                    mostrarSenha
+                        ? "Ocultar senha"
+                        : "Mostrar senha";
+
+                botaoAlternarSenha.setAttribute(
+                    "aria-label",
+                    descricao
+                );
+
+                botaoAlternarSenha.setAttribute(
+                    "aria-pressed",
+                    String(
+                        mostrarSenha
+                    )
+                );
+
+                botaoAlternarSenha.title =
+                    descricao;
+
+                campoSenha.focus({
+                    preventScroll: true
+                });
+
+            }
+        );
+
+    </script>
 
 
 </body>
