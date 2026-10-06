@@ -396,6 +396,24 @@ class FluxosFreeFlowTest(unittest.TestCase):
             )
 
     def test_portal_pagamento_qrcode_e_codigo_barras(self):
+        for rota, contexto in (
+            ("pix", "Pagamento via PIX"),
+            ("boleto", "Boleto bancário"),
+        ):
+            pagina_pagamento = requests.get(
+                f"{self.base_url}/{rota}",
+                timeout=5,
+            )
+            self.assertEqual(pagina_pagamento.status_code, 200)
+            self.assertIn(contexto, pagina_pagamento.text)
+            self.assertIn("max-width:1400px; min-height:95px", pagina_pagamento.text)
+            self.assertIn("padding:18px 30px", pagina_pagamento.text)
+            self.assertIn("font-size:30px; font-weight:800", pagina_pagamento.text)
+            self.assertIn(
+                "font-size:19px;font-weight:600",
+                pagina_pagamento.text,
+            )
+
         consulta = requests.post(
             f"{self.base_url}/portal/consultar",
             json={"cpf": "12345678901", "placa": "ABC1D23"},
@@ -577,6 +595,8 @@ class FluxosFreeFlowTest(unittest.TestCase):
         self.assertIn('id="filtroDataFinal"', passagens.text)
         self.assertIn('name="data_inicial" type="date"', recebiveis.text)
         self.assertIn('name="data_final" type="date"', recebiveis.text)
+        self.assertIn("flex-wrap:nowrap", recebiveis.text)
+        self.assertIn("flex:0 1 300px", recebiveis.text)
         self.assertIn("ConectaVia", passagens.text)
         self.assertIn("/static/logos/conectavia-simbolo.png", passagens.text)
         logo = sessao.get(
