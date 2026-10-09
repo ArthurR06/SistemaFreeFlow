@@ -4,6 +4,18 @@ Protótipo de sistema de cobrança automática de pedágio Free Flow desenvolvid
 
 O sistema recebe eventos enviados por ESP32 com leitores RFID, registra as passagens, analisa duplicidades e comportamentos anômalos, gera cobranças e disponibiliza interfaces separadas para clientes e concessionárias.
 
+## O que o projeto demonstra
+
+- Integração de dispositivos ESP32 e leitores RFID com uma API web.
+- Modelagem e persistência de passagens e cobranças com SQLAlchemy e PostgreSQL.
+- Análise de duplicidades e anomalias com dois modelos Isolation Forest.
+- Portais separados para clientes e concessionárias, com controle de acesso por faixa.
+- Pagamentos demonstrativos por PIX e boleto, relatórios e exportação CSV.
+
+**Tecnologias:** Python 3.12, FastAPI, Uvicorn, SQLAlchemy, PostgreSQL/Supabase, scikit-learn, NumPy, Jinja2, HTML/CSS/JavaScript, ESP32, RFID RC522 e Vercel.
+
+> Este é um protótipo acadêmico. Os pagamentos exibidos no portal são demonstrativos.
+
 ---
 
 ## Acessos online
@@ -80,7 +92,11 @@ Recomendado:
 
 Crie um ambiente virtual:
 
+```bash
+git clone https://github.com/ArthurR06/SistemaFreeFlow.git
+cd SistemaFreeFlow
 python -m venv .venv
+```
 
 Ative o ambiente virtual no Windows:
 
@@ -94,7 +110,13 @@ Instale as dependências:
 pip install -r requirements.txt
 ```
 
-Crie um arquivo `.env.local` baseado no `.env.example`.
+Crie um arquivo `.env.local` baseado no `.env.example`:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+Configure uma instância própria de PostgreSQL/Supabase e substitua os valores de exemplo pelas suas credenciais locais. Não utilize as credenciais de outra instalação.
 
 Exemplo para execução local:
 
@@ -131,9 +153,16 @@ Antes de iniciar a aplicação, aplique as migrations e faça a carga dos dados:
 ```bash
 supabase link --project-ref SEU_PROJECT_REF
 supabase db push --linked
-python -m scripts.banco.migrar_sqlite_supabase
 python -m scripts.banco.seed_usuarios
 ```
+
+Se você já possui uma cópia local `data/freeflow.db` com dados de uma versão anterior, a importação é opcional:
+
+```bash
+python -m scripts.banco.migrar_sqlite_supabase
+```
+
+Esse comando requer o arquivo SQLite existente e altera o banco de destino; ele não faz parte da instalação de um clone novo.
 
 A aplicação não cria tabelas automaticamente durante o boot. O esquema oficial
 fica versionado em `supabase/migrations/`.
@@ -688,4 +717,13 @@ Portal do Cliente / Portal da Concessionária
 O projeto foi desenvolvido como protótipo acadêmico de uma arquitetura de cobrança automática Free Flow baseada em IoT, banco de dados, computação em nuvem e Inteligência Artificial.
 
 A solução utiliza interfaces separadas por perfil de acesso: o cliente consulta exclusivamente seus próprios veículos e cobranças, enquanto cada concessionária acessa apenas os dados operacionais associados às suas faixas.
+
+
+## Autoria
+
+Projeto acadêmico de TCC disponível no portfólio de [Arthur Rodrigues](https://github.com/ArthurR06), com contribuição de [Letícia Costa de Moura](https://github.com/leticiacostamoura) registrada no histórico do repositório.
+
+Consulte o [histórico de commits](https://github.com/ArthurR06/SistemaFreeFlow/commits/master/) para acompanhar a evolução e as contribuições.
+
+Contato profissional de Arthur: [LinkedIn](https://www.linkedin.com/in/arthur-g-r-lima-635155225/).
 
