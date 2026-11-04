@@ -85,26 +85,26 @@ class FluxosFreeFlowTest(unittest.TestCase):
                         timestamp_criacao=datetime.now().isoformat(timespec="seconds"),
                     )
                 )
-            evento_anomalo = models.EventoPassagem(
+            evento_bloqueado = models.EventoPassagem(
                 id_veiculo=veiculo.placa,
                 faixa=1,
                 timestamp_evento=datetime.now().isoformat(timespec="seconds"),
                 valor=5.0,
                 processado=1,
-                anomalia="ia_anomalia",
+                anomalia="duplicidade",
             )
-            db.add(evento_anomalo)
+            db.add(evento_bloqueado)
             db.flush()
-            cobranca_anomala = models.Cobranca(
-                evento_id=evento_anomalo.id,
+            cobranca_bloqueada = models.Cobranca(
+                evento_id=evento_bloqueado.id,
                 veiculo_id=veiculo.id,
                 valor=5.0,
                 status="pendente",
                 timestamp_criacao=datetime.now().isoformat(timespec="seconds"),
             )
-            db.add(cobranca_anomala)
+            db.add(cobranca_bloqueada)
             db.flush()
-            cls.cobranca_anomala_id = cobranca_anomala.id
+            cls.cobranca_bloqueada_id = cobranca_bloqueada.id
             db.add(
                 models.UsuarioConcessionaria(
                     usuario="conectavia",
@@ -276,6 +276,21 @@ class FluxosFreeFlowTest(unittest.TestCase):
         self.assertEqual(repeticao.status_code, 200)
         self.assertEqual(repeticao.json()["anomalia"], "duplicidade")
 
+        limite = requests.post(
+            f"{self.base_url}/evento",
+            headers=cabecalhos,
+            json={
+                "id_veiculo": "IA30DUP",
+                "faixa": 1,
+                "timestamp_evento": "2026-09-23T14:00:59",
+                "sensor_id": "sensor-teste-ia",
+                "origem": "teste-automatizado",
+            },
+            timeout=5,
+        )
+        self.assertEqual(limite.status_code, 200)
+        self.assertIsNone(limite.json()["anomalia"])
+
         with SessionLocal() as db:
             cobrancas = (
                 db.query(models.Cobranca)
@@ -283,9 +298,9 @@ class FluxosFreeFlowTest(unittest.TestCase):
                 .filter(models.EventoPassagem.id_veiculo == "IA30DUP")
                 .count()
             )
-            self.assertEqual(cobrancas, 1)
+            self.assertEqual(cobrancas, 2)
 
-    def test_ia_bloqueia_anomalia_fora_da_janela_de_duplicidade(self):
+    def test_evento_de_madrugada_fora_da_janela_e_cobrado(self):
         with SessionLocal() as db:
             proprietario = models.Proprietario(
                 nome="Cliente IA Anomalia",
@@ -318,7 +333,7 @@ class FluxosFreeFlowTest(unittest.TestCase):
         self.assertEqual(primeira.status_code, 200)
         self.assertIsNone(primeira.json()["anomalia"])
 
-        evento_anomalo = requests.post(
+        evento_noturno = requests.post(
             f"{self.base_url}/evento",
             headers=cabecalhos,
             json={
@@ -330,8 +345,8 @@ class FluxosFreeFlowTest(unittest.TestCase):
             },
             timeout=5,
         )
-        self.assertEqual(evento_anomalo.status_code, 200)
-        self.assertEqual(evento_anomalo.json()["anomalia"], "ia_anomalia")
+        self.assertEqual(evento_noturno.status_code, 200)
+        self.assertIsNone(evento_noturno.json()["anomalia"])
 
         with SessionLocal() as db:
             cobrancas = (
@@ -340,7 +355,7 @@ class FluxosFreeFlowTest(unittest.TestCase):
                 .filter(models.EventoPassagem.id_veiculo == "IAANOM1")
                 .count()
             )
-            self.assertEqual(cobrancas, 1)
+            self.assertEqual(cobrancas, 2)
 
     def test_consulta_portal_avisa_sem_debitos_e_dados_incorretos(self):
         sem_debitos = requests.post(
@@ -434,17 +449,17 @@ class FluxosFreeFlowTest(unittest.TestCase):
         ]
         self.assertEqual(len(pendentes), 2)
 
-        tentativa_anomala = requests.post(
+        tentativa_bloqueada = requests.post(
             f"{self.base_url}/portal/pagamento/iniciar",
             json={
                 "cpf": "12345678901",
                 "placa": "ABC1D23",
-                "cobrancas": [self.cobranca_anomala_id],
+                "cobrancas": [self.cobranca_bloqueada_id],
                 "metodo": "pix",
             },
             timeout=5,
         )
-        self.assertEqual(tentativa_anomala.status_code, 409)
+        self.assertEqual(tentativa_bloqueada.status_code, 409)
 
         inicio = requests.post(
             f"{self.base_url}/portal/pagamento/iniciar",

@@ -13,9 +13,6 @@ import numpy as np
 # ==========================================
 # CARREGA A IA UMA ÚNICA VEZ
 # ==========================================
-CAMINHO_MODELO = Path(__file__).resolve().with_name(
-    "modelo_anomalia.joblib"
-)
 CAMINHO_MODELO_DUPLICIDADE = Path(__file__).resolve().with_name(
     "modelo_duplicidade.joblib"
 )
@@ -25,36 +22,34 @@ print("==============================")
 print("CARREGANDO MODELO DE IA")
 print("==============================")
 
-MODELO_IA = joblib.load(CAMINHO_MODELO)
 MODELO_DUPLICIDADE = joblib.load(CAMINHO_MODELO_DUPLICIDADE)
 
-print("Modelos Isolation Forest carregados com sucesso.")
+print("Modelo temporal Isolation Forest carregado com sucesso.")
 print("==============================")
 
 
 def classificar_com_ia(
-    faixa: int,
     intervalo_segundos: float,
-    hora_decimal: float,
 ):
-    """Classifica um evento com IA e aplica a categoria operacional.
+    """Classifica somente duplicidades temporais, sem usar o horário.
 
-    Dois modelos Isolation Forest analisam as passagens com histórico. O
-    primeiro avalia o comportamento geral e o segundo é especializado no
-    intervalo temporal. A janela dá o nome ``duplicidade`` à anomalia temporal
-    e também funciona como proteção contra cobrança indevida caso o modelo
-    experimental produza um falso negativo.
+    O Isolation Forest temporal avalia o intervalo entre passagens. A janela
+    determinística estritamente inferior a 30 segundos é a regra operacional
+    final: eventos dentro dela são duplicidades mesmo se o modelo produzir um
+    falso negativo; eventos em 30 segundos ou mais não são bloqueados por IA.
     """
-    entrada_ia = np.array(
-        [[faixa, intervalo_segundos, hora_decimal]],
-        dtype=float,
-    )
+    if intervalo_segundos >= TEMPO_DUPLICIDADE:
+        return {
+            "classificacao": None,
+            "predicao_duplicidade": None,
+            "score_duplicidade": None,
+            "origem_classificacao": "fora_janela",
+            "tempo_ia_ms": 0.0,
+        }
 
     entrada_temporal = np.array([[intervalo_segundos]], dtype=float)
 
     inicio_ia = perf_counter()
-    predicao = int(MODELO_IA.predict(entrada_ia)[0])
-    score = float(MODELO_IA.decision_function(entrada_ia)[0])
     predicao_duplicidade = int(
         MODELO_DUPLICIDADE.predict(entrada_temporal)[0]
     )
@@ -63,27 +58,19 @@ def classificar_com_ia(
     )
     tempo_ia_ms = (perf_counter() - inicio_ia) * 1000
 
-    if (
-        intervalo_segundos < TEMPO_DUPLICIDADE
-        and predicao_duplicidade == -1
-    ):
+    if intervalo_segundos < TEMPO_DUPLICIDADE:
         classificacao = "duplicidade"
-        origem_classificacao = "ia_temporal"
-    elif intervalo_segundos < TEMPO_DUPLICIDADE:
-        # Salvaguarda financeira contra um falso negativo do modelo temporal.
-        classificacao = "duplicidade"
-        origem_classificacao = "salvaguarda_temporal"
-    elif predicao == -1:
-        classificacao = "ia_anomalia"
-        origem_classificacao = "ia_comportamental"
+        origem_classificacao = (
+            "ia_temporal"
+            if predicao_duplicidade == -1
+            else "salvaguarda_temporal"
+        )
     else:
         classificacao = None
-        origem_classificacao = "ia_comportamental"
+        origem_classificacao = "fora_janela"
 
     return {
         "classificacao": classificacao,
-        "predicao": predicao,
-        "score": score,
         "predicao_duplicidade": predicao_duplicidade,
         "score_duplicidade": score_duplicidade,
         "origem_classificacao": origem_classificacao,
@@ -112,9 +99,31 @@ def analisar_eventos(db: Session):
     print("==============================")
     print(f"Eventos novos: {len(eventos)}")
 
-    # Guarda a última passagem conhecida
-    # de cada veículo, sem considerar a faixa
+    # Guarda a última passagem conhecida de cada veículo, incluindo eventos
+    # já processados. Sem essa consulta, uma chamada por leitura trataria cada
+    # evento como primeira passagem e não aplicaria a janela de duplicidade.
     ultimo_evento_por_veiculo = {}
+
+    veiculos_pendentes = {evento.id_veiculo for evento in eventos}
+    for veiculo in veiculos_pendentes:
+        historico = (
+            db.query(EventoPassagem)
+            .filter(
+                EventoPassagem.id_veiculo == veiculo,
+                EventoPassagem.processado == 1,
+            )
+            .order_by(EventoPassagem.id.desc())
+            .all()
+        )
+
+        for evento_anterior in historico:
+            try:
+                ultimo_evento_por_veiculo[veiculo] = datetime.fromisoformat(
+                    evento_anterior.timestamp_evento
+                )
+                break
+            except ValueError:
+                continue
 
     # ==========================================
     # HISTÓRICO JÁ PROCESSADO
@@ -224,35 +233,25 @@ def analisar_eventos(db: Session):
         # ======================================
         else:
 
-            # Converte o horário para decimal.
-            hora_decimal = (
-                tempo_atual.hour
-                + tempo_atual.minute / 60
-                + tempo_atual.second / 3600
-            )
-
             resultado = classificar_com_ia(
-                faixa=evento.faixa,
                 intervalo_segundos=diferenca,
-                hora_decimal=hora_decimal,
             )
 
             evento.anomalia = resultado["classificacao"]
 
-            print(
-                "Isolation Forest comportamental:",
-                "ANOMALIA" if resultado["predicao"] == -1 else "NORMAL",
-            )
-            print(f"Score comportamental: {resultado['score']:.6f}")
-            print(
-                "Isolation Forest temporal:",
-                (
-                    "ANOMALIA"
-                    if resultado["predicao_duplicidade"] == -1
-                    else "NORMAL"
-                ),
-            )
-            print(f"Score temporal: {resultado['score_duplicidade']:.6f}")
+            if resultado["predicao_duplicidade"] is None:
+                print("IA temporal: não aplicada (intervalo fora da janela)")
+            else:
+                print(
+                    "Isolation Forest temporal:",
+                    (
+                        "ANOMALIA"
+                        if resultado["predicao_duplicidade"] == -1
+                        else "NORMAL"
+                    ),
+                )
+                print(f"Score temporal: {resultado['score_duplicidade']:.6f}")
+            print(f"Origem da decisão: {resultado['origem_classificacao']}")
             print(f"Tempo da IA: {resultado['tempo_ia_ms']:.2f} ms")
 
             if evento.anomalia == "duplicidade":
@@ -261,9 +260,6 @@ def analisar_eventos(db: Session):
                     f"(IA temporal + intervalo inferior a {TEMPO_DUPLICIDADE}s)"
                 )
                 print("Resultado: DUPLICIDADE")
-                print("Cobrança: NÃO")
-            elif evento.anomalia == "ia_anomalia":
-                print("Resultado: ANOMALIA")
                 print("Cobrança: NÃO")
             else:
                 print("Resultado: NORMAL")

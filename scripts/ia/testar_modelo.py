@@ -1,6 +1,6 @@
 """Executa cenários reproduzíveis do módulo de Inteligência Artificial."""
 
-from app.anomaly import MODELO_IA, classificar_com_ia
+from app.anomaly import MODELO_DUPLICIDADE, classificar_com_ia
 from app.config import TEMPO_DUPLICIDADE
 
 
@@ -10,6 +10,14 @@ CASOS = [
         "faixa": 1,
         "intervalo": 120,
         "hora": 14,
+        "esperado": None,
+        "cobranca": "SIM",
+    },
+    {
+        "nome": "Passagem normal de madrugada",
+        "faixa": 2,
+        "intervalo": 120,
+        "hora": 2,
         "esperado": None,
         "cobranca": "SIM",
     },
@@ -30,12 +38,12 @@ CASOS = [
         "cobranca": "NÃO",
     },
     {
-        "nome": "Comportamento atípico",
+        "nome": "Limite de 30 segundos",
         "faixa": 2,
-        "intervalo": 120,
+        "intervalo": TEMPO_DUPLICIDADE,
         "hora": 2,
-        "esperado": "ia_anomalia",
-        "cobranca": "NÃO",
+        "esperado": None,
+        "cobranca": "SIM",
     },
 ]
 
@@ -45,7 +53,7 @@ def executar():
     print("=" * 66)
     print("TESTES DO MÓDULO DE IA - ISOLATION FOREST")
     print("=" * 66)
-    print(f"Modelo carregado: {type(MODELO_IA).__name__}")
+    print(f"Modelo temporal carregado: {type(MODELO_DUPLICIDADE).__name__}")
     print(f"Janela de duplicidade: intervalo < {TEMPO_DUPLICIDADE}s")
     print("")
 
@@ -53,11 +61,7 @@ def executar():
     resultados = []
 
     for indice, caso in enumerate(CASOS, start=1):
-        resultado = classificar_com_ia(
-            faixa=caso["faixa"],
-            intervalo_segundos=caso["intervalo"],
-            hora_decimal=caso["hora"],
-        )
+        resultado = classificar_com_ia(caso["intervalo"])
         obtido = resultado["classificacao"]
         status = "APROVADO" if obtido == caso["esperado"] else "FALHOU"
         nome_resultado = obtido or "normal"
@@ -73,16 +77,14 @@ def executar():
             f"intervalo={caso['intervalo']}s, "
             f"hora={caso['hora']}h"
         )
-        print(
-            "Modelo comportamental: "
-            f"{'ANOMALIA' if resultado['predicao'] == -1 else 'NORMAL'} "
-            f"| score={resultado['score']:.6f}"
-        )
-        print(
-            "Modelo temporal: "
-            f"{'ANOMALIA' if resultado['predicao_duplicidade'] == -1 else 'NORMAL'} "
-            f"| score={resultado['score_duplicidade']:.6f}"
-        )
+        if resultado["predicao_duplicidade"] is None:
+            print("Modelo temporal: não aplicado fora da janela")
+        else:
+            print(
+                "Modelo temporal: "
+                f"{'ANOMALIA' if resultado['predicao_duplicidade'] == -1 else 'NORMAL'} "
+                f"| score={resultado['score_duplicidade']:.6f}"
+            )
         print(
             f"Classificação: {nome_resultado} "
             f"| Esperado: {nome_esperado} "

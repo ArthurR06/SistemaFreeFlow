@@ -2697,13 +2697,13 @@ def testar_ia_api(
     _admin: None = Depends(exigir_admin),
 ):
     casos = {
-        "normal": anomaly.classificar_com_ia(1, 120, 14),
-        "duplicidade": anomaly.classificar_com_ia(1, 29, 14),
-        "anomalia": anomaly.classificar_com_ia(2, 120, 2),
+        "normal": anomaly.classificar_com_ia(120),
+        "duplicidade": anomaly.classificar_com_ia(29),
+        "limite_30_segundos": anomaly.classificar_com_ia(TEMPO_DUPLICIDADE),
     }
 
     return {
-        "modelo": "Isolation Forest",
+        "modelo": "Isolation Forest temporal + salvaguarda de 30 segundos",
         "status": "carregado",
         "janela_duplicidade_segundos": TEMPO_DUPLICIDADE,
         "regra_janela": f"intervalo < {TEMPO_DUPLICIDADE}",

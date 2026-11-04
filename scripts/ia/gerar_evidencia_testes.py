@@ -8,7 +8,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from app.anomaly import MODELO_IA, classificar_com_ia
+from app.anomaly import MODELO_DUPLICIDADE, classificar_com_ia
 from app.config import TEMPO_DUPLICIDADE
 
 
@@ -63,17 +63,17 @@ def gerar():
         ("Primeira passagem", "Sem histórico", "NORMAL", "SIM", "Fluxo"),
         ("Repetição curta", "10s · faixa 1 · 14h", "DUPLICIDADE", "NÃO", "IA + janela"),
         ("Repetição curta", "29s · faixa 2 · 12h", "DUPLICIDADE", "NÃO", "IA + janela"),
-        ("Limite da janela", "30s · faixa 1 · 14h", "NORMAL", "SIM", "IA"),
-        ("Evento normal", "120s · faixa 1 · 14h", "NORMAL", "SIM", "IA"),
-        ("Evento atípico", "120s · faixa 2 · 2h", "IA_ANOMALIA", "NÃO", "IA"),
+        ("Limite da janela", "30s · faixa 1 · 14h", "NORMAL", "SIM", "Fora da janela"),
+        ("Evento normal", "120s · faixa 1 · 14h", "NORMAL", "SIM", "Fora da janela"),
+        ("Passagem de madrugada", "120s · faixa 2 · 2h", "NORMAL", "SIM", "Fora da janela"),
     ]
 
     resultados = {
-        "Repetição curta-10s · faixa 1 · 14h": classificar_com_ia(1, 10, 14),
-        "Repetição curta-29s · faixa 2 · 12h": classificar_com_ia(2, 29, 12),
-        "Limite da janela-30s · faixa 1 · 14h": classificar_com_ia(1, 30, 14),
-        "Evento normal-120s · faixa 1 · 14h": classificar_com_ia(1, 120, 14),
-        "Evento atípico-120s · faixa 2 · 2h": classificar_com_ia(2, 120, 2),
+        "Repetição curta-10s · faixa 1 · 14h": classificar_com_ia(10),
+        "Repetição curta-29s · faixa 2 · 12h": classificar_com_ia(29),
+        "Limite da janela-30s · faixa 1 · 14h": classificar_com_ia(30),
+        "Evento normal-120s · faixa 1 · 14h": classificar_com_ia(120),
+        "Passagem de madrugada-120s · faixa 2 · 2h": classificar_com_ia(120),
     }
 
     imagem = Image.new("RGB", (2000, 1500), "#f5f8fb")
@@ -86,19 +86,18 @@ def gerar():
     pequeno = fonte("segoeui.ttf", 22)
 
     draw.rounded_rectangle((70, 55, 1930, 260), radius=34, fill="#063b5c")
-    texto(draw, (120, 90), "Evidências dos testes do módulo de IA", titulo, "white")
+    texto(draw, (120, 90), "Evidências da análise temporal", titulo, "white")
     texto(
         draw,
         (122, 175),
-        "Isolation Forest · detecção de anomalias · proteção contra cobranças indevidas",
+        "Isolation Forest temporal · janela de duplicidade · salvaguarda de 30 segundos",
         subtitulo,
         "#bdeaf0",
     )
 
     cards = [
         ("Amostras de treino", str(contar_amostras())),
-        ("Modelos / árvores", f"2 × {MODELO_IA.named_steps['isolation_forest'].n_estimators}"),
-        ("Contaminação", "5%"),
+        ("Modelo / árvores", f"1 × {MODELO_DUPLICIDADE.named_steps['isolation_forest'].n_estimators}"),
         ("Janela de duplicidade", f"< {TEMPO_DUPLICIDADE}s"),
         ("Testes aprovados", f"{total_ia + total_fluxos}/{total_ia + total_fluxos}"),
     ]
@@ -124,16 +123,15 @@ def gerar():
         resultado = resultados.get(chave)
         if resultado:
             obtido = resultado["classificacao"] or "normal"
-            score_chave = (
-                "score_duplicidade"
-                if resultado["classificacao"] == "duplicidade"
-                else "score"
+            score = (
+                f"{resultado['score_duplicidade']:.4f}"
+                if resultado["score_duplicidade"] is not None
+                else "n/a"
             )
-            score = f"{resultado[score_chave]:.4f}"
             decisao = {
                 "ia_temporal": "IA temporal",
-                "ia_comportamental": "IA comp.",
                 "salvaguarda_temporal": "Salvaguarda",
+                "fora_janela": "Fora da janela",
             }[resultado["origem_classificacao"]]
         else:
             obtido = "normal"
@@ -141,7 +139,6 @@ def gerar():
         esperado = classificacao.lower()
         aprovado = (
             obtido == esperado
-            or (esperado == "ia_anomalia" and obtido == "ia_anomalia")
             or (cenario == "Primeira passagem" and esperado == "normal")
         )
         valores = [cenario, entrada, classificacao, cobranca, f"{decisao} · {score}"]

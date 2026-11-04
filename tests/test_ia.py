@@ -13,32 +13,34 @@ class ModuloInteligenciaArtificialTest(unittest.TestCase):
         self.assertEqual(TEMPO_DUPLICIDADE, 30)
 
     def test_evento_normal_e_liberado_para_cobranca(self):
-        resultado = anomaly.classificar_com_ia(1, 120, 14)
-        self.assertEqual(resultado["predicao"], 1)
+        resultado = anomaly.classificar_com_ia(120)
         self.assertIsNone(resultado["classificacao"])
-        self.assertGreaterEqual(resultado["score"], 0)
+        self.assertIsNone(resultado["predicao_duplicidade"])
+        self.assertIsNone(resultado["score_duplicidade"])
+        self.assertEqual(resultado["origem_classificacao"], "fora_janela")
+
+    def test_modelo_temporal_nao_emite_anomalia_comportamental(self):
+        resultado = anomaly.classificar_com_ia(120)
+        self.assertIsNone(resultado["classificacao"])
+        self.assertEqual(resultado["origem_classificacao"], "fora_janela")
 
     def test_repeticao_em_10_segundos_e_duplicidade(self):
-        resultado = anomaly.classificar_com_ia(1, 10, 14)
+        resultado = anomaly.classificar_com_ia(10)
         self.assertEqual(resultado["predicao_duplicidade"], -1)
         self.assertEqual(resultado["origem_classificacao"], "ia_temporal")
         self.assertEqual(resultado["classificacao"], "duplicidade")
 
     def test_repeticao_em_29_segundos_e_duplicidade(self):
-        resultado = anomaly.classificar_com_ia(2, 29, 12)
+        resultado = anomaly.classificar_com_ia(29)
         self.assertEqual(resultado["predicao_duplicidade"], -1)
         self.assertEqual(resultado["origem_classificacao"], "ia_temporal")
         self.assertEqual(resultado["classificacao"], "duplicidade")
 
     def test_limite_de_30_segundos_nao_e_regra_de_duplicidade(self):
-        resultado = anomaly.classificar_com_ia(1, 30, 14)
-        self.assertNotEqual(resultado["classificacao"], "duplicidade")
-
-    def test_ia_bloqueia_anomalia_fora_da_janela_de_duplicidade(self):
-        resultado = anomaly.classificar_com_ia(2, 120, 2)
-        self.assertEqual(resultado["predicao"], -1)
-        self.assertEqual(resultado["classificacao"], "ia_anomalia")
-        self.assertLess(resultado["score"], 0)
+        resultado = anomaly.classificar_com_ia(30)
+        self.assertIsNone(resultado["classificacao"])
+        self.assertIsNone(resultado["predicao_duplicidade"])
+        self.assertEqual(resultado["origem_classificacao"], "fora_janela")
 
 
 if __name__ == "__main__":

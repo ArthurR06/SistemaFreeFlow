@@ -8,9 +8,10 @@ from sklearn.ensemble import IsolationForest
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
+from app.config import TEMPO_DUPLICIDADE
+
 
 ARQUIVO_TREINO = "data/treino_normal.csv"
-CAMINHO_MODELO = "app/modelo_anomalia.joblib"
 CAMINHO_MODELO_DUPLICIDADE = "app/modelo_duplicidade.joblib"
 
 
@@ -45,15 +46,8 @@ def carregar_dados():
 
         for linha in leitor:
             try:
-                faixa = float(linha["faixa"])
                 intervalo = float(linha["intervalo_segundos"])
-                hora = float(linha["hora_decimal"])
-
-                dados.append([
-                    faixa,
-                    intervalo,
-                    hora
-                ])
+                dados.append([intervalo])
 
             except (ValueError, KeyError):
                 continue
@@ -76,19 +70,13 @@ def treinar():
         print("ERRO: poucos dados para treinamento.")
         return
 
-    modelo = criar_pipeline()
     modelo_duplicidade = criar_pipeline()
 
     print("")
-    print("Treinando modelo comportamental...")
+    print("Treinando modelo temporal de intervalos...")
 
-    modelo.fit(dados)
-    modelo_duplicidade.fit(dados[:, 1].reshape(-1, 1))
+    modelo_duplicidade.fit(dados)
 
-    joblib.dump(
-        modelo,
-        CAMINHO_MODELO
-    )
     joblib.dump(
         modelo_duplicidade,
         CAMINHO_MODELO_DUPLICIDADE,
@@ -96,42 +84,26 @@ def treinar():
 
     print("")
     print("==============================")
-    print("MODELOS TREINADOS COM SUCESSO!")
+    print("MODELO TREINADO COM SUCESSO!")
     print("==============================")
 
-    print(f"Modelo salvo em: {CAMINHO_MODELO}")
     print(f"Modelo temporal salvo em: {CAMINHO_MODELO_DUPLICIDADE}")
 
     # Testes simples
     print("")
     print("Teste do modelo:")
 
-    normal = np.array([
-        [1, 120, 14]
-    ])
-
-    suspeito = np.array([
-        [2, 120, 2]
-    ])
-    duplicidade = np.array([[29]])
-
-    resultado_normal = modelo.predict(normal)[0]
-    resultado_suspeito = modelo.predict(suspeito)[0]
-    resultado_duplicidade = modelo_duplicidade.predict(duplicidade)[0]
-
-    print(
-        "Evento normal:",
-        "NORMAL" if resultado_normal == 1 else "ANOMALIA"
-    )
-
-    print(
-        "Evento fora do padrão:",
-        "NORMAL" if resultado_suspeito == 1 else "ANOMALIA"
-    )
-    print(
-        "Intervalo de duplicidade:",
-        "NORMAL" if resultado_duplicidade == 1 else "ANOMALIA",
-    )
+    for intervalo in (10, 29, 30, 120):
+        predicao = modelo_duplicidade.predict(np.array([[intervalo]]))[0]
+        decisao = (
+            "DUPLICIDADE"
+            if intervalo < TEMPO_DUPLICIDADE
+            else "NORMAL"
+        )
+        print(
+            f"Intervalo {intervalo}s: {decisao} "
+            f"(Isolation Forest: {'atípico' if predicao == -1 else 'usual'})"
+        )
 
 
 if __name__ == "__main__":

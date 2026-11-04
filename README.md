@@ -2,13 +2,13 @@
 
 Protótipo de sistema de cobrança automática de pedágio Free Flow desenvolvido para TCC, utilizando **IoT, FastAPI, banco de dados e Inteligência Artificial com Isolation Forest**.
 
-O sistema recebe eventos enviados por ESP32 com leitores RFID, registra as passagens, analisa duplicidades e comportamentos anômalos, gera cobranças e disponibiliza interfaces separadas para clientes e concessionárias.
+O sistema recebe eventos enviados por ESP32 com leitores RFID, registra as passagens, identifica duplicidades pela janela temporal de 30 segundos, gera cobranças e disponibiliza interfaces separadas para clientes e concessionárias.
 
 ## O que o projeto demonstra
 
 - Integração de dispositivos ESP32 e leitores RFID com uma API web.
 - Modelagem e persistência de passagens e cobranças com SQLAlchemy e PostgreSQL.
-- Análise de duplicidades e anomalias com dois modelos Isolation Forest.
+- Análise temporal de duplicidades com Isolation Forest e salvaguarda determinística de 30 segundos.
 - Portais separados para clientes e concessionárias, com controle de acesso por faixa.
 - Pagamentos demonstrativos por PIX e boleto, relatórios e exportação CSV.
 
@@ -46,7 +46,7 @@ SistemaFreeFlow/
 │   ├── config.py
 │   ├── security.py
 │   ├── anomaly.py
-│   └── modelo_anomalia.joblib
+│   └── modelo_duplicidade.joblib
 │
 ├── data/
 │   └── treino_normal.csv
@@ -352,11 +352,10 @@ Depois que uma placa é vinculada, ela continua associada ao mesmo proprietário
 
 ## Análise de duplicidade
 
-A partir da segunda passagem conhecida de um veículo, o evento é analisado por
-dois modelos Isolation Forest. O modelo comportamental considera faixa,
-intervalo e horário; o modelo temporal é especializado no intervalo entre as
-passagens. Quando o modelo temporal detecta uma anomalia inferior a 30 segundos,
-o evento recebe a categoria operacional de duplicidade.
+A partir da segunda passagem conhecida de um veículo, o sistema calcula o
+intervalo entre eventos. O horário não é usado para classificar a passagem. O
+Isolation Forest temporal analisa o intervalo, e a regra operacional considera
+duplicidade toda repetição estritamente inferior a 30 segundos.
 
 No protótipo:
 
@@ -368,8 +367,11 @@ A regra operacional é:
 Evento normal
 → gera cobrança
 
-Duplicidade
+Duplicidade (intervalo < 30 segundos)
 → não gera nova cobrança
+
+Passagem em qualquer horário com intervalo ≥ 30 segundos
+→ segue para cobrança
 
 Exemplo:
 
@@ -385,27 +387,21 @@ Exemplo:
 
 ## Inteligência Artificial
 
-O projeto utiliza dois modelos **Isolation Forest** como componentes ativos da
-análise dos eventos de passagem e da decisão que antecede a cobrança.
-
-O modelo busca identificar eventos que apresentam características fora do padrão observado nos dados utilizados durante o treinamento.
+O fluxo usa um modelo **Isolation Forest temporal**, treinado com intervalos entre
+passagens, e uma salvaguarda determinística. O modelo não usa faixa nem horário
+para classificar o evento. Independentemente do resultado do modelo, a regra
+operacional final é: intervalo inferior a 30 segundos é duplicidade e não gera
+cobrança; intervalo igual ou superior a 30 segundos não é bloqueado pela IA e
+pode seguir para cobrança. Assim, passagens noturnas não são consideradas
+anômalas apenas por ocorrerem fora de um horário comercial.
 
 A primeira passagem conhecida de cada veículo é considerada normal porque ainda
-não existe intervalo anterior. Todas as passagens seguintes são submetidas ao
-modelo com as características `faixa`, `intervalo_segundos` e `hora_decimal`.
+não existe intervalo anterior. Timestamps inválidos ou fora de ordem continuam
+sendo tratados como inválidos.
 
-Quando o modelo temporal encontra uma repetição anômala inferior a 30 segundos,
-o evento recebe a categoria `duplicidade`. Outras ocorrências rejeitadas pelo
-modelo comportamental recebem a categoria `ia_anomalia`. Nenhuma dessas
-categorias gera cobrança; somente eventos classificados como normais seguem
-para o registro financeiro.
+O modelo temporal utilizado pela aplicação está em:
 
-O limite temporal também permanece como salvaguarda operacional para que uma
-leitura repetida nunca seja cobrada, mesmo diante de um falso negativo do modelo.
-
-O modelo treinado utilizado pela aplicação está em:
-
-app/modelo_anomalia.joblib
+`app/modelo_duplicidade.joblib`
 
 Os scripts relacionados à IA ficam em:
 
@@ -701,14 +697,12 @@ FastAPI
  ↓
 Registro da passagem
  ↓
-Análise pelo Isolation Forest
+Análise do intervalo pelo Isolation Forest
  ↓
-Classificação normal, duplicidade ou anomalia
- ↓
-Duplicidade?
- ├── Sim → registra evento sem nova cobrança
+Intervalo inferior a 30 segundos?
+ ├── Sim → duplicidade, sem nova cobrança
  │
- └── Não → identifica veículo e gera cobrança
+ └── Não → evento normal, gera cobrança
  ↓
 Banco de dados
  ↓
