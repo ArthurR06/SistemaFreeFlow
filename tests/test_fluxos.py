@@ -449,8 +449,13 @@ class FluxosFreeFlowTest(unittest.TestCase):
             timeout=5,
         )
         self.assertEqual(pagina_limpa.url, f"{self.base_url}/cobrancas")
+        self.assertEqual(pagina_limpa.headers["cache-control"], "no-store")
         self.assertNotIn("cpf=", pagina_limpa.url)
         self.assertNotIn("placa=", pagina_limpa.url)
+        self.assertIn(
+            "Number(1) * 1000",
+            pagina_limpa.text,
+        )
 
         link_antigo = sessao_cliente.get(
             f"{self.base_url}/cobrancas",
@@ -641,6 +646,11 @@ class FluxosFreeFlowTest(unittest.TestCase):
         self.assertIn('name="data_final" type="date"', recebiveis.text)
         self.assertIn("flex-wrap:nowrap", recebiveis.text)
         self.assertIn("flex:0 1 300px", recebiveis.text)
+        self.assertEqual(recebiveis.headers["cache-control"], "no-store")
+        self.assertIn(
+            "intervaloAtualizacaoRecebiveis=Number(1)*1000",
+            recebiveis.text,
+        )
         self.assertIn("ConectaVia", passagens.text)
         self.assertIn("/static/logos/conectavia-simbolo.png", passagens.text)
         logo = sessao.get(

@@ -105,7 +105,7 @@
       <div class="labels"><span>Veículo</span><span>Proprietário</span><span>A receber</span><span>Recebido</span><span>Situação</span><span></span></div>
       <div id="listaVeiculos">
         {% for item in resumo %}
-          <details class="vehicle" data-search="{{ item.placa }} {{ item.nome_proprietario }}">
+          <details class="vehicle" data-vehicle="{{ item.placa }}" data-search="{{ item.placa }} {{ item.nome_proprietario }}">
             <summary class="vehicle-summary">
               <strong>{{ item.placa }}</strong>
               <span>{{ item.nome_proprietario }}</span>
@@ -157,8 +157,8 @@
     dataFinalRecebiveis.addEventListener("change",atualizarLimitesRecebiveis);
     atualizarLimitesRecebiveis();
     const campoBusca=document.getElementById("campoBusca");
-    campoBusca.addEventListener("input",function(){
-      const termo=this.value.trim().toLocaleLowerCase("pt-BR");
+    function aplicarBuscaRecebiveis(){
+      const termo=campoBusca.value.trim().toLocaleLowerCase("pt-BR");
       const itens=[...document.querySelectorAll(".vehicle")];
       let visiveis=0;
       itens.forEach(item=>{
@@ -167,7 +167,47 @@
         if(exibir) visiveis++;
       });
       document.getElementById("semResultado").hidden=visiveis>0||itens.length===0;
-    });
+    }
+    campoBusca.addEventListener("input",aplicarBuscaRecebiveis);
+
+    let atualizacaoRecebiveisEmAndamento=false;
+    async function atualizarRecebiveis(){
+      if(document.visibilityState!=="visible"||atualizacaoRecebiveisEmAndamento) return;
+
+      atualizacaoRecebiveisEmAndamento=true;
+      const veiculosAbertos=new Set(
+        [...document.querySelectorAll(".vehicle[open]")]
+          .map(item=>item.dataset.vehicle)
+      );
+
+      try{
+        const resposta=await fetch(
+          window.location.pathname+window.location.search,
+          {cache:"no-store",headers:{"X-FreeFlow-Atualizacao":"recebiveis"}}
+        );
+        if(!resposta.ok) return;
+
+        const documento=new DOMParser().parseFromString(await resposta.text(),"text/html");
+        const novosCards=documento.querySelector(".cards");
+        const novaLista=documento.getElementById("listaVeiculos");
+        if(!novosCards||!novaLista) return;
+
+        document.querySelector(".cards").innerHTML=novosCards.innerHTML;
+        document.getElementById("listaVeiculos").innerHTML=novaLista.innerHTML;
+
+        document.querySelectorAll(".vehicle").forEach(item=>{
+          if(veiculosAbertos.has(item.dataset.vehicle)) item.open=true;
+        });
+        aplicarBuscaRecebiveis();
+      }catch(erro){
+        console.error("Não foi possível atualizar os recebíveis.",erro);
+      }finally{
+        atualizacaoRecebiveisEmAndamento=false;
+      }
+    }
+
+    const intervaloAtualizacaoRecebiveis=Number({{ refresh_segundos }})*1000;
+    setInterval(atualizarRecebiveis,intervaloAtualizacaoRecebiveis);
   </script>
 </body>
 </html>

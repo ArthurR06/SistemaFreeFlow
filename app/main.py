@@ -944,6 +944,9 @@ def portal_cobrancas(
     return templates.TemplateResponse(
         request=request,
         name="cobrancas.html",
+        context={
+            "refresh_segundos": REFRESH_SEGUNDOS,
+        },
         headers={"Cache-Control": "no-store"},
     )
 
@@ -2120,9 +2123,14 @@ def admin_cobrancas(
                 data_inicial_filtrada or "",
 
             "data_final_filtro":
-                data_final_filtrada or ""
+                data_final_filtrada or "",
 
-        }
+            "refresh_segundos":
+                REFRESH_SEGUNDOS,
+
+        },
+
+        headers={"Cache-Control": "no-store"},
 
     )
 

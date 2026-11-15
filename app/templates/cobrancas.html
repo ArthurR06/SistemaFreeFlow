@@ -1951,6 +1951,9 @@
                     "/portal/consultar",
                     {
 
+                        cache:
+                            "no-store",
+
                         method:
                             "POST",
 
@@ -2846,16 +2849,8 @@
 
 
     function atualizarAposPagamento() {
-
-        const existeSelecao =
-            document.querySelector(
-                ".checkbox-cobranca:checked"
-            );
-
         if (
             document.visibilityState === "visible"
-            &&
-            !existeSelecao
         ) {
 
             carregarCobrancas();
@@ -2895,9 +2890,12 @@
     );
 
 
+    const intervaloAtualizacaoCobrancas =
+        Number({{ refresh_segundos }}) * 1000;
+
     setInterval(
         atualizarAposPagamento,
-        1000
+        intervaloAtualizacaoCobrancas
     );
 
 
