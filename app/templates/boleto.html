@@ -53,13 +53,11 @@
     </aside>
   </main>
   <script>
-    const parametros=new URLSearchParams(window.location.search);
-    const cpf=parametros.get("cpf");
-    const placa=parametros.get("placa");
-    const ids=(parametros.get("cobrancas")||"").split(",").filter(Boolean).map(Number);
+    let ids=[];
+    try{ids=JSON.parse(sessionStorage.getItem("freeflow_cobrancas_selecionadas")||"[]").map(Number).filter(Number.isInteger);}catch(erro){ids=[];}
     let timerPagamento=null;
     const moeda=valor=>Number(valor||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-    function voltar(){window.location.href=`/cobrancas?cpf=${encodeURIComponent(cpf||"")}&placa=${encodeURIComponent(placa||"")}`;}
+    function voltar(){window.location.href="/cobrancas";}
     async function acompanharPagamento(token){
       try{
         const resposta=await fetch(`/portal/pagamento/status?token=${encodeURIComponent(token)}`,{cache:"no-store"});
@@ -68,14 +66,14 @@
       timerPagamento=setTimeout(()=>acompanharPagamento(token),1000);
     }
     async function carregar(){
-      if(!cpf||!placa||!ids.length){voltar();return;}
+      if(!ids.length){voltar();return;}
       try{
-        const consulta=await fetch("/portal/consultar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({cpf,placa})});
+        const consulta=await fetch("/portal/consultar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({cpf:"",placa:""})});
         if(!consulta.ok) throw new Error("Não foi possível localizar os débitos.");
         const dados=await consulta.json();
         const selecionadas=(dados.cobrancas||[]).filter(item=>item.status==="pendente"&&ids.includes(Number(item.id)));
         if(selecionadas.length!==ids.length) throw new Error("Um dos débitos selecionados não está mais pendente.");
-        const inicio=await fetch("/portal/pagamento/iniciar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({cpf,placa,cobrancas:ids,metodo:"boleto"})});
+        const inicio=await fetch("/portal/pagamento/iniciar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({cobrancas:ids,metodo:"boleto"})});
         const pagamento=await inicio.json();
         if(!inicio.ok) throw new Error(pagamento.detail||"Não foi possível gerar o boleto.");
         const total=selecionadas.reduce((soma,item)=>soma+Number(item.valor||0),0);
@@ -85,7 +83,7 @@
         document.getElementById("codigoBarras").src=pagamento.codigo_barras_url;
         document.getElementById("linkPagamento").value=pagamento.confirmacao_url;
         document.getElementById("confirmar").href=pagamento.confirmacao_url;
-        document.getElementById("voltar").href=`/cobrancas?cpf=${encodeURIComponent(cpf)}&placa=${encodeURIComponent(placa)}`;
+        document.getElementById("voltar").href="/cobrancas";
         acompanharPagamento(pagamento.token);
         const grupos={};
         selecionadas.forEach(item=>{const nome=item.concessionaria||"Concessionária";grupos[nome]=(grupos[nome]||0)+Number(item.valor||0)});

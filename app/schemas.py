@@ -115,8 +115,8 @@ class PortalConsulta(BaseModel):
 
 
 class PortalPagamento(BaseModel):
-    cpf: str
-    placa: str
+    cpf: str = ""
+    placa: str = ""
 
 
 class PortalPagamentoIniciar(PortalPagamento):

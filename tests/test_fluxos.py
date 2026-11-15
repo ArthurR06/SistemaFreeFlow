@@ -411,27 +411,22 @@ class FluxosFreeFlowTest(unittest.TestCase):
             )
 
     def test_portal_pagamento_qrcode_e_codigo_barras(self):
-        for rota, contexto in (
-            ("pix", "Pagamento via PIX"),
-            ("boleto", "Boleto bancário"),
-        ):
-            pagina_pagamento = requests.get(
-                f"{self.base_url}/{rota}",
-                timeout=5,
-            )
-            self.assertEqual(pagina_pagamento.status_code, 200)
-            self.assertIn(contexto, pagina_pagamento.text)
-            self.assertIn("max-width:1400px; min-height:95px", pagina_pagamento.text)
-            self.assertIn("padding:18px 30px", pagina_pagamento.text)
-            self.assertIn("font-size:30px; font-weight:800", pagina_pagamento.text)
-            self.assertIn(
-                "font-size:19px;font-weight:600",
-                pagina_pagamento.text,
-            )
+        sem_sessao = requests.get(
+            f"{self.base_url}/cobrancas",
+            allow_redirects=False,
+            timeout=5,
+        )
+        self.assertEqual(sem_sessao.status_code, 303)
+        self.assertEqual(sem_sessao.headers["location"], "/portal")
 
-        consulta = requests.post(
+        sessao_cliente = requests.Session()
+        consulta = sessao_cliente.post(
             f"{self.base_url}/portal/consultar",
-            json={"cpf": "12345678901", "placa": "ABC1D23"},
+            json={
+                "cpf": "12345678901",
+                "placa": "ABC1D23",
+                "registrar_acesso": True,
+            },
             timeout=5,
         )
         self.assertEqual(consulta.status_code, 200)
@@ -449,11 +444,45 @@ class FluxosFreeFlowTest(unittest.TestCase):
         ]
         self.assertEqual(len(pendentes), 2)
 
-        tentativa_bloqueada = requests.post(
+        pagina_limpa = sessao_cliente.get(
+            f"{self.base_url}/cobrancas",
+            timeout=5,
+        )
+        self.assertEqual(pagina_limpa.url, f"{self.base_url}/cobrancas")
+        self.assertNotIn("cpf=", pagina_limpa.url)
+        self.assertNotIn("placa=", pagina_limpa.url)
+
+        link_antigo = sessao_cliente.get(
+            f"{self.base_url}/cobrancas",
+            params={"cpf": "12345678901", "placa": "ABC1D23"},
+            allow_redirects=False,
+            timeout=5,
+        )
+        self.assertEqual(link_antigo.status_code, 303)
+        self.assertEqual(link_antigo.headers["location"], "/cobrancas")
+
+        for rota, contexto in (
+            ("pix", "Pagamento via PIX"),
+            ("boleto", "Boleto bancário"),
+        ):
+            pagina_pagamento = sessao_cliente.get(
+                f"{self.base_url}/{rota}",
+                params={"cobrancas": pendentes[0]},
+                timeout=5,
+            )
+            self.assertEqual(pagina_pagamento.status_code, 200)
+            self.assertIn(contexto, pagina_pagamento.text)
+            self.assertIn("max-width:1400px; min-height:95px", pagina_pagamento.text)
+            self.assertIn("padding:18px 30px", pagina_pagamento.text)
+            self.assertIn("font-size:30px; font-weight:800", pagina_pagamento.text)
+            self.assertIn(
+                "font-size:19px;font-weight:600",
+                pagina_pagamento.text,
+            )
+
+        tentativa_bloqueada = sessao_cliente.post(
             f"{self.base_url}/portal/pagamento/iniciar",
             json={
-                "cpf": "12345678901",
-                "placa": "ABC1D23",
                 "cobrancas": [self.cobranca_bloqueada_id],
                 "metodo": "pix",
             },
@@ -461,11 +490,9 @@ class FluxosFreeFlowTest(unittest.TestCase):
         )
         self.assertEqual(tentativa_bloqueada.status_code, 409)
 
-        inicio = requests.post(
+        inicio = sessao_cliente.post(
             f"{self.base_url}/portal/pagamento/iniciar",
             json={
-                "cpf": "12345678901",
-                "placa": "ABC1D23",
                 "cobrancas": [pendentes[0]],
                 "metodo": "pix",
             },
@@ -473,6 +500,8 @@ class FluxosFreeFlowTest(unittest.TestCase):
         )
         self.assertEqual(inicio.status_code, 200)
         pagamento = inicio.json()
+        self.assertNotIn("12345678901", str(pagamento))
+        self.assertNotIn("ABC1D23", str(pagamento))
         self.assertTrue(requests.get(pagamento["confirmacao_url"], timeout=5).ok)
         qr = requests.get(pagamento["qrcode_url"], timeout=5)
         self.assertEqual(qr.headers["content-type"], "image/png")
@@ -505,19 +534,19 @@ class FluxosFreeFlowTest(unittest.TestCase):
             timeout=5,
         )
         self.assertTrue(status_confirmado.json()["confirmado"])
-        pagina_sucesso = requests.get(
+        pagina_sucesso = sessao_cliente.get(
             f"{self.base_url}{confirmacao.json()['success_url']}",
             timeout=5,
         )
         self.assertIn("Pagamento confirmado", pagina_sucesso.text)
         self.assertIn("Negociar outros débitos", pagina_sucesso.text)
-        self.assertIn("/cobrancas?cpf=12345678901", pagina_sucesso.text)
+        self.assertIn('href="/cobrancas"', pagina_sucesso.text)
+        self.assertNotIn("cpf=", pagina_sucesso.text)
+        self.assertNotIn("placa=", pagina_sucesso.text)
 
-        segundo_pagamento = requests.post(
+        segundo_pagamento = sessao_cliente.post(
             f"{self.base_url}/portal/pagamento/iniciar",
             json={
-                "cpf": "12345678901",
-                "placa": "ABC1D23",
                 "cobrancas": [pendentes[1]],
                 "metodo": "boleto",
             },
@@ -529,16 +558,16 @@ class FluxosFreeFlowTest(unittest.TestCase):
             timeout=5,
         )
         self.assertEqual(segunda_confirmacao.status_code, 200)
-        pagina_final = requests.get(
+        pagina_final = sessao_cliente.get(
             f"{self.base_url}{segunda_confirmacao.json()['success_url']}",
             timeout=5,
         )
         self.assertNotIn("Negociar outros débitos", pagina_final.text)
         self.assertIn(">Encerrar<", pagina_final.text)
 
-        atualizada = requests.post(
+        atualizada = sessao_cliente.post(
             f"{self.base_url}/portal/consultar",
-            json={"cpf": "12345678901", "placa": "ABC1D23"},
+            json={"cpf": "", "placa": ""},
             timeout=5,
         ).json()
         self.assertTrue(all(item["status"] == "pago" for item in atualizada["cobrancas"]))

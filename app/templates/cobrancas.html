@@ -1625,24 +1625,6 @@
     /* PARÂMETROS */
     /* ========================================= */
 
-    const parametros =
-        new URLSearchParams(
-            window.location.search
-        );
-
-
-    const cpf =
-        parametros.get(
-            "cpf"
-        );
-
-
-    const placa =
-        parametros.get(
-            "placa"
-        );
-
-
     let cobrancasPendentes = [];
 
     let metodoSelecionado =
@@ -1962,20 +1944,6 @@
                 .map(item => item.dataset.id)
             );
 
-        if (
-            !cpf
-            ||
-            !placa
-        ) {
-
-            window.location.href =
-                "/portal";
-
-            return;
-
-        }
-
-
         try {
 
             const resposta =
@@ -1997,11 +1965,9 @@
                             JSON.stringify(
                                 {
 
-                                    cpf:
-                                        cpf,
+                                    cpf: "",
 
-                                    placa:
-                                        placa
+                                    placa: ""
 
                                 }
                             )
@@ -2848,39 +2814,20 @@
         );
 
 
-        const query =
-
-            `cpf=${encodeURIComponent(
-                cpf
-            )}`
-
-            +
-
-            `&placa=${encodeURIComponent(
-                placa
-            )}`
-
-            +
-
-            `&cobrancas=${encodeURIComponent(
-                ids.join(",")
-            )}`;
-
-
         if (
             metodoSelecionado
             === "pix"
         ) {
 
             window.location.href =
-                `/pix?${query}`;
+                "/pix";
 
         }
 
         else {
 
             window.location.href =
-                `/boleto?${query}`;
+                "/boleto";
 
         }
 
@@ -2893,7 +2840,7 @@
             "freeflow_cobrancas_selecionadas"
         );
 
-        window.location.href = "/portal";
+        window.location.href = "/portal/logout";
 
     }
 

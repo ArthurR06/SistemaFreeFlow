@@ -28,12 +28,12 @@
       <p>O pagamento foi registrado. Este veículo ainda possui {{ quantidade_outros_debitos }} débito(s) pendente(s).</p>
       <div class="actions">
         <a href="{{ retorno_debitos_url }}">Negociar outros débitos</a>
-        <a class="secondary" href="/portal">Encerrar</a>
+        <a class="secondary" href="/portal/logout">Encerrar</a>
       </div>
     {% else %}
       <p>O pagamento foi registrado com sucesso e os débitos selecionados já foram baixados.</p>
       <div class="actions">
-        <a href="/portal">Encerrar</a>
+        <a href="/portal/logout">Encerrar</a>
       </div>
     {% endif %}
   </main>

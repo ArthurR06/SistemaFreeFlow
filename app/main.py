@@ -67,6 +67,58 @@ def exigir_admin(request: Request) -> None:
         )
 
 
+def salvar_sessao_cliente(
+    request: Request,
+    proprietario: models.Proprietario,
+    veiculo: models.Veiculo,
+) -> None:
+    request.session["cliente_logado"] = True
+    request.session["cliente_proprietario_id"] = proprietario.id
+    request.session["cliente_veiculo_id"] = veiculo.id
+
+
+def cliente_da_sessao(
+    request: Request,
+    db: Session,
+) -> tuple[models.Proprietario, models.Veiculo]:
+    proprietario_id = request.session.get("cliente_proprietario_id")
+    veiculo_id = request.session.get("cliente_veiculo_id")
+
+    if not request.session.get("cliente_logado") or not proprietario_id or not veiculo_id:
+        raise HTTPException(
+            status_code=401,
+            detail="A sessão do cliente expirou. Entre novamente.",
+        )
+
+    veiculo = (
+        db.query(models.Veiculo)
+        .filter(
+            models.Veiculo.id == veiculo_id,
+            models.Veiculo.proprietario_id == proprietario_id,
+        )
+        .first()
+    )
+    proprietario = (
+        db.query(models.Proprietario)
+        .filter(models.Proprietario.id == proprietario_id)
+        .first()
+    )
+
+    if not proprietario or not veiculo:
+        for chave in (
+            "cliente_logado",
+            "cliente_proprietario_id",
+            "cliente_veiculo_id",
+        ):
+            request.session.pop(chave, None)
+        raise HTTPException(
+            status_code=401,
+            detail="A sessão do cliente expirou. Entre novamente.",
+        )
+
+    return proprietario, veiculo
+
+
 def validar_chave_esp32(
     x_api_key: str | None = Header(
         default=None,
@@ -720,7 +772,23 @@ def portal_cliente(
 
     return templates.TemplateResponse(
         request=request,
-        name="portal.html"
+        name="portal.html",
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+@app.get("/portal/logout")
+def portal_cliente_logout(request: Request):
+    for chave in (
+        "cliente_logado",
+        "cliente_proprietario_id",
+        "cliente_veiculo_id",
+    ):
+        request.session.pop(chave, None)
+
+    return RedirectResponse(
+        url="/portal",
+        status_code=303,
     )
 
 # ==========================================
@@ -861,9 +929,22 @@ def portal_cobrancas(
     request: Request
 ):
 
+    if request.query_params:
+        return RedirectResponse(
+            url="/cobrancas",
+            status_code=303,
+        )
+
+    if not request.session.get("cliente_logado"):
+        return RedirectResponse(
+            url="/portal",
+            status_code=303,
+        )
+
     return templates.TemplateResponse(
         request=request,
-        name="cobrancas.html"
+        name="cobrancas.html",
+        headers={"Cache-Control": "no-store"},
     )
 
 # ==========================================
@@ -878,9 +959,16 @@ def pagina_pix(
     request: Request
 ):
 
+    if not request.session.get("cliente_logado"):
+        return RedirectResponse(
+            url="/portal",
+            status_code=303,
+        )
+
     return templates.TemplateResponse(
         request=request,
-        name="pix.html"
+        name="pix.html",
+        headers={"Cache-Control": "no-store"},
     )
 
 
@@ -897,9 +985,16 @@ def pagina_boleto(
     request: Request
 ):
 
+    if not request.session.get("cliente_logado"):
+        return RedirectResponse(
+            url="/portal",
+            status_code=303,
+        )
+
     return templates.TemplateResponse(
         request=request,
-        name="boleto.html"
+        name="boleto.html",
+        headers={"Cache-Control": "no-store"},
     )
 
 
@@ -969,16 +1064,16 @@ def iniciar_pagamento(
     if metodo not in {"pix", "boleto"}:
         raise HTTPException(status_code=400, detail="Forma de pagamento inválida.")
 
+    proprietario, veiculo_sessao = cliente_da_sessao(request, db)
     veiculo, cobrancas = localizar_cobrancas_pagamento(
         db,
-        pagamento.cpf,
-        pagamento.placa,
+        proprietario.cpf,
+        veiculo_sessao.placa,
         pagamento.cobrancas,
     )
     token = pagamento_serializer.dumps(
         {
             "v": 1,
-            "placa": veiculo.placa,
             "veiculo_id": veiculo.id,
             "cobrancas": [cobranca.id for cobranca in cobrancas],
             "metodo": metodo,
@@ -1026,21 +1121,13 @@ def confirmar_pagamento_page(
         name="confirmar_pagamento.html",
         context={
             "token": token,
-            "placa": dados["placa"],
+            "placa": veiculo.placa,
             "metodo": dados["metodo"],
             "cobrancas": cobrancas,
             "total": sum(float(cobranca.valor or 0) for cobranca in cobrancas),
             "ja_pago": all(cobranca.status == "pago" for cobranca in cobrancas),
             "success_url": url_sucesso_pagamento(token),
-            "redirect_url": (
-                "/cobrancas?"
-                + urlencode(
-                    {
-                        "cpf": veiculo.proprietario.cpf,
-                        "placa": dados["placa"],
-                    }
-                )
-            ),
+            "redirect_url": "/cobrancas",
         },
     )
 
@@ -1155,13 +1242,14 @@ def pagamento_confirmado_page(
                 .count()
             )
 
-            if quantidade_outros_debitos:
-                retorno_debitos_url = "/cobrancas?" + urlencode(
-                    {
-                        "cpf": veiculo.proprietario.cpf,
-                        "placa": veiculo.placa,
-                    }
-                )
+            if (
+                quantidade_outros_debitos
+                and request.session.get("cliente_logado")
+                and request.session.get("cliente_veiculo_id") == veiculo.id
+                and request.session.get("cliente_proprietario_id")
+                == veiculo.proprietario_id
+            ):
+                retorno_debitos_url = "/cobrancas"
 
     return templates.TemplateResponse(
         request=request,
@@ -1230,6 +1318,8 @@ def codigo_barras_pagamento(
 )
 def consultar_portal(
     consulta: schemas.PortalConsulta,
+    request: Request,
+    response: Response,
     db: Session = Depends(get_db)
 ):
 
@@ -1247,6 +1337,14 @@ def consultar_portal(
         .strip()
         .upper()
     )
+
+    usar_sessao = not cpf and not placa
+
+    if bool(cpf) != bool(placa):
+        raise HTTPException(
+            status_code=400,
+            detail="Informe CPF e veículo para entrar no portal.",
+        )
 
     def registrar_acesso_cliente(
         *,
@@ -1277,12 +1375,17 @@ def consultar_portal(
     # PROPRIETÁRIO
     # ======================================
 
-    proprietario = (
-        crud.buscar_proprietario_por_cpf(
-            db,
-            cpf
+    if usar_sessao:
+        proprietario, veiculo = cliente_da_sessao(request, db)
+        cpf = proprietario.cpf
+        placa = veiculo.placa
+    else:
+        proprietario = (
+            crud.buscar_proprietario_por_cpf(
+                db,
+                cpf
+            )
         )
-    )
 
 
     if not proprietario:
@@ -1305,12 +1408,13 @@ def consultar_portal(
     # VEÍCULO
     # ======================================
 
-    veiculo = (
-        crud.buscar_veiculo_por_placa(
-            db,
-            placa
+    if not usar_sessao:
+        veiculo = (
+            crud.buscar_veiculo_por_placa(
+                db,
+                placa
+            )
         )
-    )
 
 
     if not veiculo:
@@ -1437,10 +1541,26 @@ def consultar_portal(
         veiculo_id=veiculo.id,
     )
 
+    if not usar_sessao and total_pendentes > 0:
+        salvar_sessao_cliente(
+            request,
+            proprietario,
+            veiculo,
+        )
+    elif not usar_sessao:
+        for chave in (
+            "cliente_logado",
+            "cliente_proprietario_id",
+            "cliente_veiculo_id",
+        ):
+            request.session.pop(chave, None)
+
 
     # ======================================
     # RESPOSTA
     # ======================================
+
+    response.headers["Cache-Control"] = "no-store"
 
     return {
 
@@ -1520,73 +1640,11 @@ def consultar_portal(
 )
 def pagar_cobranca(
     cobranca_id: int,
-    pagamento: schemas.PortalPagamento,
+    _pagamento: schemas.PortalPagamento,
+    request: Request,
     db: Session = Depends(get_db)
 ):
-
-    # Normaliza CPF
-    cpf = (
-        pagamento.cpf
-        .replace(".", "")
-        .replace("-", "")
-        .strip()
-    )
-
-
-    # Normaliza placa
-    placa = (
-        pagamento.placa
-        .strip()
-        .upper()
-    )
-
-
-    proprietario = (
-        crud.buscar_proprietario_por_cpf(
-            db,
-            cpf
-        )
-    )
-
-
-    veiculo = (
-        crud.buscar_veiculo_por_placa(
-            db,
-            placa
-        )
-    )
-
-
-    if (
-        not proprietario
-        or not veiculo
-    ):
-
-        raise HTTPException(
-            status_code=404,
-            detail=(
-                "Cliente ou veículo "
-                "não encontrado."
-            )
-        )
-
-
-    # ======================================
-    # SEGURANÇA DO PORTAL
-    # ======================================
-
-    if (
-        veiculo.proprietario_id
-        != proprietario.id
-    ):
-
-        raise HTTPException(
-            status_code=403,
-            detail=(
-                "Veículo não pertence "
-                "ao CPF informado."
-            )
-        )
+    _proprietario, veiculo = cliente_da_sessao(request, db)
 
 
     # ======================================
