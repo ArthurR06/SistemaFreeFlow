@@ -11,15 +11,15 @@
 // WI-FI
 // ==========================================
 
-const char* ssid = "Leticia";
-const char* password = "freeflow2026";
+const char* ssid = WIFI_SSID;
+const char* password = WIFI_PASSWORD;
 
 // ==========================================
 // SERVIDOR FASTAPI
 // ==========================================
 
 // Endpoint HTTPS publicado na Vercel
-const char* URL_EVENTO = "http://172.20.10.5:8002/evento";
+const char* URL_EVENTO = FREEFLOW_API_URL;
 
 // ==========================================
 // MAC DOS DOIS ESP32
