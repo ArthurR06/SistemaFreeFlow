@@ -458,6 +458,10 @@ class FluxosFreeFlowTest(unittest.TestCase):
         )
         self.assertIn("const gruposAbertos = new Set();", pagina_limpa.text)
         self.assertIn("carregamentoCobrancasEmAndamento", pagina_limpa.text)
+        self.assertIn("const idsCobrancasSelecionadas = new Set();", pagina_limpa.text)
+        self.assertIn("atualizarSelecaoPersistente(this)", pagina_limpa.text)
+        self.assertIn("idsCobrancasSelecionadas.forEach", pagina_limpa.text)
+        self.assertNotIn("const idsSelecionados =", pagina_limpa.text)
         self.assertNotIn('<div class="seta">', pagina_limpa.text)
 
         link_antigo = sessao_cliente.get(

@@ -1864,6 +1864,7 @@
     /* ========================================= */
 
     const gruposAbertos = new Set();
+    const idsCobrancasSelecionadas = new Set();
     let carregamentoCobrancasEmAndamento = false;
 
     function alternarConcessionaria(
@@ -1919,16 +1920,6 @@
         }
 
         carregamentoCobrancasEmAndamento = true;
-
-        const idsSelecionados =
-            new Set(
-                Array.from(
-                    document.querySelectorAll(
-                        ".checkbox-cobranca:checked"
-                    )
-                )
-                .map(item => item.dataset.id)
-            );
 
         try {
 
@@ -2023,6 +2014,27 @@
                         === "pendente"
                 );
 
+            const idsPendentesAtuais =
+                new Set(
+                    cobrancasPendentes.map(
+                        cobranca => String(cobranca.id)
+                    )
+                );
+
+            Array.from(
+                idsCobrancasSelecionadas
+            ).forEach(
+                id => {
+
+                    if (!idsPendentesAtuais.has(id)) {
+
+                        idsCobrancasSelecionadas.delete(id);
+
+                    }
+
+                }
+            );
+
 
             document.getElementById(
                 "quantidadePendentes"
@@ -2047,7 +2059,7 @@
                 }
             );
 
-            idsSelecionados.forEach(
+            idsCobrancasSelecionadas.forEach(
                 id => {
 
                     const checkbox =
@@ -2197,7 +2209,7 @@
                                         data-id="${cobranca.id}"
                                         data-valor="${cobranca.valor}"
                                         data-concessionaria="${concessionaria}"
-                                        onchange="atualizarResumo()"
+                                        onchange="atualizarSelecaoPersistente(this)"
                                     >
 
 
@@ -2372,6 +2384,36 @@
 }
 
     /* ========================================= */
+    /* SELEÇÃO PERSISTENTE */
+    /* ========================================= */
+
+    function atualizarSelecaoPersistente(
+        checkbox
+    ) {
+
+        const id =
+            checkbox.dataset.id;
+
+
+        if (checkbox.checked) {
+
+            idsCobrancasSelecionadas.add(id);
+
+        }
+
+        else {
+
+            idsCobrancasSelecionadas.delete(id);
+
+        }
+
+
+        atualizarResumo();
+
+    }
+
+
+    /* ========================================= */
     /* SELECIONAR TODAS */
     /* ========================================= */
 
@@ -2388,6 +2430,23 @@
 
                 checkbox.checked =
                     marcado;
+
+
+                if (marcado) {
+
+                    idsCobrancasSelecionadas.add(
+                        checkbox.dataset.id
+                    );
+
+                }
+
+                else {
+
+                    idsCobrancasSelecionadas.delete(
+                        checkbox.dataset.id
+                    );
+
+                }
 
             }
         );
