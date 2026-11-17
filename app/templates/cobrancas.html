@@ -527,38 +527,6 @@
         }
 
 
-        .seta {
-
-            width: 28px;
-            height: 28px;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            color:
-                #a8bfd1;
-
-            font-size: 15px;
-
-            transition:
-                transform
-                0.22s;
-        }
-
-
-        .concessionaria.aberta
-        .seta {
-
-            transform:
-                rotate(
-                    180deg
-                );
-        }
-
-
         /* ===================================== */
         /* CORPO RETRÁTIL */
         /* ===================================== */
@@ -1895,6 +1863,9 @@
     /* ABRIR / FECHAR */
     /* ========================================= */
 
+    const gruposAbertos = new Set();
+    let carregamentoCobrancasEmAndamento = false;
+
     function alternarConcessionaria(
         chave
     ) {
@@ -1909,9 +1880,26 @@
             painel
         ) {
 
-            painel.classList.toggle(
+            const abriu =
+                painel.classList.toggle(
                 "aberta"
             );
+
+            if (abriu) {
+
+                gruposAbertos.add(
+                    painel.id
+                );
+
+            }
+
+            else {
+
+                gruposAbertos.delete(
+                    painel.id
+                );
+
+            }
 
         }
 
@@ -1924,15 +1912,13 @@
 
     async function carregarCobrancas() {
 
-        const gruposAbertos =
-            new Set(
-                Array.from(
-                    document.querySelectorAll(
-                        ".concessionaria.aberta"
-                    )
-                )
-                .map(item => item.id)
-            );
+        if (carregamentoCobrancasEmAndamento) {
+
+            return;
+
+        }
+
+        carregamentoCobrancasEmAndamento = true;
 
         const idsSelecionados =
             new Set(
@@ -2094,6 +2080,12 @@
             alert(
                 "Não foi possível conectar ao servidor."
             );
+
+        }
+
+        finally {
+
+            carregamentoCobrancasEmAndamento = false;
 
         }
 
@@ -2302,12 +2294,6 @@
                                     </strong>
 
                                 </div>
-
-
-                                <div class="seta">
-                                    ▼
-                                </div>
-
 
                             </div>
 

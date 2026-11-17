@@ -456,6 +456,9 @@ class FluxosFreeFlowTest(unittest.TestCase):
             "Number(1) * 1000",
             pagina_limpa.text,
         )
+        self.assertIn("const gruposAbertos = new Set();", pagina_limpa.text)
+        self.assertIn("carregamentoCobrancasEmAndamento", pagina_limpa.text)
+        self.assertNotIn('<div class="seta">', pagina_limpa.text)
 
         link_antigo = sessao_cliente.get(
             f"{self.base_url}/cobrancas",
@@ -651,6 +654,9 @@ class FluxosFreeFlowTest(unittest.TestCase):
             "intervaloAtualizacaoRecebiveis=Number(1)*1000",
             recebiveis.text,
         )
+        self.assertIn("veiculosAbertosRecebiveis", recebiveis.text)
+        self.assertIn("acompanharEstadoVeiculos", recebiveis.text)
+        self.assertNotIn('class="chevron"', recebiveis.text)
         self.assertIn("ConectaVia", passagens.text)
         self.assertIn("/static/logos/conectavia-simbolo.png", passagens.text)
         logo = sessao.get(
